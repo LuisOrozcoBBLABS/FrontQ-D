@@ -156,7 +156,9 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .input:focus,.select:focus,.textarea:focus{ outline:none; border-color:var(--accent); }
 .input::placeholder{ color:var(--text-dim); }
 .select{ appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--text-2) 50%),linear-gradient(135deg,var(--text-2) 50%,transparent 50%); background-position:calc(100% - 18px) 20px,calc(100% - 12px) 20px; background-size:6px 6px,6px 6px; background-repeat:no-repeat; padding-right:38px; }
-.field__error{ color:var(--text); font-size:13px; }
+.field__error{ color:var(--danger); font-size:var(--fs-sm); }
+/* Texto de apoyo persistente bajo un campo (no reemplaza a la etiqueta). */
+.field__hint{ color:var(--text-dim); font-size:var(--fs-xs); line-height:var(--lh-snug); }
 .field-inline{ display:flex; gap:12px; flex-wrap:wrap; }
 .field-inline > *{ flex:1 1 200px; }
 

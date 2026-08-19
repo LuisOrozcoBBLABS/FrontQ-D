@@ -14,20 +14,25 @@ export class Login {
   private auth = inject(AuthService);
   private router = inject(Router);
 
-  email = signal('admin@bblabs.io');
-  password = signal('demo');
+  email = signal('');
+  password = signal('');
   error = signal<string | null>(null);
   loading = signal(false);
 
-  submit(): void {
+  async submit(): Promise<void> {
+    if (this.loading()) return;
     this.error.set(null);
     this.loading.set(true);
-    const res = this.auth.login(this.email(), this.password());
+
+    const res = await this.auth.login(this.email().trim(), this.password());
     this.loading.set(false);
-    if (res.ok) {
-      this.router.navigateByUrl('/inicio');
-    } else {
+
+    if (!res.ok) {
       this.error.set(res.error ?? 'No se pudo iniciar sesión.');
+      return;
     }
+
+    // Con clave temporal, el servidor no deja operar hasta cambiarla.
+    await this.router.navigateByUrl(res.debeCambiarPassword ? '/cambiar-clave' : '/inicio');
   }
 }

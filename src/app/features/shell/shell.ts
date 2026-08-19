@@ -24,6 +24,10 @@ export class Shell {
 
   protected notifOpen = signal(false);
 
+  constructor() {
+    void this.assignSvc.loadNotificaciones();
+  }
+
   protected unread = computed(() => {
     const u = this.auth.currentUser();
     return u ? this.assignSvc.unreadCount(u.id) : 0;
@@ -33,9 +37,9 @@ export class Shell {
     return u ? this.assignSvc.notificationsFor(u.id) : [];
   });
 
-  logout(): void {
-    this.auth.logout();
-    this.router.navigateByUrl('/login');
+  async logout(): Promise<void> {
+    await this.auth.logout();
+    await this.router.navigateByUrl('/login');
   }
 
   initials(name: string): string {
@@ -45,15 +49,15 @@ export class Shell {
   toggleNotif(): void { this.notifOpen.set(!this.notifOpen()); }
   closeNotif(): void { this.notifOpen.set(false); }
 
-  openNotif(n: NotificationItem): void {
-    this.assignSvc.markRead(n.id);
+  async openNotif(n: NotificationItem): Promise<void> {
+    await this.assignSvc.markRead(n.id);
     this.notifOpen.set(false);
-    this.router.navigate(['/proyectos', n.projectId]);
+    if (n.projectId) await this.router.navigate(['/proyectos', n.projectId]);
   }
 
-  markAll(): void {
+  async markAll(): Promise<void> {
     const u = this.auth.currentUser();
-    if (u) this.assignSvc.markAllRead(u.id);
+    if (u) await this.assignSvc.markAllRead(u.id);
   }
 
   @HostListener('document:keydown.escape')

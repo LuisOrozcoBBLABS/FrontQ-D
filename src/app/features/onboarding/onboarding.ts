@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/auth.service';
+import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { GENEROS, Genero } from '../../core/models';
 import { ThemeToggle } from '../../ui/theme-toggle';
 
@@ -22,15 +22,19 @@ export class Onboarding {
   genero = signal<Genero>(null);
   error = signal<string | null>(null);
 
-  finish(): void {
+  async finish(): Promise<void> {
     this.error.set(null);
     if (!this.fechaNacimiento()) { this.error.set('Ingresa tu fecha de nacimiento.'); return; }
     if (!this.genero()) { this.error.set('Selecciona una opción para continuar.'); return; }
-    this.auth.updateCurrent({
-      fechaNacimiento: this.fechaNacimiento(),
-      genero: this.genero(),
-      onboardingCompleto: true,
-    });
-    this.router.navigateByUrl('/inicio');
+    try {
+      await this.auth.updateCurrent({
+        fechaNacimiento: this.fechaNacimiento(),
+        genero: this.genero(),
+        onboardingCompleto: true,
+      });
+      await this.router.navigateByUrl('/inicio');
+    } catch (e) {
+      this.error.set(mensajeDeError(e, 'No se pudo guardar tus datos.'));
+    }
   }
 }

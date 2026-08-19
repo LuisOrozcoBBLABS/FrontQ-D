@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../core/auth.service';
+import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { GENEROS, Genero, generoLabel } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
 
@@ -30,19 +30,37 @@ export class Profile {
     const file = input.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => this.avatarUrl.set(reader.result as string);
+    reader.onload = () => {
+      const dataUri = reader.result as string;
+      // El backend rechaza fotos de mas de 400 KB; avisamos antes de intentar.
+      if (dataUri.length > 400_000) {
+        this.toast.error('La foto pesa demasiado. Usá una imagen más liviana (menos de 300 KB).');
+        return;
+      }
+      this.avatarUrl.set(dataUri);
+    };
     reader.readAsDataURL(file);
   }
   removePhoto(): void { this.avatarUrl.set(null); }
 
-  save(): void {
-    this.auth.updateCurrent({
-      linkedin: this.linkedin().trim() || null,
-      telefono: this.telefono().trim() || null,
-      genero: this.genero(),
-      fechaNacimiento: this.fechaNacimiento() || null,
-      avatarUrl: this.avatarUrl(),
-    });
-    this.toast.success('Perfil actualizado');
+  protected guardando = signal(false);
+
+  async save(): Promise<void> {
+    if (this.guardando()) return;
+    this.guardando.set(true);
+    try {
+      await this.auth.updateCurrent({
+        linkedin: this.linkedin().trim() || null,
+        telefono: this.telefono().trim() || null,
+        genero: this.genero(),
+        fechaNacimiento: this.fechaNacimiento() || null,
+        avatarUrl: this.avatarUrl(),
+      });
+      this.toast.success('Perfil actualizado');
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo guardar el perfil.'));
+    } finally {
+      this.guardando.set(false);
+    }
   }
 }

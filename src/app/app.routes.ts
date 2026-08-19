@@ -1,11 +1,23 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard, onboardedRedirectGuard, onboardingGuard, permissionGuard } from './core/guards';
+import {
+  authGuard,
+  cambioClaveGuard,
+  guestGuard,
+  onboardedRedirectGuard,
+  onboardingGuard,
+  permissionGuard,
+} from './core/guards';
 
 export const routes: Routes = [
   {
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () => import('./features/login/login').then(m => m.Login),
+  },
+  {
+    path: 'cambiar-clave',
+    canActivate: [cambioClaveGuard],
+    loadComponent: () => import('./features/change-password/change-password').then(m => m.ChangePassword),
   },
   {
     path: 'bienvenida',

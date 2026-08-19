@@ -1,77 +1,184 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { Assignment, AssignmentStatus, Canal, CanalEnvio, NotificationItem, Prioridad } from './models';
-import { UsersService } from './users.service';
-import { ProjectsService } from './projects.service';
 
-const A_KEY = 'plataforma-id.assignments';
-const N_KEY = 'plataforma-id.notifications';
+interface AssignmentApi {
+  id: string;
+  projectId: string;
+  asignadoAId: string;
+  asignadoPorId: string;
+  prioridad: Prioridad;
+  nota: string;
+  fechaLimite: string | null;
+  estado: string;
+  canales: Canal[];
+  createdAt: string;
+  project?: { id: string; nombre: string };
+  asignadoA?: { id: string; nombre: string };
+  notificaciones?: NotificationApi[];
+}
+
+interface NotificationApi {
+  id: string;
+  userId: string;
+  titulo: string;
+  detalle: string;
+  leida: boolean;
+  createdAt: string;
+  assignmentId: string | null;
+  projectId: string | null;
+  envios: { canal: Canal; destino: string; estado: string; detalle: string | null }[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class AssignmentsService {
-  private users = inject(UsersService);
-  private projects = inject(ProjectsService);
+  private http = inject(HttpClient);
+  private base = environment.apiUrl;
 
-  private _assignments = signal<Assignment[]>(this.load<Assignment>(A_KEY));
-  private _notifications = signal<NotificationItem[]>(this.load<NotificationItem>(N_KEY));
+  private readonly _assignments = signal<Assignment[]>([]);
+  private readonly _notifications = signal<NotificationItem[]>([]);
+  private readonly _cargando = signal(false);
+
   readonly assignments = this._assignments.asReadonly();
   readonly notifications = this._notifications.asReadonly();
+  readonly cargando = this._cargando.asReadonly();
 
-  private load<T>(key: string): T[] {
-    try { const raw = localStorage.getItem(key); if (raw) return JSON.parse(raw) as T[]; } catch { /* ignore */ }
-    return [];
-  }
-  private persistA(list: Assignment[]): void { this._assignments.set(list); try { localStorage.setItem(A_KEY, JSON.stringify(list)); } catch { /* ignore */ } }
-  private persistN(list: NotificationItem[]): void { this._notifications.set(list); try { localStorage.setItem(N_KEY, JSON.stringify(list)); } catch { /* ignore */ } }
-
-  forUser(userId: string): Assignment[] {
-    return this._assignments().filter(a => a.asignadoA === userId).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }
-  notificationsFor(userId: string): NotificationItem[] {
-    return this._notifications().filter(n => n.userId === userId).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }
-  unreadCount(userId: string): number {
-    return this._notifications().filter(n => n.userId === userId && !n.leida).length;
-  }
-
-  /** Simula el "envío" por cada canal (esto lo haría n8n en producción). */
-  private simulateSend(userId: string, canales: Canal[]): CanalEnvio[] {
-    const u = this.users.byId(userId);
-    return canales.map<CanalEnvio>(canal => {
-      let destino: string;
-      if (canal === 'correo' || canal === 'teams') destino = u?.email ?? '(sin correo)';
-      else destino = u?.telefono || '(teléfono no configurado)';
-      return { canal, destino, estado: 'Enviado (simulado)' };
-    });
+  /** `todas` requiere el permiso assignments.create; el servidor lo valida. */
+  async load(todas = false): Promise<void> {
+    this._cargando.set(true);
+    try {
+      const lista = await firstValueFrom(
+        this.http.get<AssignmentApi[]>(`${this.base}/assignments`, {
+          params: { mias: todas ? 'false' : 'true' },
+        }),
+      );
+      this._assignments.set(lista.map(aAsignacion));
+    } catch {
+      /* la vista muestra su propio estado vacío */
+    } finally {
+      this._cargando.set(false);
+    }
   }
 
-  assign(projectId: string, userId: string, asignadoPor: string, prioridad: Prioridad, nota: string, fechaLimite: string | null, canales: Canal[]): Assignment {
-    const now = new Date().toISOString();
-    const a: Assignment = {
-      id: 'a-' + Math.random().toString(36).slice(2, 9),
-      projectId, asignadoA: userId, asignadoPor, prioridad, nota, fechaLimite,
-      estado: 'pendiente', canales, createdAt: now,
-    };
-    this.persistA([a, ...this._assignments()]);
-
-    const proj = this.projects.byId(projectId);
-    const notif: NotificationItem = {
-      id: 'n-' + Math.random().toString(36).slice(2, 9),
-      userId, titulo: 'Nuevo proyecto asignado',
-      detalle: `Se te asignó “${proj?.nombre ?? 'proyecto'}” con prioridad ${prioridad}.`,
-      leida: false, createdAt: now, assignmentId: a.id, projectId,
-      envios: this.simulateSend(userId, canales),
-    };
-    this.persistN([notif, ...this._notifications()]);
-    return a;
+  async loadNotificaciones(): Promise<void> {
+    try {
+      const lista = await firstValueFrom(
+        this.http.get<NotificationApi[]>(`${this.base}/notifications`),
+      );
+      this._notifications.set(lista.map(aNotificacion));
+    } catch {
+      /* la campana queda vacía */
+    }
   }
 
-  updateEstado(assignmentId: string, estado: AssignmentStatus): void {
-    this.persistA(this._assignments().map(a => (a.id === assignmentId ? { ...a, estado } : a)));
+  /** Firmas heredadas: la API ya filtra por la persona autenticada. */
+  forUser(_userId: string): Assignment[] {
+    return this._assignments();
   }
-  markRead(notifId: string): void {
-    this.persistN(this._notifications().map(n => (n.id === notifId ? { ...n, leida: true } : n)));
+
+  notificationsFor(_userId: string): NotificationItem[] {
+    return this._notifications();
   }
-  markAllRead(userId: string): void {
-    this.persistN(this._notifications().map(n => (n.userId === userId ? { ...n, leida: true } : n)));
+
+  unreadCount(_userId: string): number {
+    return this._notifications().filter(n => !n.leida).length;
+  }
+
+  async assign(
+    projectId: string,
+    userId: string,
+    _asignadoPor: string,
+    prioridad: Prioridad,
+    nota: string,
+    fechaLimite: string | null,
+    canales: Canal[],
+  ): Promise<Assignment> {
+    const creada = await firstValueFrom(
+      this.http.post<AssignmentApi>(`${this.base}/assignments`, {
+        projectId,
+        asignadoAId: userId,
+        prioridad,
+        nota,
+        fechaLimite,
+        canales,
+      }),
+    );
+    const asignacion = aAsignacion(creada);
+    this._assignments.update(l => [asignacion, ...l]);
+    return asignacion;
+  }
+
+  async updateEstado(assignmentId: string, estado: AssignmentStatus): Promise<void> {
+    const actualizada = await firstValueFrom(
+      this.http.patch<AssignmentApi>(`${this.base}/assignments/${assignmentId}/estado`, { estado }),
+    );
+    const a = aAsignacion(actualizada);
+    this._assignments.update(l => l.map(x => (x.id === a.id ? a : x)));
+  }
+
+  async markRead(notifId: string): Promise<void> {
+    await firstValueFrom(this.http.patch(`${this.base}/notifications/${notifId}/read`, {}));
+    this._notifications.update(l => l.map(n => (n.id === notifId ? { ...n, leida: true } : n)));
+  }
+
+  async markAllRead(_userId: string): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.base}/notifications/read-all`, {}));
+    this._notifications.update(l => l.map(n => ({ ...n, leida: true })));
+  }
+}
+
+/** El backend usa guion bajo en los enums; el front, guion. */
+function estadoDesdeApi(estado: string): AssignmentStatus {
+  return estado.replace(/_/g, '-') as AssignmentStatus;
+}
+
+function aAsignacion(a: AssignmentApi): Assignment {
+  return {
+    id: a.id,
+    projectId: a.projectId,
+    asignadoA: a.asignadoAId,
+    asignadoPor: a.asignadoPorId,
+    prioridad: a.prioridad,
+    nota: a.nota,
+    fechaLimite: a.fechaLimite ? a.fechaLimite.slice(0, 10) : null,
+    estado: estadoDesdeApi(a.estado),
+    canales: a.canales,
+    createdAt: a.createdAt,
+  };
+}
+
+function aNotificacion(n: NotificationApi): NotificationItem {
+  return {
+    id: n.id,
+    userId: n.userId,
+    titulo: n.titulo,
+    detalle: n.detalle,
+    leida: n.leida,
+    createdAt: n.createdAt,
+    assignmentId: n.assignmentId ?? '',
+    projectId: n.projectId ?? '',
+    envios: n.envios.map<CanalEnvio>(e => ({
+      canal: e.canal,
+      destino: e.destino,
+      // Estado real del envío, con el motivo cuando falta algo.
+      estado: etiquetaEnvio(e.estado, e.detalle),
+    })),
+  };
+}
+
+function etiquetaEnvio(estado: string, detalle: string | null): string {
+  switch (estado) {
+    case 'enviado':
+      return 'Enviado';
+    case 'pendiente':
+      return 'En cola';
+    case 'fallido':
+      return `Falló${detalle ? `: ${detalle}` : ''}`;
+    case 'no_configurado':
+      return detalle ?? 'Canal no configurado';
+    default:
+      return estado;
   }
 }

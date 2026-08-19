@@ -1,7 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UsersService } from '../../core/users.service';
-import { PERMISSIONS, ROLES, GRUPOS, RoleId, User } from '../../core/models';
+import { GroupsService } from '../../core/groups.service';
+import { mensajeDeError } from '../../core/auth.service';
+import { PERMISSIONS, ROLES, RoleId, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
@@ -12,9 +14,11 @@ interface Draft {
   email: string;
   cargo: string;
   rol: RoleId;
-  grupo: string | null;
+  groupId: string | null;
   activo: boolean;
   permisosExtra: string[];
+  /** Solo al crear: contraseña inicial que la persona deberá cambiar. */
+  password: string;
 }
 
 @Component({
@@ -25,13 +29,22 @@ interface Draft {
 })
 export class Users {
   private usersSvc = inject(UsersService);
+  private groupsSvc = inject(GroupsService);
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
 
   protected list = this.usersSvc.users;
+  protected cargando = this.usersSvc.cargando;
+  protected errorCarga = this.usersSvc.error;
   protected permisos = PERMISSIONS;
   protected roles = Object.values(ROLES);
-  protected grupos = GRUPOS;
+  /** Los grupos llegan de la API: el select necesita el id, no el nombre. */
+  protected grupos = this.groupsSvc.groups;
+
+  constructor() {
+    void this.usersSvc.load();
+    void this.groupsSvc.load();
+  }
 
   protected query = signal('');
   protected rolF = signal<string>('all');
@@ -71,11 +84,11 @@ export class Users {
   protected rolePerms = computed(() => (this.draft() ? ROLES[this.draft()!.rol].permissions : []));
 
   openCreate(): void {
-    this.draft.set({ nombre: '', email: '', cargo: '', rol: 'colaborador', grupo: null, activo: true, permisosExtra: [] });
+    this.draft.set({ nombre: '', email: '', cargo: '', rol: 'colaborador', groupId: null, activo: true, permisosExtra: [], password: '' });
     this.modalOpen.set(true);
   }
   openEdit(u: User): void {
-    this.draft.set({ id: u.id, nombre: u.nombre, email: u.email, cargo: u.cargo, rol: u.rol, grupo: u.grupo, activo: u.activo, permisosExtra: [...u.permisosExtra] });
+    this.draft.set({ id: u.id, nombre: u.nombre, email: u.email, cargo: u.cargo, rol: u.rol, groupId: u.groupId, activo: u.activo, permisosExtra: [...u.permisosExtra], password: '' });
     this.modalOpen.set(true);
   }
   close(): void { this.modalOpen.set(false); this.draft.set(null); }
@@ -97,31 +110,80 @@ export class Users {
     this.draft.set({ ...d, permisosExtra: has ? d.permisosExtra.filter(x => x !== permId) : [...d.permisosExtra, permId] });
   }
 
-  save(): void {
+  protected guardando = signal(false);
+
+  /** Mínimo que exige el backend para la contraseña inicial. */
+  protected readonly minPassword = 10;
+
+  protected puedeGuardar = computed(() => {
     const d = this.draft();
-    if (!d || !d.nombre.trim() || !d.email.trim()) return;
-    const payload = { nombre: d.nombre.trim(), email: d.email.trim(), cargo: d.cargo.trim(), rol: d.rol, grupo: d.grupo, activo: d.activo, permisosExtra: d.permisosExtra };
-    if (d.id) {
-      this.usersSvc.update(d.id, payload);
-      this.toast.success('Usuario actualizado');
-    } else {
-      this.usersSvc.create({ ...payload, avatarUrl: null, linkedin: null, genero: null, fechaNacimiento: null, onboardingCompleto: false });
-      this.toast.success('Usuario creado');
+    if (!d || !d.nombre.trim() || !d.email.trim()) return false;
+    return d.id ? true : d.password.length >= this.minPassword;
+  });
+
+  async save(): Promise<void> {
+    const d = this.draft();
+    if (!d || !this.puedeGuardar() || this.guardando()) return;
+
+    this.guardando.set(true);
+    try {
+      if (d.id) {
+        await this.usersSvc.update(d.id, {
+          nombre: d.nombre.trim(),
+          cargo: d.cargo.trim(),
+          rol: d.rol,
+          groupId: d.groupId,
+          activo: d.activo,
+          permisosExtra: d.permisosExtra,
+        });
+        this.toast.success('Usuario actualizado');
+      } else {
+        await this.usersSvc.create({
+          nombre: d.nombre.trim(),
+          email: d.email.trim(),
+          cargo: d.cargo.trim(),
+          password: d.password,
+          rol: d.rol,
+          groupId: d.groupId,
+          activo: d.activo,
+          permisosExtra: d.permisosExtra,
+        });
+        this.toast.success('Usuario creado. Pasale la contraseña temporal: se le pedirá cambiarla al entrar.');
+      }
+      this.close();
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo guardar el usuario.'));
+    } finally {
+      this.guardando.set(false);
     }
-    this.close();
   }
 
-  toggleActivo(u: User): void { this.usersSvc.toggleActivo(u.id); }
-  async remove(u: User): Promise<void> {
-    const ok = await this.confirm.ask({ title: 'Eliminar usuario', message: `¿Eliminar a ${u.nombre}? No se puede deshacer (simulado).`, danger: true, confirmText: 'Eliminar' });
-    if (ok) { this.usersSvc.remove(u.id); this.toast.success('Usuario eliminado'); }
+  async toggleActivo(u: User): Promise<void> {
+    try {
+      await this.usersSvc.toggleActivo(u.id);
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo cambiar el estado.'));
+    }
   }
-  async resetSeed(): Promise<void> {
-    const ok = await this.confirm.ask({ title: 'Restaurar ejemplo', message: 'Se descartarán los cambios locales y se restaurarán los usuarios de ejemplo.', confirmText: 'Restaurar' });
-    if (ok) { this.usersSvc.resetSeed(); this.toast.info('Usuarios restaurados'); }
+
+  /** No se borra a nadie: se archiva la cuenta y se cierran sus sesiones. */
+  async remove(u: User): Promise<void> {
+    const ok = await this.confirm.ask({
+      title: 'Archivar usuario',
+      message: `¿Archivar la cuenta de ${u.nombre}? No podrá entrar y sus sesiones se cierran. Sus proyectos y asignaciones se conservan, y podés reactivarla después.`,
+      danger: true,
+      confirmText: 'Archivar',
+    });
+    if (!ok) return;
+    try {
+      await this.usersSvc.archivar(u.id);
+      this.toast.success('Cuenta archivada');
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo archivar la cuenta.'));
+    }
   }
 
   initials(n: string): string { return n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase(); }
   roleLabel(r: RoleId): string { return ROLES[r].label; }
-  effectiveCount(u: User): number { return new Set([...ROLES[u.rol].permissions, ...u.permisosExtra]).size; }
+  effectiveCount(u: User): number { return u.permisosEfectivos?.length ?? new Set([...ROLES[u.rol].permissions, ...u.permisosExtra]).size; }
 }

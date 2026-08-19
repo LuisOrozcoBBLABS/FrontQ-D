@@ -18,6 +18,14 @@ export class Projects {
   private usersSvc = inject(UsersService);
   protected auth = inject(AuthService);
 
+  protected cargando = this.projectsSvc.cargando;
+  protected errorCarga = this.projectsSvc.error;
+
+  constructor() {
+    void this.projectsSvc.load();
+    void this.usersSvc.load();
+  }
+
   protected sectores = SECTORES;
   protected estados = ESTADOS_PROYECTO;
 

@@ -38,3 +38,8 @@
 .login__submit { width: 100%; margin-top: 4px; }
 .login__sim { margin-top: 22px; align-items: flex-start; line-height: 1.5; }
 .login__sim b { color: var(--text-2); }
+
+/* Isotipo de marca: en tema claro se invierte para no perderse sobre el blanco. */
+.login__isotipo { width: 44px; height: 44px; object-fit: contain; margin-bottom: var(--sp-4); }
+html[data-theme="light"] .login__isotipo { filter: invert(1); }
+.login__ayuda { margin-top: var(--sp-5); font-size: var(--fs-xs); line-height: var(--lh-snug); }

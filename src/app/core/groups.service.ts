@@ -1,62 +1,96 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Group, User } from './models';
-import { UsersService } from './users.service';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { Group } from './models';
 
-const STORAGE_KEY = 'plataforma-id.groups';
+export interface MiembroResumen {
+  id: string;
+  nombre: string;
+  email: string;
+  cargo: string;
+  avatarUrl: string | null;
+}
 
-// Semilla de grupos (equipos de alto rendimiento, estilo RIWI)
-const SEED: Group[] = [
-  { id: 'g-manglar', nombre: 'Manglar', lema: 'Raíces profundas, ideas que crecen.' },
-  { id: 'g-delta',   nombre: 'Delta',   lema: 'Cambio constante, mejora continua.' },
-  { id: 'g-bravo',   nombre: 'Bravo',   lema: 'Ejecución valiente y sin fricción.' },
-  { id: 'g-alpha',   nombre: 'Alpha',   lema: 'Primeros en explorar lo nuevo.' },
-];
+interface GroupApi {
+  id: string;
+  nombre: string;
+  lema: string;
+  activo: boolean;
+  miembros: MiembroResumen[];
+  _count?: { proyectos: number };
+}
 
 @Injectable({ providedIn: 'root' })
 export class GroupsService {
-  private users = inject(UsersService);
-  private readonly _groups = signal<Group[]>(this.load());
-  readonly groups = this._groups.asReadonly();
+  private http = inject(HttpClient);
+  private base = environment.apiUrl;
+
+  private readonly _groups = signal<GroupApi[]>([]);
+  private readonly _cargando = signal(false);
+  private readonly _error = signal<string | null>(null);
+
+  readonly groups = computed<Group[]>(() =>
+    this._groups().map(g => ({ id: g.id, nombre: g.nombre, lema: g.lema })),
+  );
+  readonly cargando = this._cargando.asReadonly();
+  readonly error = this._error.asReadonly();
   readonly count = computed(() => this._groups().length);
 
-  private load(): Group[] {
+  async load(): Promise<void> {
+    this._cargando.set(true);
+    this._error.set(null);
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw) as Group[];
-    } catch { /* ignore */ }
-    return structuredClone(SEED);
-  }
-  private persist(list: Group[]): void {
-    this._groups.set(list);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch { /* ignore */ }
-  }
-
-  byName(nombre: string): Group | undefined { return this._groups().find(g => g.nombre === nombre); }
-
-  /** La membresía vive en user.grupo (una persona pertenece a un grupo). */
-  members(nombre: string): User[] { return this.users.users().filter(u => u.grupo === nombre); }
-  memberCount(nombre: string): number { return this.members(nombre).length; }
-
-  create(nombre: string, lema: string): Group {
-    const g: Group = { id: 'g-' + Math.random().toString(36).slice(2, 8), nombre: nombre.trim(), lema: lema.trim() };
-    this.persist([...this._groups(), g]);
-    return g;
-  }
-  update(id: string, patch: Partial<Group>): void {
-    const prev = this._groups().find(g => g.id === id);
-    this.persist(this._groups().map(g => (g.id === id ? { ...g, ...patch } : g)));
-    // si cambió el nombre, mover a sus miembros
-    if (prev && patch.nombre && patch.nombre !== prev.nombre) {
-      this.users.users().filter(u => u.grupo === prev.nombre).forEach(u => this.users.update(u.id, { grupo: patch.nombre! }));
+      const lista = await firstValueFrom(
+        this.http.get<GroupApi[]>(`${this.base}/groups`, { params: { estado: 'activos' } }),
+      );
+      this._groups.set(lista);
+    } catch {
+      this._error.set('No se pudieron cargar los grupos.');
+    } finally {
+      this._cargando.set(false);
     }
   }
-  remove(id: string): void {
-    const g = this._groups().find(x => x.id === id);
-    if (g) this.users.users().filter(u => u.grupo === g.nombre).forEach(u => this.users.update(u.id, { grupo: null }));
-    this.persist(this._groups().filter(x => x.id !== id));
+
+  byId(id: string): Group | undefined {
+    return this.groups().find(g => g.id === id);
   }
 
-  setMembership(userId: string, groupName: string, isMember: boolean): void {
-    this.users.update(userId, { grupo: isMember ? groupName : null });
+  /** Integrantes que ya vienen resueltos con el grupo. */
+  members(groupId: string): MiembroResumen[] {
+    return this._groups().find(g => g.id === groupId)?.miembros ?? [];
+  }
+
+  memberCount(groupId: string): number {
+    return this.members(groupId).length;
+  }
+
+  async create(nombre: string, lema: string): Promise<Group> {
+    const creado = await firstValueFrom(
+      this.http.post<GroupApi>(`${this.base}/groups`, { nombre, lema }),
+    );
+    this._groups.update(l => [...l, creado].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+    return { id: creado.id, nombre: creado.nombre, lema: creado.lema };
+  }
+
+  async update(id: string, patch: { nombre?: string; lema?: string }): Promise<void> {
+    const actualizado = await firstValueFrom(
+      this.http.patch<GroupApi>(`${this.base}/groups/${id}`, patch),
+    );
+    this._groups.update(l => l.map(g => (g.id === id ? actualizado : g)));
+  }
+
+  /** Reemplaza la lista completa de integrantes del grupo. */
+  async setMembership(groupId: string, userIds: string[]): Promise<void> {
+    const actualizado = await firstValueFrom(
+      this.http.put<GroupApi>(`${this.base}/groups/${groupId}/members`, { userIds }),
+    );
+    this._groups.update(l => l.map(g => (g.id === groupId ? actualizado : g)));
+  }
+
+  /** "Eliminar" = archivar. Los integrantes quedan sin grupo, nada se borra. */
+  async archivar(id: string): Promise<void> {
+    await firstValueFrom(this.http.patch(`${this.base}/groups/${id}/disable`, {}));
+    this._groups.update(l => l.filter(g => g.id !== id));
   }
 }

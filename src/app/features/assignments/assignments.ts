@@ -20,6 +20,15 @@ export class Assignments {
   private usersSvc = inject(UsersService);
   protected auth = inject(AuthService);
 
+  protected cargando = this.assignSvc.cargando;
+
+  constructor() {
+    void this.assignSvc.load();
+    void this.assignSvc.loadNotificaciones();
+    void this.projectsSvc.load();
+    void this.usersSvc.load();
+  }
+
   protected estados = ASIG_ESTADOS;
 
   protected mias = computed<Assignment[]>(() => {

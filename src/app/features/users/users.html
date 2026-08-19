@@ -12,7 +12,6 @@
     </button>
     <span class="chip">{{ sorted().length }} de {{ list().length }}</span>
     <div class="toolbar__spacer"></div>
-    <button class="btn btn--ghost btn--sm" type="button" (click)="resetSeed()">Restaurar ejemplo</button>
   </div>
 
   <div class="filters enter">
@@ -121,12 +120,21 @@
         </div>
         <div class="field">
           <label for="g">Grupo</label>
-          <select id="g" class="select" [ngModel]="d.grupo" (ngModelChange)="patch('grupo', $event)">
+          <select id="g" class="select" [ngModel]="d.groupId" (ngModelChange)="patch('groupId', $event)">
             <option [ngValue]="null">Sin grupo</option>
-            @for (grp of grupos; track grp) { <option [ngValue]="grp">Grupo {{ grp }}</option> }
+            @for (grp of grupos(); track grp.id) { <option [ngValue]="grp.id">Grupo {{ grp.nombre }}</option> }
           </select>
         </div>
       </div>
+
+      @if (!isEdit()) {
+        <div class="field">
+          <label for="pw">Contraseña inicial</label>
+          <input id="pw" class="input" type="password" autocomplete="new-password"
+                 [ngModel]="d.password" (ngModelChange)="patch('password', $event)" placeholder="••••••••" />
+          <span class="field__hint">Mínimo {{ minPassword }} caracteres. La persona deberá cambiarla en su primer ingreso.</span>
+        </div>
+      }
 
       <div class="field">
         <label for="c">Cargo</label>

@@ -1,4 +1,4 @@
-// Modelos del dominio (fase local / SIMULADA)
+// Modelos del dominio. Espejan los DTO que devuelve la API de BackQ-D.
 
 export type RoleId = 'admin' | 'colaborador';
 
@@ -23,15 +23,22 @@ export interface User {
   email: string;
   cargo: string;
   rol: RoleId;
+  groupId: string | null;
   grupo: string | null;      // nombre del grupo (Manglar, Delta, ...)
   activo: boolean;
   permisosExtra: string[];   // permisos adicionales sobre el rol (override)
+  /** Rol + extras, ya resueltos por el servidor. Es la fuente de verdad. */
+  permisosEfectivos: string[];
   avatarUrl: string | null;
   linkedin: string | null;
   genero: Genero;
   fechaNacimiento: string | null;
   onboardingCompleto: boolean;
   telefono?: string | null;
+  /** El servidor exige cambiar la clave temporal en el primer ingreso. */
+  debeCambiarPassword?: boolean;
+  ultimoLoginAt?: string | null;
+  createdAt?: string;
 }
 
 // Catálogo de permisos de la plataforma
@@ -113,8 +120,10 @@ export interface Project {
   solucion: string;         // solución planteada
   similares: AppSimilar[];  // apps/programas parecidos (con URL)
   plusIA: string;           // qué se agregaría con IA (el PLUS)
-  grupo: string | null;
+  grupo: string | null;     // nombre del grupo, resuelto por la API
+  groupId?: string | null;
   autorId: string;
+  autorNombre?: string | null; // la API ya trae el autor resuelto
   estado: ProjectStatus;
   createdAt: string;
   // Campos de IA (módulo 6, simulados de momento)

@@ -1,81 +1,124 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { User } from './models';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { Permission, User } from './models';
 
-const STORAGE_KEY = 'plataforma-id.users';
+export interface NuevoUsuario {
+  nombre: string;
+  email: string;
+  cargo?: string;
+  /** Contraseña inicial: el servidor obliga a cambiarla en el primer ingreso. */
+  password: string;
+  rol: User['rol'];
+  groupId?: string | null;
+  permisosExtra?: string[];
+  activo?: boolean;
+}
 
-// Semilla de usuarios (SIMULADO — en producción vendría del backend/DB)
-const SEED: User[] = [
-  {
-    id: 'u-admin', nombre: 'Luis Orozco', email: 'admin@bblabs.io', cargo: 'Jefe de Innovación',
-    rol: 'admin', grupo: null, activo: true, permisosExtra: [], avatarUrl: null,
-    linkedin: 'https://www.linkedin.com/in/luisr26', genero: null, fechaNacimiento: null,
-    onboardingCompleto: true,
-  },
-  {
-    id: 'u-ana', nombre: 'Ana Gómez', email: 'ana@bblabs.io', cargo: 'AI Engineer',
-    rol: 'colaborador', grupo: 'Manglar', activo: true, permisosExtra: ['projects.viewAll'],
-    avatarUrl: null, linkedin: null, genero: 'mujer', fechaNacimiento: '1998-04-12', onboardingCompleto: true,
-  },
-  {
-    id: 'u-carlos', nombre: 'Carlos Ruiz', email: 'carlos@bblabs.io', cargo: 'Data Scientist',
-    rol: 'colaborador', grupo: 'Delta', activo: true, permisosExtra: [], avatarUrl: null,
-    linkedin: null, genero: 'hombre', fechaNacimiento: null, onboardingCompleto: false,
-  },
-  {
-    id: 'u-sara', nombre: 'Sara Torres', email: 'sara@bblabs.io', cargo: 'Product Designer',
-    rol: 'colaborador', grupo: 'Bravo', activo: false, permisosExtra: [], avatarUrl: null,
-    linkedin: null, genero: 'prefiero-no-decirlo', fechaNacimiento: null, onboardingCompleto: false,
-  },
-];
+export type CambiosUsuario = Partial<
+  Pick<User, 'nombre' | 'cargo' | 'rol' | 'groupId' | 'permisosExtra' | 'activo'>
+>;
 
+/**
+ * Servicio de usuarios contra la API. Mantiene una señal con la lista para que
+ * las vistas sigan leyendo de forma reactiva; las mutaciones van al servidor y
+ * refrescan esa señal con lo que el servidor devuelve.
+ */
 @Injectable({ providedIn: 'root' })
 export class UsersService {
-  private readonly _users = signal<User[]>(this.load());
+  private http = inject(HttpClient);
+  private base = environment.apiUrl;
+
+  private readonly _users = signal<User[]>([]);
+  private readonly _cargando = signal(false);
+  private readonly _error = signal<string | null>(null);
+  private readonly _permisos = signal<Permission[]>([]);
+
   readonly users = this._users.asReadonly();
+  readonly cargando = this._cargando.asReadonly();
+  readonly error = this._error.asReadonly();
+  readonly permisos = this._permisos.asReadonly();
+
   readonly count = computed(() => this._users().length);
   readonly activos = computed(() => this._users().filter(u => u.activo).length);
 
-  private load(): User[] {
+  async load(): Promise<void> {
+    this._cargando.set(true);
+    this._error.set(null);
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return JSON.parse(raw) as User[];
-    } catch { /* ignore */ }
-    return structuredClone(SEED);
+      const lista = await firstValueFrom(
+        this.http.get<User[]>(`${this.base}/users`, { params: { estado: 'todos', take: 200 } }),
+      );
+      this._users.set(lista);
+    } catch {
+      this._error.set('No se pudieron cargar los usuarios.');
+    } finally {
+      this._cargando.set(false);
+    }
   }
 
-  private persist(list: User[]): void {
-    this._users.set(list);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch { /* ignore */ }
+  /** Catálogo de permisos, para armar la pantalla de gestión. */
+  async loadPermisos(): Promise<void> {
+    if (this._permisos().length) return;
+    try {
+      const p = await firstValueFrom(
+        this.http.get<{ id: string; label: string; desc: string; grupo: string }[]>(
+          `${this.base}/permissions`,
+        ),
+      );
+      this._permisos.set(p.map(x => ({ id: x.id, label: x.label, desc: x.desc, group: x.grupo })));
+    } catch {
+      /* la vista cae al catálogo local si esto falla */
+    }
+  }
+
+  byId(id: string): User | undefined {
+    return this._users().find(u => u.id === id);
   }
 
   byEmail(email: string): User | undefined {
     return this._users().find(u => u.email.toLowerCase() === email.trim().toLowerCase());
   }
-  byId(id: string): User | undefined {
-    return this._users().find(u => u.id === id);
+
+  async create(data: NuevoUsuario): Promise<User> {
+    const creado = await firstValueFrom(this.http.post<User>(`${this.base}/users`, data));
+    this._users.update(l => [...l, creado].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+    return creado;
   }
 
-  create(data: Omit<User, 'id'>): User {
-    const user: User = { ...data, id: 'u-' + Math.random().toString(36).slice(2, 9) };
-    this.persist([...this._users(), user]);
-    return user;
+  async update(id: string, patch: CambiosUsuario): Promise<User> {
+    const actualizado = await firstValueFrom(
+      this.http.patch<User>(`${this.base}/users/${id}`, patch),
+    );
+    this.reemplazar(actualizado);
+    return actualizado;
   }
 
-  update(id: string, patch: Partial<User>): void {
-    this.persist(this._users().map(u => (u.id === id ? { ...u, ...patch } : u)));
-  }
-
-  toggleActivo(id: string): void {
+  /** Activar o desactivar. La API no borra personas. */
+  async toggleActivo(id: string): Promise<void> {
     const u = this.byId(id);
-    if (u) this.update(id, { activo: !u.activo });
+    if (!u) return;
+    const ruta = u.activo ? 'disable' : 'enable';
+    const actualizado = await firstValueFrom(
+      this.http.patch<User>(`${this.base}/users/${id}/${ruta}`, {}),
+    );
+    this.reemplazar(actualizado);
   }
 
-  remove(id: string): void {
-    this.persist(this._users().filter(u => u.id !== id));
+  /** "Eliminar" en la interfaz = archivar. Los datos quedan. */
+  async archivar(id: string): Promise<void> {
+    const actualizado = await firstValueFrom(
+      this.http.patch<User>(`${this.base}/users/${id}/disable`, {}),
+    );
+    this.reemplazar(actualizado);
   }
 
-  // Solo para demo: reinicia a la semilla
-  resetSeed(): void {
-    this.persist(structuredClone(SEED));
+  async resetPassword(id: string, nueva: string): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.base}/users/${id}/reset-password`, { nueva }));
+  }
+
+  private reemplazar(u: User): void {
+    this._users.update(l => l.map(x => (x.id === u.id ? u : x)));
   }
 }

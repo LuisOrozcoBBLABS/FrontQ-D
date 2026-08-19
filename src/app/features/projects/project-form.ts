@@ -61,14 +61,13 @@ export class ProjectForm {
     this.dupResults.set(this.ai.duplicates(text));
   }
 
-  save(): void {
+  async save(): Promise<void> {
     this.error.set(null);
     if (!this.nombre().trim() || !this.sector() || !this.problema().trim()) {
       this.error.set('Completa al menos el nombre de la solución, el sector y el problema.');
       return;
     }
-    const me = this.auth.currentUser();
-    const p = this.projectsSvc.create({
+    const p = await this.projectsSvc.create({
       nombre: this.nombre().trim(),
       sector: this.sector(),
       problema: this.problema().trim(),
@@ -76,13 +75,11 @@ export class ProjectForm {
       solucion: this.solucion().trim(),
       plusIA: this.plusIA().trim(),
       similares: this.similares().filter(s => s.name.trim() || s.url.trim()),
-      grupo: this.grupo(),
-      autorId: me?.id ?? '',
+      groupId: this.grupo(),
       estado: 'idea',
-      enriquecido: false,
     });
     this.toast.success('Proyecto creado');
-    this.router.navigate(['/proyectos', p.id]);
+    await this.router.navigate(['/proyectos', p.id]);
   }
 
   cancel(): void { this.router.navigateByUrl('/proyectos'); }

@@ -1,63 +1,129 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { ROLES, User } from './models';
-import { UsersService } from './users.service';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { TokenStore } from './api/token.store';
+import { User } from './models';
 
-const SESSION_KEY = 'plataforma-id.session';
+interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+}
 
-export interface LoginResult { ok: boolean; error?: string; user?: User; }
+interface LoginResponse extends TokenPair {
+  debeCambiarPassword: boolean;
+}
+
+export interface LoginResult {
+  ok: boolean;
+  error?: string;
+  debeCambiarPassword?: boolean;
+}
 
 /**
- * Autenticación SIMULADA (mock):
- * - No hay contraseñas reales ni tokens. Se valida que el email exista y esté activo.
- * - currentUser es un computed sobre UsersService => los cambios de perfil se reflejan en toda la app.
- * - En producción: NestJS + JWT/refresh, hash de contraseña (argon2/bcrypt), o proveedor externo.
+ * Autenticación real contra BackQ-D. Los permisos NO se calculan acá: llegan
+ * resueltos en `permisosEfectivos` desde el servidor, que es quien decide.
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private users = inject(UsersService);
-  private currentId = signal<string | null>(this.restore());
+  private http = inject(HttpClient);
+  private tokens = inject(TokenStore);
+  private base = environment.apiUrl;
 
-  readonly currentUser = computed<User | null>(() => {
-    const id = this.currentId();
-    return id ? this.users.byId(id) ?? null : null;
-  });
-  readonly isAuthenticated = computed(() => this.currentUser() !== null);
-  readonly isAdmin = computed(() => this.currentUser()?.rol === 'admin');
+  private readonly _user = signal<User | null>(null);
+  /** Ya se intentó resolver la sesión guardada (para que los guards no corran antes). */
+  private readonly _resuelto = signal(false);
 
-  /** Permisos efectivos = permisos del rol + permisos extra del usuario. */
-  readonly permissions = computed<string[]>(() => {
-    const u = this.currentUser();
-    if (!u) return [];
-    const base = ROLES[u.rol]?.permissions ?? [];
-    return Array.from(new Set([...base, ...u.permisosExtra]));
-  });
+  readonly currentUser = this._user.asReadonly();
+  readonly isAuthenticated = computed(() => this._user() !== null);
+  readonly isAdmin = computed(() => this._user()?.rol === 'admin');
+  readonly permissions = computed<string[]>(() => this._user()?.permisosEfectivos ?? []);
+  readonly debeCambiarPassword = computed(() => this._user()?.debeCambiarPassword === true);
 
-  private restore(): string | null {
-    try { return localStorage.getItem(SESSION_KEY); } catch { return null; }
+  async login(email: string, password: string): Promise<LoginResult> {
+    try {
+      const res = await firstValueFrom(
+        this.http.post<LoginResponse>(`${this.base}/auth/login`, { email, password }),
+      );
+      this.tokens.guardar(res.accessToken, res.refreshToken);
+      await this.cargarUsuario();
+      return { ok: true, debeCambiarPassword: res.debeCambiarPassword };
+    } catch (e) {
+      return { ok: false, error: mensajeDeError(e, 'No se pudo iniciar sesión.') };
+    }
   }
 
-  login(email: string, password: string): LoginResult {
-    const user = this.users.byEmail(email);
-    if (!user) return { ok: false, error: 'No existe una cuenta con ese correo.' };
-    if (!user.activo) return { ok: false, error: 'La cuenta está desactivada. Contacta a un administrador.' };
-    if (!password.trim()) return { ok: false, error: 'Ingresa tu contraseña.' };
-    this.currentId.set(user.id);
-    try { localStorage.setItem(SESSION_KEY, user.id); } catch { /* ignore */ }
-    return { ok: true, user };
+  async logout(): Promise<void> {
+    try {
+      // Invalida el refresh en el servidor; si falla, igual limpiamos local.
+      await firstValueFrom(this.http.post(`${this.base}/auth/logout`, {}));
+    } catch {
+      /* ignorar */
+    }
+    this.tokens.limpiar();
+    this._user.set(null);
   }
 
-  logout(): void {
-    this.currentId.set(null);
-    try { localStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
+  /** Trae el perfil con los permisos efectivos. */
+  async cargarUsuario(): Promise<User | null> {
+    if (!this.tokens.hayTokens()) {
+      this._user.set(null);
+      this._resuelto.set(true);
+      return null;
+    }
+    try {
+      const user = await firstValueFrom(this.http.get<User>(`${this.base}/auth/me`));
+      this._user.set(user);
+      return user;
+    } catch {
+      this.tokens.limpiar();
+      this._user.set(null);
+      return null;
+    } finally {
+      this._resuelto.set(true);
+    }
+  }
+
+  /** Resuelve la sesión guardada una sola vez, antes de que decidan los guards. */
+  async asegurarSesion(): Promise<boolean> {
+    if (this._resuelto()) return this.isAuthenticated();
+    await this.cargarUsuario();
+    return this.isAuthenticated();
+  }
+
+  async changePassword(actual: string, nueva: string): Promise<{ ok: boolean; error?: string }> {
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.base}/auth/change-password`, { actual, nueva }),
+      );
+      // El backend cierra las sesiones abiertas: hay que entrar de nuevo.
+      this.tokens.limpiar();
+      this._user.set(null);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: mensajeDeError(e, 'No se pudo cambiar la contraseña.') };
+    }
   }
 
   can(permission: string): boolean {
     return this.permissions().includes(permission);
   }
 
-  /** Actualiza el usuario actualmente autenticado (perfil / onboarding). */
-  updateCurrent(patch: Partial<User>): void {
-    const id = this.currentId();
-    if (id) this.users.update(id, patch);
+  /** Actualiza el perfil propio (lo usan perfil y onboarding). */
+  async updateCurrent(patch: Partial<User>): Promise<void> {
+    const actualizado = await firstValueFrom(
+      this.http.patch<User>(`${this.base}/me/profile`, patch),
+    );
+    this._user.set(actualizado);
   }
+}
+
+/** Saca el mensaje que manda el backend, sin exponer detalles internos. */
+export function mensajeDeError(e: unknown, porDefecto: string): string {
+  const posible = e as { error?: { message?: string | string[] }; status?: number };
+  const m = posible?.error?.message;
+  if (Array.isArray(m) && m.length) return m[0];
+  if (typeof m === 'string' && m) return m;
+  if (posible?.status === 0) return 'No hay conexión con el servidor.';
+  return porDefecto;
 }

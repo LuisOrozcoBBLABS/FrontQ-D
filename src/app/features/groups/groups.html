@@ -21,11 +21,11 @@
             <h3 class="group-card__name">Grupo {{ g.nombre }}</h3>
             <p class="group-card__lema">{{ g.lema || '—' }}</p>
           </div>
-          <span class="tag-mono">{{ memberCount(g.nombre) }} personas</span>
+          <span class="tag-mono">{{ memberCount(g) }} personas</span>
         </div>
 
         <div class="group-card__members">
-          @for (m of members(g.nombre); track m.id) {
+          @for (m of members(g); track m.id) {
             <span class="avatar" [title]="m.nombre">
               @if (m.avatarUrl) { <img [src]="m.avatarUrl" alt="" /> } @else { {{ initials(m.nombre) }} }
             </span>
@@ -92,7 +92,7 @@
               </span>
             </span>
             <span class="switch">
-              <input type="checkbox" [checked]="u.grupo === g.nombre" (change)="toggleMember(u, g)" />
+              <input type="checkbox" [checked]="esMiembro(u, g)" (change)="toggleMember(u, g)" />
               <span class="switch__track"></span>
             </span>
           </label>

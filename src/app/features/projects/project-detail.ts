@@ -10,6 +10,7 @@ import { CANALES, Canal, CanalEnvio, ESTADOS_PROYECTO, PRIORIDADES, Prioridad, P
 import { TrapFocus } from '../../ui/trap-focus';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
+import { mensajeDeError } from '../../core/auth.service';
 
 @Component({
   selector: 'app-project-detail',
@@ -26,6 +27,12 @@ export class ProjectDetail {
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
   private router = inject(Router);
+
+  constructor() {
+    // Entrar por URL directa tiene que funcionar sin pasar por la lista.
+    void this.projectsSvc.fetchOne(this.route.snapshot.paramMap.get('id') ?? '');
+    void this.usersSvc.load();
+  }
   protected auth = inject(AuthService);
 
   protected estados = ESTADOS_PROYECTO;
@@ -65,11 +72,23 @@ export class ProjectDetail {
   }
   canAssign(): boolean { return this.auth.can('assignments.create'); }
 
-  setEstado(e: ProjectStatus): void { if (this.project()) { this.projectsSvc.update(this.id, { estado: e }); this.toast.success('Estado actualizado'); } }
+  async setEstado(e: ProjectStatus): Promise<void> {
+    if (!this.project()) return;
+    await this.projectsSvc.update(this.id, { estado: e });
+    this.toast.success('Estado actualizado');
+  }
   async remove(): Promise<void> {
     if (!this.project()) return;
-    const ok = await this.confirm.ask({ title: 'Eliminar proyecto', message: `¿Eliminar “${this.project()!.nombre}”? No se puede deshacer (simulado).`, danger: true, confirmText: 'Eliminar' });
-    if (ok) { this.projectsSvc.remove(this.id); this.toast.success('Proyecto eliminado'); this.router.navigateByUrl('/proyectos'); }
+    const ok = await this.confirm.ask({
+      title: 'Archivar proyecto',
+      message: `¿Archivar “${this.project()!.nombre}”? Sale de las listas pero no se pierde: un administrador puede restaurarlo.`,
+      danger: true,
+      confirmText: 'Archivar',
+    });
+    if (!ok) return;
+    await this.projectsSvc.archivar(this.id);
+    this.toast.success('Proyecto archivado');
+    await this.router.navigateByUrl('/proyectos');
   }
 
   openAssign(): void {
@@ -80,23 +99,47 @@ export class ProjectDetail {
     const has = this.canalesSel().includes(c);
     this.canalesSel.set(has ? this.canalesSel().filter(x => x !== c) : [...this.canalesSel(), c]);
   }
-  doAssign(): void {
-    if (!this.assignee()) return;
-    const a = this.assignSvc.assign(
-      this.id, this.assignee(), this.auth.currentUser()?.id ?? '',
-      this.prioridad(), this.nota().trim(), this.fechaLimite() || null, this.canalesSel(),
-    );
-    // mostrar el registro simulado de envíos
-    const notif = this.assignSvc.notificationsFor(this.assignee()).find(n => n.assignmentId === a.id);
-    this.result.set(notif?.envios ?? []);
+  protected asignando = signal(false);
+
+  async doAssign(): Promise<void> {
+    if (!this.assignee() || this.asignando()) return;
+    this.asignando.set(true);
+    try {
+      const a = await this.assignSvc.assign(
+        this.id, this.assignee(), this.auth.currentUser()?.id ?? '',
+        this.prioridad(), this.nota().trim(), this.fechaLimite() || null, this.canalesSel(),
+      );
+      // El estado de cada canal lo decide el despachador del backend.
+      await this.assignSvc.loadNotificaciones();
+      const notif = this.assignSvc.notifications().find(n => n.assignmentId === a.id);
+      this.result.set(notif?.envios ?? []);
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo crear la asignación.'));
+    } finally {
+      this.asignando.set(false);
+    }
   }
   closeAssign(): void { this.assignOpen.set(false); }
 
   // ---- IA ----
   openAi(v: 'enrich' | 'score' | 'committee' | 'docs'): void { this.aiView.set(v); }
   closeAi(): void { this.aiView.set('none'); }
-  applyEnrich(): void { const e = this.enrichResult(); if (e) { this.projectsSvc.update(this.id, { enriquecido: true, enrichment: e }); this.toast.success('Proyecto enriquecido con IA'); } this.closeAi(); }
-  applyScore(): void { const s = this.scoreResult(); if (s) { this.projectsSvc.update(this.id, { score: s.total }); this.toast.success('Score guardado'); } this.closeAi(); }
+  async applyEnrich(): Promise<void> {
+    const e = this.enrichResult();
+    if (e) {
+      await this.projectsSvc.saveAi(this.id, { enriquecido: true, enrichment: e });
+      this.toast.success('Proyecto enriquecido con IA');
+    }
+    this.closeAi();
+  }
+  async applyScore(): Promise<void> {
+    const s = this.scoreResult();
+    if (s) {
+      await this.projectsSvc.saveAi(this.id, { score: s.total });
+      this.toast.success('Score guardado');
+    }
+    this.closeAi();
+  }
   downloadDoc(): void {
     const d = this.docResult(); if (!d) return;
     const text = d.titulo + '\n\n' + d.secciones.map(s => s.h.toUpperCase() + '\n' + s.body).join('\n\n');

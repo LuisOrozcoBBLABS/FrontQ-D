@@ -20,6 +20,13 @@ export class Dashboard {
   protected projects = inject(ProjectsService);
   private assignSvc = inject(AssignmentsService);
 
+  constructor() {
+    void this.projects.load();
+    void this.groups.load();
+    void this.assignSvc.load();
+    if (this.auth.can('users.manage')) void this.users.load();
+  }
+
   protected nombre = computed(() => this.auth.currentUser()?.nombre?.split(' ')[0] ?? '');
 
   protected recientes = computed<Project[]>(() => {
