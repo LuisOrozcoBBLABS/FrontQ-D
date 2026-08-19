@@ -1,16 +1,17 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GroupsService, MiembroResumen } from '../../core/groups.service';
 import { UsersService } from '../../core/users.service';
 import { Group, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
+import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { mensajeDeError } from '../../core/auth.service';
 
 @Component({
   selector: 'app-groups',
-  imports: [FormsModule, TrapFocus],
+  imports: [FormsModule, TrapFocus, Paginador],
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })
@@ -21,6 +22,14 @@ export class Groups {
   private confirm = inject(ConfirmService);
 
   protected groups = this.groupsSvc.groups;
+
+  /** Paginacion en el cliente: los grupos son pocos por naturaleza. */
+  protected readonly porPagina = FILAS_POR_PAGINA;
+  protected pagina = signal(1);
+  protected pagados = computed(() => {
+    const desde = (this.pagina() - 1) * this.porPagina;
+    return this.groups().slice(desde, desde + this.porPagina);
+  });
   protected cargando = this.groupsSvc.cargando;
   protected errorCarga = this.groupsSvc.error;
 

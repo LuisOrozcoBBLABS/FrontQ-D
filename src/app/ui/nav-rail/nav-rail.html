@@ -79,6 +79,12 @@
               >
                 <b>{{ n.titulo }}</b>
                 <span>{{ n.detalle }}</span>
+                @if (accionDe(n)) {
+                  <span class="avisos__accion">
+                    {{ accionDe(n) }}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg>
+                  </span>
+                }
               </button>
             } @empty {
               <p class="avisos__vacio">Sin avisos por ahora.</p>

@@ -88,6 +88,32 @@ escribió la persona, y hay un botón `Clave` por fila. El modal permite generar
 una sugerencia en el navegador (no la inventa el servidor) y muestra la clave en
 claro a propósito: hay que poder leerla para comunicarla.
 
+## Tablas y paginación
+
+Toda la información en volumen se muestra en **tablas**, no en tarjetas:
+proyectos, usuarios, grupos, asignaciones y pedidos de restablecimiento. El
+espaciado sale del sistema (`--sp-4` en las celdas, `--sp-3` en las compactas),
+la cabecera se queda pegada al hacer scroll y las columnas numéricas usan cifras
+tabulares.
+
+`ui/paginador` es el paginador compartido: **8 filas por página**, números con
+elipsis cuando son muchas (1 … 4 5 6 … 20) y el rango a la izquierda
+("9–16 de 28 proyectos").
+
+- **Proyectos y usuarios** paginan y filtran **contra el servidor** (`skip`/`take`
+  más el total en `X-Total-Count`), con 300 ms de espera al escribir. Buscar mira
+  todo el conjunto, no la página cargada.
+- **Grupos y asignaciones** paginan en el cliente: son listas cortas por
+  naturaleza y la API de asignaciones no pagina.
+
+## Avisos que llevan a la acción
+
+El clic en un aviso de la campana no solo lo marca leído: lleva a donde se
+resuelve. Una asignación abre `/asignaciones?a=<id>` con esa fila resaltada y su
+botón de avance; un pedido de contraseña abre `/usuarios?reset=<id>` con el modal
+de clave de esa persona ya abierto, aunque no esté en la primera página. Cada
+aviso muestra de antemano qué va a pasar ("Ver y aceptar", "Asignar clave").
+
 ## Estado actual
 
 Conectado a la API de BackQ-D: el login, los permisos y todos los datos vienen
@@ -105,6 +131,7 @@ OpenAI en el backend.
 
 | Rama | Qué cambió |
 |---|---|
+| `main` | Tarjetas fuera: proyectos, usuarios, grupos, asignaciones y pedidos pasan a tablas con paginación de 8 filas (`ui/paginador`). Proyectos y usuarios paginan y filtran contra el servidor. Los avisos de la campana llevan a la acción concreta. |
 | `main` | Login rediseñado en clave minimalista (sin tarjeta, campos de línea, ver/ocultar contraseña) y pantalla de recuperación; el módulo de usuarios atiende los pedidos y asigna la clave temporal. |
 | `main` | Rediseño: se elimina la barra superior y su contenido pasa al riel; marca de agua `I+D` en el fondo; baldosa de marca en lugar del isotipo suelto; icono propio para Grupos; Proyectos con resumen de una línea (antes cuatro tarjetas) y Asignaciones como tablero por estado con un único avance por tarjeta. |
 | `main` | MVP: funciones de IA ocultas detras de `environment.funcionesIA` (dock, rutas con `iaGuard`, pestana del detalle, buscador de duplicados y accesos del inicio), y textos que ya no prometen lo que no hay. |

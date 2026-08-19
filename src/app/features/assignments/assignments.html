@@ -1,13 +1,13 @@
-<div class="page page--ancha">
+<div class="page">
   <div class="page__head enter">
     <p class="eyebrow">Trabajo asignado</p>
     <h1 class="page__title">Asignaciones</h1>
     <p class="page__sub">
       @if (pendientesDeMias() > 0) {
         Tenés {{ pendientesDeMias() }} {{ pendientesDeMias() === 1 ? 'asignación abierta' : 'asignaciones abiertas' }}.
-        Cada tarjeta avanza un paso por vez, igual que lo valida el servidor.
+        Lo vencido va primero, y cada fila avanza un paso por vez.
       } @else {
-        Acá aparece el trabajo que te asignan, en el estado en que va.
+        Acá aparece el trabajo que te asignan, con su prioridad y su plazo.
       }
     </p>
   </div>
@@ -15,89 +15,101 @@
   @if (hayVencidas()) {
     <div class="alerta enter">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
-      <span>Tenés trabajo con la fecha límite pasada. Va primero en cada columna.</span>
+      <span>Tenés trabajo con la fecha límite pasada.</span>
     </div>
   }
 
-  @if (cargando() && !mias().length) {
-    <div class="tablero">
-      @for (i of [1, 2, 3, 4]; track i) {
-        <div class="col">
-          <div class="col__head"><div class="esqueleto__linea esqueleto__linea--corta"></div></div>
-          <div class="col__cuerpo">
-            <div class="card esqueleto">
-              <div class="esqueleto__linea esqueleto__linea--corta"></div>
-              <div class="esqueleto__linea esqueleto__linea--titulo"></div>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-  } @else if (!mias().length) {
-    <app-empty
-      title="No tenés asignaciones"
-      hint="Cuando el jefe de innovación te asigne un proyecto, aparece acá con su prioridad y su plazo."
-    ></app-empty>
-  } @else {
-    <!-- Tablero: una columna por estado, en el orden que permite el servidor -->
-    <div class="tablero enter">
-      @for (c of columnas(); track c.estado) {
-        <section class="col" [attr.data-estado]="c.estado">
-          <header class="col__head">
-            <span class="col__t">{{ c.titulo }}</span>
-            <span class="col__n mono">{{ c.items.length }}</span>
-          </header>
+  <!-- ================= Lo mío ================= -->
+  <section class="bloque enter">
+    <header class="bloque__head">
+      <h2 class="bloque__t">
+        Mis asignaciones
+        <span class="bloque__n mono">{{ mias().length }}</span>
+      </h2>
+      <p class="bloque__nota">El botón de la última columna es el único paso que el servidor acepta desde el estado actual.</p>
+    </header>
 
-          <div class="col__cuerpo">
-            @for (a of c.items; track a.id) {
-              <article class="ficha" [class.ficha--vencida]="vencida(a)">
-                <div class="ficha__top">
-                  <span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span>
-                  @if (vencida(a)) {
-                    <span class="ficha__alerta" [attr.title]="plazo(a.fechaLimite)">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Proyecto</th>
+              <th>Prioridad</th>
+              <th>Estado</th>
+              <th>Plazo</th>
+              <th>Asignó</th>
+              <th class="table__min">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (cargando() && !mias().length) {
+              @for (i of [1, 2, 3]; track i) {
+                <tr>
+                  @for (c of [1, 2, 3, 4, 5, 6]; track c) { <td><span class="esq"></span></td> }
+                </tr>
+              }
+            } @else {
+              @for (a of miasPagina(); track a.id) {
+                <tr [class.destacada]="destacada() === a.id" [attr.id]="'asg-' + a.id">
+                  <td>
+                    <a class="fila__link" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a>
+                    @if (a.nota) { <span class="celda-sub">{{ recorte(a.nota) }}</span> }
+                  </td>
+                  <td><span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span></td>
+                  <td><span [class]="'estado estado--' + a.estado">{{ estadoLabel(a.estado) }}</span></td>
+                  <td [class.plazo--alerta]="vencida(a)">
+                    @if (vencida(a)) {
+                      <svg class="plazo__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
+                    }
+                    {{ plazo(a.fechaLimite) }}
+                  </td>
+                  <td>
+                    <span class="celda-persona">
+                      <span class="celda-ini" aria-hidden="true">{{ iniciales(asignadoPor(a)) }}</span>
+                      {{ asignadoPor(a) }}
                     </span>
-                  }
-                </div>
-
-                <a class="ficha__nombre" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a>
-
-                @if (a.nota) { <p class="ficha__nota">{{ a.nota }}</p> }
-
-                <div class="ficha__meta">
-                  <span class="ficha__plazo" [class.ficha__plazo--alerta]="vencida(a)">{{ plazo(a.fechaLimite) }}</span>
-                  <span class="ficha__de" [attr.title]="'Te la asignó ' + asignadoPor(a)">
-                    {{ iniciales(asignadoPor(a)) }}
-                  </span>
-                </div>
-
-                @if (siguientePaso(a); as paso) {
-                  <button
-                    class="ficha__accion"
-                    type="button"
-                    [disabled]="moviendo() === a.id"
-                    (click)="avanzar(a)"
-                  >
-                    {{ moviendo() === a.id ? 'Guardando…' : paso.verbo }}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg>
-                  </button>
-                }
-              </article>
-            } @empty {
-              <p class="col__vacia">
-                @switch (c.estado) {
-                  @case ('pendiente') { Nada por aceptar. }
-                  @case ('aceptada') { Nada aceptado sin empezar. }
-                  @case ('en-curso') { No hay nada en marcha. }
-                  @default { Todavía no completaste ninguna. }
-                }
-              </p>
+                  </td>
+                  <td class="table__min">
+                    @if (siguientePaso(a); as paso) {
+                      <button
+                        class="btn btn--primary btn--sm"
+                        type="button"
+                        [disabled]="moviendo() === a.id"
+                        (click)="avanzar(a)"
+                      >
+                        {{ moviendo() === a.id ? 'Guardando…' : paso.verbo }}
+                      </button>
+                    } @else {
+                      <span class="cerrada">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
+                        Cerrada
+                      </span>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="table__vacia">
+                    <b>No tenés asignaciones</b>
+                    Cuando el jefe de innovación te asigne un proyecto, aparece acá con su prioridad y su plazo.
+                  </td>
+                </tr>
+              }
             }
-          </div>
-        </section>
-      }
+          </tbody>
+        </table>
+      </div>
+
+      <app-paginador
+        [pagina]="pagMias()"
+        [total]="mias().length"
+        [porPagina]="porPagina"
+        etiqueta="asignaciones"
+        (cambia)="pagMias.set($event)"
+      />
     </div>
-  }
+  </section>
 
   <!-- ================= Vista de quien asigna ================= -->
   @if (canManage()) {
@@ -114,48 +126,63 @@
       </header>
 
       <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Proyecto</th>
-              <th>Responsable</th>
-              <th>Prioridad</th>
-              <th>Estado</th>
-              <th>Plazo</th>
-              <th>Aviso</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (a of todas(); track a.id) {
+        <div class="table-scroll">
+          <table class="table table--compacta">
+            <thead>
               <tr>
-                <td><a class="tabla__link" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a></td>
-                <td>
-                  <span class="quien">
-                    <span class="quien__ini" aria-hidden="true">{{ iniciales(responsable(a)) }}</span>
-                    {{ responsable(a) }}
-                  </span>
-                </td>
-                <td><span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span></td>
-                <td><span [class]="'estado estado--' + a.estado">{{ estadoLabel(a.estado) }}</span></td>
-                <td [class.ficha__plazo--alerta]="vencida(a)">{{ plazo(a.fechaLimite) }}</td>
-                <td>
-                  <div class="envios-celda">
-                    @for (e of a.envios ?? []; track e.canal) {
-                      <span class="envio" [title]="e.destino">
-                        <span class="envio__canal">{{ e.canal }}</span>
-                        <span class="envio__estado">{{ e.estado }}</span>
-                      </span>
-                    } @empty {
-                      <span class="text-dim">—</span>
-                    }
-                  </div>
-                </td>
+                <th>Proyecto</th>
+                <th>Responsable</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Plazo</th>
+                <th>Aviso</th>
               </tr>
-            } @empty {
-              <tr><td colspan="6" class="tabla__vacia">Todavía no asignaste ningún proyecto.</td></tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (a of todasPagina(); track a.id) {
+                <tr [class.destacada]="destacada() === a.id">
+                  <td><a class="fila__link" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a></td>
+                  <td>
+                    <span class="celda-persona">
+                      <span class="celda-ini" aria-hidden="true">{{ iniciales(responsable(a)) }}</span>
+                      {{ responsable(a) }}
+                    </span>
+                  </td>
+                  <td><span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span></td>
+                  <td><span [class]="'estado estado--' + a.estado">{{ estadoLabel(a.estado) }}</span></td>
+                  <td [class.plazo--alerta]="vencida(a)">{{ plazo(a.fechaLimite) }}</td>
+                  <td>
+                    <div class="envios-celda">
+                      @for (e of a.envios ?? []; track e.canal) {
+                        <span class="envio" [title]="e.destino">
+                          <span class="envio__canal">{{ e.canal }}</span>
+                          <span class="envio__estado">{{ e.estado }}</span>
+                        </span>
+                      } @empty {
+                        <span class="text-dim">—</span>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="table__vacia">
+                    <b>Todavía no asignaste ningún proyecto</b>
+                    Entrá a un proyecto y usá “Asignar a un colaborador”.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <app-paginador
+          [pagina]="pagTodas()"
+          [total]="todas().length"
+          [porPagina]="porPagina"
+          etiqueta="asignaciones"
+          (cambia)="pagTodas.set($event)"
+        />
       </div>
     </section>
   }

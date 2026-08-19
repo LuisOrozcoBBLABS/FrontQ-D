@@ -117,10 +117,41 @@ export class NavRail {
     this.tema.toggle();
   }
 
+  /**
+   * Un aviso no es solo texto: lleva a donde se resuelve. Cada tipo tiene su
+   * destino, y va con el id para que la vista resalte lo que corresponde.
+   */
   async abrirAviso(n: NotificationItem): Promise<void> {
     await this.assignSvc.markRead(n.id);
     this.notifOpen.set(false);
-    if (n.projectId) await this.router.navigate(['/proyectos', n.projectId]);
+
+    switch (n.tipo) {
+      case 'asignacion':
+        // Donde esta el boton para aceptarla o avanzarla.
+        await this.router.navigate(['/asignaciones'], {
+          queryParams: n.assignmentId ? { a: n.assignmentId } : {},
+        });
+        return;
+
+      case 'reset_password':
+        // Donde se le asigna la clave temporal a quien la pidio.
+        await this.router.navigate(['/usuarios'], {
+          queryParams: n.sujetoId ? { reset: n.sujetoId } : {},
+        });
+        return;
+
+      default:
+        if (n.projectId) await this.router.navigate(['/proyectos', n.projectId]);
+    }
+  }
+
+  /** Frase corta de que va a pasar al hacer clic. */
+  accionDe(n: NotificationItem): string {
+    switch (n.tipo) {
+      case 'asignacion': return 'Ver y aceptar';
+      case 'reset_password': return 'Asignar clave';
+      default: return n.projectId ? 'Ver el proyecto' : '';
+    }
   }
 
   async marcarTodos(): Promise<void> {

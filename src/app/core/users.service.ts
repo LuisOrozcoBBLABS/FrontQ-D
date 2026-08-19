@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Permission, User } from './models';
+import { FILAS_POR_PAGINA } from '../ui/paginador/paginador';
 
 /** Pedido de restablecimiento hecho desde la pantalla de recuperacion. */
 export interface SolicitudReset {
@@ -11,6 +12,14 @@ export interface SolicitudReset {
   nota: string | null;
   createdAt: string;
   user: { id: string; nombre: string; email: string; activo: boolean; avatarUrl: string | null };
+}
+
+/** Lo que el servidor necesita para devolver una pagina de usuarios. */
+export interface FiltroUsuarios {
+  q?: string;
+  rol?: string;
+  estado?: string;
+  pagina?: number;
 }
 
 export interface NuevoUsuario {
@@ -44,24 +53,41 @@ export class UsersService {
   private readonly _error = signal<string | null>(null);
   private readonly _permisos = signal<Permission[]>([]);
   private readonly _solicitudes = signal<SolicitudReset[]>([]);
+  /** Total que cumple los filtros en el servidor. */
+  private readonly _total = signal(0);
+  /** Ultimo filtro usado, para poder recargar la misma pagina tras un cambio. */
+  private ultimoFiltro: FiltroUsuarios = {};
 
   readonly users = this._users.asReadonly();
   readonly cargando = this._cargando.asReadonly();
   readonly error = this._error.asReadonly();
   readonly permisos = this._permisos.asReadonly();
   readonly solicitudes = this._solicitudes.asReadonly();
+  readonly total = this._total.asReadonly();
 
-  readonly count = computed(() => this._users().length);
+  readonly count = computed(() => this._total());
   readonly activos = computed(() => this._users().filter(u => u.activo).length);
 
-  async load(): Promise<void> {
+  async load(filtro: FiltroUsuarios = this.ultimoFiltro): Promise<void> {
+    this.ultimoFiltro = filtro;
     this._cargando.set(true);
     this._error.set(null);
+
+    const pagina = Math.max(1, filtro.pagina ?? 1);
+    const params: Record<string, string | number> = {
+      estado: filtro.estado && filtro.estado !== 'all' ? filtro.estado : 'todos',
+      take: FILAS_POR_PAGINA,
+      skip: (pagina - 1) * FILAS_POR_PAGINA,
+    };
+    if (filtro.q) params['q'] = filtro.q;
+    if (filtro.rol && filtro.rol !== 'all') params['rol'] = filtro.rol;
+
     try {
-      const lista = await firstValueFrom(
-        this.http.get<User[]>(`${this.base}/users`, { params: { estado: 'todos', take: 200 } }),
+      const res = await firstValueFrom(
+        this.http.get<User[]>(`${this.base}/users`, { params, observe: 'response' }),
       );
-      this._users.set(lista);
+      this._users.set(res.body ?? []);
+      this._total.set(Number(res.headers.get('X-Total-Count') ?? 0));
     } catch {
       this._error.set('No se pudieron cargar los usuarios.');
     } finally {
@@ -88,13 +114,23 @@ export class UsersService {
     return this._users().find(u => u.id === id);
   }
 
+  /** Trae una persona puntual, para cuando no esta en la pagina cargada. */
+  async fetchOne(id: string): Promise<User | null> {
+    try {
+      return await firstValueFrom(this.http.get<User>(`${this.base}/users/${id}`));
+    } catch {
+      return null;
+    }
+  }
+
   byEmail(email: string): User | undefined {
     return this._users().find(u => u.email.toLowerCase() === email.trim().toLowerCase());
   }
 
   async create(data: NuevoUsuario): Promise<User> {
     const creado = await firstValueFrom(this.http.post<User>(`${this.base}/users`, data));
-    this._users.update(l => [...l, creado].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+    // La lista es una pagina del servidor: se recarga en lugar de insertar a mano.
+    await this.load();
     return creado;
   }
 

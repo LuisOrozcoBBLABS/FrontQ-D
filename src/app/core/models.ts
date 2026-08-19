@@ -179,9 +179,15 @@ export interface Assignment {
 
 export interface CanalEnvio { canal: Canal; destino: string; estado: string; }
 
+/** De que es el aviso: define a donde lleva el clic. */
+export type TipoAviso = 'asignacion' | 'reset_password' | 'general';
+
 export interface NotificationItem {
   id: string;
   userId: string;      // destinatario
+  tipo: TipoAviso;
+  /** De quien habla el aviso, no el destinatario. */
+  sujetoId?: string | null;
   titulo: string;
   detalle: string;
   leida: boolean;

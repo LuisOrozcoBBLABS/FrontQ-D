@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AssignmentsService } from '../../core/assignments.service';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
@@ -7,7 +7,7 @@ import { ProjectsService } from '../../core/projects.service';
 import { UsersService } from '../../core/users.service';
 import { ToastService } from '../../core/toast.service';
 import { ASIG_ESTADOS, Assignment, AssignmentStatus, PRIORIDADES, Prioridad } from '../../core/models';
-import { Empty } from '../../ui/empty';
+import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
 
 /** Mismo orden que la máquina de estados del backend. */
 const SECUENCIA: AssignmentStatus[] = ['pendiente', 'aceptada', 'en-curso', 'completada'];
@@ -19,15 +19,9 @@ const SIGUIENTE: Partial<Record<AssignmentStatus, { estado: AssignmentStatus; ve
   'en-curso': { estado: 'completada', verbo: 'Completar' },
 };
 
-interface Columna {
-  estado: AssignmentStatus;
-  titulo: string;
-  items: Assignment[];
-}
-
 @Component({
   selector: 'app-assignments',
-  imports: [RouterLink, FormsModule, Empty],
+  imports: [RouterLink, FormsModule, Paginador],
   templateUrl: './assignments.html',
   styleUrl: './assignments.scss',
 })
@@ -37,6 +31,7 @@ export class Assignments {
   private usersSvc = inject(UsersService);
   private toast = inject(ToastService);
   protected auth = inject(AuthService);
+  private route = inject(ActivatedRoute);
 
   protected cargando = this.assignSvc.cargando;
   protected moviendo = signal<string | null>(null);
@@ -48,6 +43,17 @@ export class Assignments {
     void this.usersSvc.load();
     // La tabla del area es otra consulta, y solo con permiso.
     if (this.canManage()) void this.assignSvc.loadTodas();
+
+    // Si llegamos desde un aviso, resaltamos esa fila y la traemos a la vista.
+    const id = this.route.snapshot.queryParamMap.get('a');
+    if (id) {
+      this.destacada.set(id);
+      setTimeout(() => {
+        document.getElementById('asg-' + id)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, 400);
+      // El resaltado se apaga solo: sirve para ubicar, no para quedarse.
+      setTimeout(() => this.destacada.set(null), 4000);
+    }
   }
 
   protected estados = ASIG_ESTADOS;
@@ -65,27 +71,49 @@ export class Assignments {
   );
 
   /**
-   * Tablero por estado. La urgencia sigue mandando: dentro de cada columna van
-   * primero las vencidas y despues por prioridad.
+   * Lo vencido primero, despues por prioridad, y lo completado al final: la
+   * tabla se lee de arriba hacia abajo en orden de urgencia.
    */
-  protected columnas = computed<Columna[]>(() => {
-    const orden = (x: Assignment[]) =>
-      [...x].sort((a, b) => {
-        const venceA = this.vencida(a) ? 0 : 1;
-        const venceB = this.vencida(b) ? 0 : 1;
-        if (venceA !== venceB) return venceA - venceB;
-        const peso: Record<Prioridad, number> = { urgente: 0, alta: 1, media: 2, baja: 3 };
-        return peso[a.prioridad] - peso[b.prioridad];
-      });
+  protected misOrdenadas = computed<Assignment[]>(() => {
+    const peso: Record<Prioridad, number> = { urgente: 0, alta: 1, media: 2, baja: 3 };
+    return [...this.mias()].sort((a, b) => {
+      const cerradaA = a.estado === 'completada' ? 1 : 0;
+      const cerradaB = b.estado === 'completada' ? 1 : 0;
+      if (cerradaA !== cerradaB) return cerradaA - cerradaB;
 
-    return SECUENCIA.map(estado => ({
-      estado,
-      titulo: this.estadoLabel(estado),
-      items: orden(this.mias().filter(a => a.estado === estado)),
-    }));
+      const venceA = this.vencida(a) ? 0 : 1;
+      const venceB = this.vencida(b) ? 0 : 1;
+      if (venceA !== venceB) return venceA - venceB;
+
+      return peso[a.prioridad] - peso[b.prioridad];
+    });
   });
 
   protected hayVencidas = computed(() => this.mias().some(a => this.vencida(a)));
+
+  /** Id que llega por ?a=... desde un aviso: la fila se resalta un momento. */
+  protected destacada = signal<string | null>(null);
+
+  /** Paginacion en el cliente: la API de asignaciones no pagina, y son listas
+   *  cortas por naturaleza (lo propio de una persona, o lo del area). */
+  protected readonly porPagina = FILAS_POR_PAGINA;
+  protected pagMias = signal(1);
+  protected pagTodas = signal(1);
+
+  protected miasPagina = computed(() => {
+    const desde = (this.pagMias() - 1) * this.porPagina;
+    return this.misOrdenadas().slice(desde, desde + this.porPagina);
+  });
+  protected todasPagina = computed(() => {
+    const desde = (this.pagTodas() - 1) * this.porPagina;
+    return this.todas().slice(desde, desde + this.porPagina);
+  });
+
+  /** Recorta la nota para usarla de subtitulo sin romper la altura de la fila. */
+  recorte(texto: string, max = 72): string {
+    const limpio = texto.trim();
+    return limpio.length > max ? limpio.slice(0, max).trimEnd() + '\u2026' : limpio;
+  }
 
   canManage(): boolean {
     return this.auth.can('assignments.create');

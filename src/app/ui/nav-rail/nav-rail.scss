@@ -269,6 +269,22 @@
 .avisos__item b { color: var(--text); font-size: var(--fs-sm); font-weight: 600; }
 .avisos__item span { font-size: var(--fs-xs); line-height: var(--lh-snug); }
 .avisos__item--nuevo { border-left: 2px solid var(--accent); }
+
+/* Que va a pasar al hacer clic: el aviso lleva a resolverlo */
+.avisos__accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.avisos__accion svg { width: 12px; height: 12px; transition: transform var(--dur) var(--ease-spring); }
+.avisos__item:hover .avisos__accion svg { transform: translateX(3px); }
 .avisos__vacio { padding: var(--sp-5) var(--sp-4); text-align: center; color: var(--text-dim); font-size: var(--fs-sm); }
 
 /* ---------- Ventanas bajas: apretar un poco ---------- */

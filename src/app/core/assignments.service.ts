@@ -2,7 +2,15 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Assignment, AssignmentStatus, Canal, CanalEnvio, NotificationItem, Prioridad } from './models';
+import {
+  Assignment,
+  AssignmentStatus,
+  Canal,
+  CanalEnvio,
+  NotificationItem,
+  Prioridad,
+  TipoAviso,
+} from './models';
 
 interface AssignmentApi {
   id: string;
@@ -24,6 +32,8 @@ interface AssignmentApi {
 interface NotificationApi {
   id: string;
   userId: string;
+  tipo: TipoAviso;
+  sujetoId: string | null;
   titulo: string;
   detalle: string;
   leida: boolean;
@@ -193,6 +203,8 @@ function aNotificacion(n: NotificationApi): NotificationItem {
   return {
     id: n.id,
     userId: n.userId,
+    tipo: n.tipo ?? 'general',
+    sujetoId: n.sujetoId ?? null,
     titulo: n.titulo,
     detalle: n.detalle,
     leida: n.leida,

@@ -1,8 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { UsersService } from '../../core/users.service';
 import { GroupsService } from '../../core/groups.service';
 import { SolicitudReset } from '../../core/users.service';
+import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
 import { mensajeDeError } from '../../core/auth.service';
 import { PERMISSIONS, ROLES, RoleId, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
@@ -24,7 +26,7 @@ interface Draft {
 
 @Component({
   selector: 'app-users',
-  imports: [FormsModule, TrapFocus],
+  imports: [FormsModule, TrapFocus, Paginador],
   templateUrl: './users.html',
   styleUrl: './users.scss',
 })
@@ -33,6 +35,7 @@ export class Users {
   private groupsSvc = inject(GroupsService);
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
+  private route = inject(ActivatedRoute);
 
   protected list = this.usersSvc.users;
   protected cargando = this.usersSvc.cargando;
@@ -44,41 +47,87 @@ export class Users {
   protected solicitudes = this.usersSvc.solicitudes;
 
   constructor() {
-    void this.usersSvc.load();
     void this.groupsSvc.load();
     void this.usersSvc.loadSolicitudes();
+
+    // Filtros y pagina se resuelven en el servidor: con volumen alto, filtrar
+    // solo la pagina cargada mostraria resultados incompletos.
+    effect(() => {
+      void this.usersSvc.load({
+        q: this.queryDebounce(),
+        rol: this.rolF(),
+        estado: this.estadoF(),
+        pagina: this.pagina(),
+      });
+    });
+
+    // Si venimos de un aviso (?reset=<id>), buscamos a esa persona y abrimos su
+    // modal de clave, aunque no este en la primera pagina.
+    const pedido = this.route.snapshot.queryParamMap.get('reset');
+    if (pedido) void this.abrirResetPorId(pedido);
+  }
+
+  /** Escribir reinicia a la primera pagina, con 300ms de espera. */
+  escribir(valor: string): void {
+    this.query.set(valor);
+    clearTimeout(this.temporizador);
+    this.temporizador = setTimeout(() => {
+      this.pagina.set(1);
+      this.queryDebounce.set(valor.trim());
+    }, 300);
+  }
+
+  filtrarRol(valor: string): void {
+    this.pagina.set(1);
+    this.rolF.set(valor);
+  }
+
+  filtrarEstado(valor: string): void {
+    this.pagina.set(1);
+    this.estadoF.set(valor);
+  }
+
+  irAPagina(p: number): void {
+    this.pagina.set(p);
+  }
+
+  /** Trae la persona del servidor si no esta en la pagina actual. */
+  private async abrirResetPorId(id: string): Promise<void> {
+    const enPagina = this.usersSvc.byId(id);
+    if (enPagina) {
+      this.abrirReset(enPagina);
+      return;
+    }
+    const u = await this.usersSvc.fetchOne(id);
+    if (u) this.abrirReset(u);
   }
 
   protected query = signal('');
   protected rolF = signal<string>('all');
   protected estadoF = signal<string>('all');
+  protected pagina = signal(1);
+  protected total = this.usersSvc.total;
+  protected readonly porPagina = FILAS_POR_PAGINA;
+
+  /** Texto ya reposado: evita una consulta por cada tecla. */
+  private queryDebounce = signal('');
+  private temporizador?: ReturnType<typeof setTimeout>;
   protected sortKey = signal<'nombre' | 'rol' | 'grupo' | 'estado'>('nombre');
   protected sortDir = signal<'asc' | 'desc'>('asc');
 
-  private filtered = computed<User[]>(() => {
-    const q = this.query().trim().toLowerCase();
-    return this.list().filter(u => {
-      if (this.rolF() !== 'all' && u.rol !== this.rolF()) return false;
-      if (this.estadoF() === 'activo' && !u.activo) return false;
-      if (this.estadoF() === 'inactivo' && u.activo) return false;
-      if (q && !(u.nombre + ' ' + u.email + ' ' + u.cargo + ' ' + (u.grupo ?? '')).toLowerCase().includes(q)) return false;
-      return true;
-    });
-  });
+  /** La pagina que devolvio el servidor, ya filtrada y ordenada por nombre. */
+  protected sorted = computed<User[]>(() => this.list());
 
-  protected sorted = computed<User[]>(() => {
-    const key = this.sortKey(), dir = this.sortDir() === 'asc' ? 1 : -1;
-    const val = (u: User): string =>
-      key === 'nombre' ? u.nombre :
-      key === 'rol' ? u.rol :
-      key === 'grupo' ? (u.grupo ?? '') :
-      (u.activo ? '0' : '1');
-    return [...this.filtered()].sort((a, b) => val(a).localeCompare(val(b)) * dir);
-  });
+  protected hayFiltros = computed(
+    () => Boolean(this.queryDebounce()) || this.rolF() !== 'all' || this.estadoF() !== 'all',
+  );
 
-  sortBy(key: 'nombre' | 'rol' | 'grupo' | 'estado'): void {
-    if (this.sortKey() === key) this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
-    else { this.sortKey.set(key); this.sortDir.set('asc'); }
+  limpiarFiltros(): void {
+    this.pagina.set(1);
+    this.query.set('');
+    this.queryDebounce.set('');
+    this.rolF.set('all');
+    this.estadoF.set('all');
   }
 
   protected modalOpen = signal(false);

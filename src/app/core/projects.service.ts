@@ -2,7 +2,16 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { FILAS_POR_PAGINA } from '../ui/paginador/paginador';
 import { AppSimilar, Enrichment, Project, ProjectStatus } from './models';
+
+/** Lo que el servidor necesita para devolver una pagina de proyectos. */
+export interface FiltroProyectos {
+  q?: string;
+  sector?: string;
+  estado?: string;
+  pagina?: number;
+}
 
 export interface NuevoProyecto {
   nombre: string;
@@ -32,24 +41,59 @@ export class ProjectsService {
   private readonly _projects = signal<Project[]>([]);
   private readonly _cargando = signal(false);
   private readonly _error = signal<string | null>(null);
+  /** Total que cumple los filtros en el servidor, no lo que hay cargado. */
+  private readonly _total = signal(0);
+  private readonly _porEstado = signal<Record<string, number>>({});
 
   readonly projects = this._projects.asReadonly();
   readonly cargando = this._cargando.asReadonly();
   readonly error = this._error.asReadonly();
-  readonly count = computed(() => this._projects().length);
+  readonly total = this._total.asReadonly();
+  readonly porEstado = this._porEstado.asReadonly();
+  readonly count = computed(() => this._total());
 
-  async load(): Promise<void> {
+  /**
+   * Trae una pagina. El total viene en la cabecera: sin eso no se pueden
+   * numerar las paginas.
+   */
+  async load(filtro: FiltroProyectos = {}): Promise<void> {
     this._cargando.set(true);
     this._error.set(null);
+
+    const pagina = Math.max(1, filtro.pagina ?? 1);
+    const params: Record<string, string | number> = {
+      take: FILAS_POR_PAGINA,
+      skip: (pagina - 1) * FILAS_POR_PAGINA,
+    };
+    if (filtro.q) params['q'] = filtro.q;
+    if (filtro.sector && filtro.sector !== 'all') params['sector'] = filtro.sector;
+    if (filtro.estado && filtro.estado !== 'all') params['estado'] = filtro.estado;
+
     try {
-      const lista = await firstValueFrom(
-        this.http.get<ProjectApi[]>(`${this.base}/projects`, { params: { take: 200 } }),
+      const res = await firstValueFrom(
+        this.http.get<ProjectApi[]>(`${this.base}/projects`, { params, observe: 'response' }),
       );
-      this._projects.set(lista.map(aProyecto));
+      this._projects.set((res.body ?? []).map(aProyecto));
+      this._total.set(Number(res.headers.get('X-Total-Count') ?? 0));
     } catch {
       this._error.set('No se pudieron cargar los proyectos.');
     } finally {
       this._cargando.set(false);
+    }
+  }
+
+  /** Conteo por estado para las pastillas: lo calcula el servidor. */
+  async loadPorEstado(filtro: FiltroProyectos = {}): Promise<void> {
+    const params: Record<string, string> = {};
+    if (filtro.q) params['q'] = filtro.q;
+    if (filtro.sector && filtro.sector !== 'all') params['sector'] = filtro.sector;
+    try {
+      const conteo = await firstValueFrom(
+        this.http.get<Record<string, number>>(`${this.base}/projects/stats`, { params }),
+      );
+      this._porEstado.set(conteo);
+    } catch {
+      this._porEstado.set({});
     }
   }
 

@@ -1,0 +1,46 @@
+@if (total() > 0) {
+  <nav class="pag" [attr.aria-label]="'Paginación de ' + etiqueta()">
+    <p class="pag__rango">
+      {{ desde() }}–{{ hasta() }} de <b>{{ total() }}</b> {{ etiqueta() }}
+    </p>
+
+    @if (paginas() > 1) {
+      <div class="pag__ctrl">
+        <button
+          class="pag__flecha"
+          type="button"
+          [disabled]="pagina() === 1"
+          (click)="ir(pagina() - 1)"
+          aria-label="Página anterior"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>
+        </button>
+
+        @for (n of numeros(); track $index) {
+          @if (n === null) {
+            <span class="pag__gap" aria-hidden="true">…</span>
+          } @else {
+            <button
+              class="pag__n"
+              type="button"
+              [class.pag__n--on]="n === pagina()"
+              [attr.aria-current]="n === pagina() ? 'page' : null"
+              [attr.aria-label]="'Página ' + n"
+              (click)="ir(n)"
+            >{{ n }}</button>
+          }
+        }
+
+        <button
+          class="pag__flecha"
+          type="button"
+          [disabled]="pagina() === paginas()"
+          (click)="ir(pagina() + 1)"
+          aria-label="Página siguiente"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m10 6 6 6-6 6"/></svg>
+        </button>
+      </div>
+    }
+  </nav>
+}

@@ -1,7 +1,8 @@
 /* =============================================================
-   Asignaciones — tablero por estado
-   Una columna por estado de la máquina del backend. Cada ficha avanza un paso
-   por vez con su propio botón: el recorrido se ve, y no hay estados imposibles.
+   Asignaciones — tablas
+   Una tabla con lo propio (con la acción en la última columna) y otra con el
+   área completa. El espaciado sale del sistema: los bloques respiran con
+   --sp-10 entre sí y --sp-4 entre encabezado y tabla.
    ============================================================= */
 
 .alerta {
@@ -9,7 +10,7 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-3) var(--sp-4);
-  margin-bottom: var(--sp-5);
+  margin-bottom: var(--sp-6);
   border: 1px solid var(--danger);
   border-radius: var(--r-md);
   background: var(--danger-bg);
@@ -18,189 +19,11 @@
 }
 .alerta svg { width: 17px; height: 17px; color: var(--danger); flex: 0 0 auto; }
 
-/* ---------- Tablero ---------- */
-.tablero {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(230px, 1fr));
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-12);
-}
-
-.col {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  min-width: 0;
-  padding: var(--sp-3);
-  border-radius: var(--r-lg);
-  background: var(--surface);
-  border: 1px solid var(--line);
-}
-/* La columna terminal se distingue sin gritar */
-.col[data-estado="completada"] { background: transparent; border-style: dashed; }
-
-.col__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  padding: var(--sp-1) var(--sp-2) var(--sp-3);
-  border-bottom: 1px solid var(--line);
-}
-.col__t {
-  font-family: var(--font-display);
-  font-size: var(--fs-2xs);
-  font-weight: 700;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--text-2);
-}
-.col__n {
-  display: inline-grid;
-  place-items: center;
-  min-width: 20px;
-  height: 19px;
-  padding: 0 6px;
-  border-radius: var(--r-full);
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-dim);
-  font-variant-numeric: tabular-nums;
-}
-/* En curso es donde está la atención: su encabezado lo marca */
-.col[data-estado="en-curso"] .col__t { color: var(--text); }
-.col[data-estado="en-curso"] .col__n { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-
-.col__cuerpo { display: flex; flex-direction: column; gap: var(--sp-2); min-height: 72px; }
-.col__vacia {
-  padding: var(--sp-5) var(--sp-3);
-  text-align: center;
-  font-size: var(--fs-xs);
-  color: var(--text-dim);
-  border: 1px dashed var(--line);
-  border-radius: var(--r-md);
-}
-
-/* ---------- Ficha ---------- */
-.ficha {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  padding: var(--sp-4);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: var(--bg);
-  transition:
-    border-color var(--dur) var(--ease),
-    transform var(--dur) var(--ease-spring),
-    box-shadow var(--dur) var(--ease);
-}
-.ficha:hover {
-  border-color: var(--line-strong);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-.ficha--vencida { border-color: var(--danger); }
-
-.ficha__top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
-.ficha__alerta { display: grid; place-items: center; color: var(--danger); }
-.ficha__alerta svg { width: 15px; height: 15px; }
-
-.ficha__nombre {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-base);
-  letter-spacing: -.015em;
-  line-height: var(--lh-tight);
-  color: var(--text);
-  transition: color var(--dur) var(--ease);
-}
-.ficha__nombre:hover { color: var(--accent-text); }
-
-.ficha__nota {
-  font-size: var(--fs-xs);
-  line-height: var(--lh-snug);
-  color: var(--text-2);
-  padding-left: var(--sp-3);
-  border-left: 2px solid var(--line);
-  /* Dos líneas: la nota orienta, el detalle está en el proyecto */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.ficha__meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  font-size: var(--fs-2xs);
-}
-.ficha__plazo { color: var(--text-dim); font-variant-numeric: tabular-nums; }
-.ficha__plazo--alerta { color: var(--danger); font-weight: 600; }
-.ficha__de {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--r-full);
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  font-family: var(--font-display);
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-2);
-  flex: 0 0 auto;
-}
-
-/* La acción es el borde inferior de la ficha: aparece siempre en el mismo lugar */
-.ficha__accion {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  margin: var(--sp-1) calc(-1 * var(--sp-4)) calc(-1 * var(--sp-4));
-  padding: var(--sp-3) var(--sp-4);
-  border-top: 1px solid var(--line);
-  border-radius: 0 0 calc(var(--r-md) - 1px) calc(var(--r-md) - 1px);
-  color: var(--text-2);
-  font-family: var(--font-display);
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: .04em;
-  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-.ficha__accion svg { width: 14px; height: 14px; transition: transform var(--dur) var(--ease-spring); }
-.ficha__accion:hover:not(:disabled) { background: var(--accent); color: var(--on-accent); border-top-color: var(--accent); }
-.ficha__accion:hover:not(:disabled) svg { transform: translateX(3px); }
-.ficha__accion:disabled { opacity: .5; cursor: not-allowed; }
-.ficha__accion:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-
-/* ---------- Angosto: el tablero se desliza; en móvil se apila ---------- */
-@media (max-width: 1100px) {
-  .tablero {
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(230px, 1fr);
-    grid-template-columns: none;
-    overflow-x: auto;
-    padding-bottom: var(--sp-3);
-    scroll-snap-type: x proximity;
-  }
-  .col { scroll-snap-align: start; }
-}
-@media (max-width: 700px) {
-  .tablero {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    overflow-x: visible;
-  }
-}
-
-/* ---------- Bloque de la tabla ---------- */
+/* ---------- Bloques ---------- */
+.bloque { margin-bottom: var(--sp-10); }
+.bloque:last-child { margin-bottom: 0; }
 .bloque__head { margin-bottom: var(--sp-4); }
+
 .bloque__t {
   display: flex;
   align-items: center;
@@ -224,46 +47,50 @@
   color: var(--text-2);
   font-variant-numeric: tabular-nums;
 }
-.bloque__nota { margin-top: var(--sp-1); font-size: var(--fs-sm); color: var(--text-dim); max-width: 70ch; }
-
-.quien { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--text-2); }
-.quien__ini {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--r-full);
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  font-family: var(--font-display);
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-2);
-  flex: 0 0 auto;
+.bloque__nota {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  max-width: 74ch;
+  line-height: var(--lh-snug);
 }
 
-.tabla__link { font-weight: 600; }
-.tabla__link:hover { color: var(--accent-text); }
-.tabla__vacia { text-align: center; color: var(--text-dim); font-size: var(--fs-sm); }
+/* ---------- Celdas propias ---------- */
+.fila__link { color: inherit; font-weight: 600; }
+.fila__link:hover { color: var(--accent-text); }
 
-/* ---------- Estado del aviso, dentro de la fila ---------- */
+.plazo--alerta { color: var(--danger); font-weight: 600; }
+.plazo__icono { display: inline-block; width: 13px; height: 13px; vertical-align: -2px; margin-right: 4px; }
+
+.cerrada {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.cerrada svg { width: 14px; height: 14px; color: var(--accent-text); }
+
+/* Estado del aviso por canal, dentro de la fila */
 .envios-celda { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
 .envio {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  padding: 4px 11px 4px 4px;
+  padding: 3px 10px 3px 3px;
   border: 1px solid var(--line);
   border-radius: var(--r-full);
   background: var(--surface-2);
-  font-size: var(--fs-xs);
+  font-size: var(--fs-2xs);
+  white-space: nowrap;
 }
 .envio__canal {
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: var(--r-full);
   background: var(--surface);
   border: 1px solid var(--line);
-  font-size: var(--fs-2xs);
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -271,23 +98,18 @@
 }
 .envio__estado { color: var(--text-dim); }
 
-/* ---------- Esqueletos ---------- */
-.esqueleto { display: flex; flex-direction: column; gap: var(--sp-3); }
-.esqueleto__linea {
+/* Esqueleto de celda mientras carga */
+.esq {
+  display: block;
   height: 11px;
+  width: 70%;
   border-radius: var(--r-sm);
   background: linear-gradient(90deg, var(--surface-2) 0%, var(--line) 50%, var(--surface-2) 100%);
   background-size: 200% 100%;
   animation: brillo 1.4s ease-in-out infinite;
 }
-.esqueleto__linea--corta { width: 40%; }
-.esqueleto__linea--titulo { height: 18px; width: 75%; }
 @keyframes brillo {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .esqueleto__linea { animation: none; }
-  .ficha:hover { transform: none; }
-  .ficha__accion svg { transition: none; }
-}
+@media (prefers-reduced-motion: reduce) { .esq { animation: none; } }

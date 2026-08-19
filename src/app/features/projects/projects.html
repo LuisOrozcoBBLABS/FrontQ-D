@@ -10,8 +10,8 @@
   <!-- Una sola linea: cuantos hay y como se reparten. Las pastillas filtran. -->
   <div class="resumen enter">
     <div class="resumen__total">
-      <span class="resumen__num mono">{{ visible().length }}</span>
-      <span class="resumen__lbl">{{ visible().length === 1 ? 'proyecto' : 'proyectos' }}</span>
+      <span class="resumen__num mono">{{ total() }}</span>
+      <span class="resumen__lbl">{{ total() === 1 ? 'proyecto' : 'proyectos' }}</span>
     </div>
 
     <div class="resumen__pills">
@@ -20,7 +20,7 @@
         type="button"
         [class.pill--on]="estadoF() === 'all'"
         [attr.aria-pressed]="estadoF() === 'all'"
-        (click)="estadoF.set('all')"
+        (click)="filtrarEstado('all')"
       >Todos</button>
 
       @for (e of estados; track e.value) {
@@ -30,7 +30,7 @@
           [class.pill--on]="estadoF() === e.value"
           [attr.aria-pressed]="estadoF() === e.value"
           [disabled]="!conteoPorEstado()[e.value]"
-          (click)="estadoF.set(e.value)"
+          (click)="filtrarEstado(e.value)"
         >
           <span class="pill__punto" [attr.data-estado]="e.value" aria-hidden="true"></span>
           {{ e.label }}
@@ -46,42 +46,21 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       <input
         [ngModel]="query()"
-        (ngModelChange)="query.set($event)"
+        (ngModelChange)="escribir($event)"
         placeholder="Buscar por nombre, problema o sector…"
         aria-label="Buscar proyectos"
       />
       @if (query()) {
-        <button class="search__x" type="button" (click)="query.set('')" aria-label="Limpiar búsqueda">
+        <button class="search__x" type="button" (click)="quitarFiltro('query')" aria-label="Limpiar búsqueda">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       }
     </div>
 
-    <select class="select select--auto" [ngModel]="sectorF()" (ngModelChange)="sectorF.set($event)" aria-label="Filtrar por sector">
+    <select class="select select--auto" [ngModel]="sectorF()" (ngModelChange)="filtrarSector($event)" aria-label="Filtrar por sector">
       <option value="all">Todos los sectores</option>
       @for (s of sectores; track s) { <option [value]="s">{{ s }}</option> }
     </select>
-
-    <select class="select select--auto" [ngModel]="orden()" (ngModelChange)="orden.set($event)" aria-label="Ordenar">
-      <option value="recientes">Más recientes</option>
-      <option value="estado">Por estado</option>
-      <option value="nombre">Por nombre</option>
-    </select>
-
-    <div class="vista" role="group" aria-label="Forma de ver la lista">
-      <button
-        class="vista__b" type="button" [class.vista__b--on]="vista() === 'tarjetas'"
-        [attr.aria-pressed]="vista() === 'tarjetas'" (click)="vista.set('tarjetas')" aria-label="Ver en tarjetas"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
-      </button>
-      <button
-        class="vista__b" type="button" [class.vista__b--on]="vista() === 'lista'"
-        [attr.aria-pressed]="vista() === 'lista'" (click)="vista.set('lista')" aria-label="Ver en lista"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
-      </button>
-    </div>
 
     @if (auth.can('projects.create')) {
       <a class="btn btn--primary barra__cta" routerLink="/proyectos/nuevo">
@@ -94,7 +73,7 @@
   <!-- Filtros puestos, visibles y quitables de a uno -->
   @if (filtrosActivos().length) {
     <div class="activos">
-      <span class="activos__lbl">{{ filtered().length }} de {{ visible().length }} ·</span>
+      <span class="activos__lbl">{{ total() }} {{ total() === 1 ? 'resultado' : 'resultados' }} ·</span>
       @for (f of filtrosActivos(); track f.clave) {
         <button class="activos__chip" type="button" (click)="quitarFiltro(f.clave)">
           {{ f.etiqueta }}
@@ -106,64 +85,79 @@
   }
 
   @if (errorCarga()) {
-    <div class="card aviso-error">
-      <p>{{ errorCarga() }}</p>
-      <p class="text-2">Revisá que la API esté corriendo en el puerto 3000.</p>
+    <div class="aviso-error">
+      <p><b>{{ errorCarga() }}</b></p>
+      <p>Revisá que la API esté corriendo en el puerto 3000.</p>
     </div>
   }
 
-  <!-- Carga: esqueletos con la forma del contenido, no un spinner suelto -->
-  @if (cargando() && !filtered().length) {
-    <div class="proj-grid">
-      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
-        <div class="card esqueleto">
-          <div class="esqueleto__linea esqueleto__linea--corta"></div>
-          <div class="esqueleto__linea esqueleto__linea--titulo"></div>
-          <div class="esqueleto__linea"></div>
-          <div class="esqueleto__linea esqueleto__linea--media"></div>
-        </div>
-      }
+  <!-- Tabla paginada: el servidor devuelve solo las filas de esta página -->
+  <div class="table-wrap enter">
+    <div class="table-scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Proyecto</th>
+            <th>Sector</th>
+            <th>Estado</th>
+            <th>Grupo</th>
+            <th>Autor</th>
+            <th class="table__num">Creado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (cargando() && !lista().length) {
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+              <tr>
+                @for (c of [1, 2, 3, 4, 5, 6]; track c) {
+                  <td><span class="esq"></span></td>
+                }
+              </tr>
+            }
+          } @else {
+            @for (p of lista(); track p.id) {
+              <tr class="fila-click" tabindex="0" (click)="abrir(p)" (keydown.enter)="abrir(p)">
+                <td>
+                  <a class="fila__link" [routerLink]="['/proyectos', p.id]" (click)="$event.stopPropagation()">
+                    {{ p.nombre }}
+                  </a>
+                  @if (p.problema) { <span class="celda-sub">{{ recorte(p.problema) }}</span> }
+                </td>
+                <td>{{ p.sector }}</td>
+                <td><span [class]="'estado estado--' + p.estado">{{ estadoLabel(p.estado) }}</span></td>
+                <td>{{ p.grupo ?? '—' }}</td>
+                <td>
+                  <span class="celda-persona">
+                    <span class="celda-ini" aria-hidden="true">{{ iniciales(autorNombre(p)) }}</span>
+                    {{ autorNombre(p) }}
+                  </span>
+                </td>
+                <td class="table__num">{{ hace(p.createdAt) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="table__vacia">
+                  @if (sinFiltros()) {
+                    <b>Todavía no hay proyectos</b>
+                    Registrá la primera idea del área y queda visible para tu grupo.
+                  } @else {
+                    <b>Nada coincide con esos filtros</b>
+                    Probá con otro sector o estado, o limpiá los filtros para ver todo.
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
     </div>
-  } @else {
-    <div [class]="vista() === 'lista' ? 'proj-lista' : 'proj-grid'">
-      @for (p of filtered(); track p.id) {
-        <a class="proj" [class.proj--fila]="vista() === 'lista'" [routerLink]="['/proyectos', p.id]">
-          <span class="proj__stripe" [attr.data-estado]="p.estado" aria-hidden="true"></span>
 
-          <div class="proj__cuerpo">
-            <div class="proj__top">
-              <span class="tag-mono">{{ p.sector }}</span>
-              <span [class]="'estado estado--' + p.estado">{{ estadoLabel(p.estado) }}</span>
-            </div>
-
-            <h3 class="proj__nombre">{{ p.nombre }}</h3>
-            <p class="proj__desc">{{ p.problema || 'Sin problema descrito todavía.' }}</p>
-          </div>
-
-          <div class="proj__foot">
-            <span class="proj__autor">
-              <span class="proj__ini" aria-hidden="true">{{ iniciales(autorNombre(p)) }}</span>
-              <span class="proj__autor-txt">
-                {{ autorNombre(p) }}
-                <span class="text-dim">· {{ hace(p.createdAt) }}</span>
-              </span>
-            </span>
-            <span class="proj__grupo">{{ p.grupo ? p.grupo : 'Sin grupo' }}</span>
-          </div>
-        </a>
-      } @empty {
-        @if (sinNada()) {
-          <app-empty
-            title="Todavía no hay proyectos"
-            hint="Registrá la primera idea del área y quedará visible para tu grupo."
-          ></app-empty>
-        } @else {
-          <app-empty
-            title="Nada coincide con esos filtros"
-            hint="Probá con otro sector o estado, o limpiá los filtros para ver todo."
-          ></app-empty>
-        }
-      }
-    </div>
-  }
+    <app-paginador
+      [pagina]="pagina()"
+      [total]="total()"
+      [porPagina]="porPagina"
+      etiqueta="proyectos"
+      (cambia)="irAPagina($event)"
+    />
+  </div>
 </div>
