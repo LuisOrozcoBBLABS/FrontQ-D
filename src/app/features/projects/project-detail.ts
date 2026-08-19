@@ -11,6 +11,7 @@ import { TrapFocus } from '../../ui/trap-focus';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { mensajeDeError } from '../../core/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-project-detail',
@@ -99,6 +100,9 @@ export class ProjectDetail {
     const has = this.canalesSel().includes(c);
     this.canalesSel.set(has ? this.canalesSel().filter(x => x !== c) : [...this.canalesSel(), c]);
   }
+  /** Las funciones de IA estan fuera del MVP. */
+  protected readonly ia = environment.funcionesIA;
+
   protected asignando = signal(false);
 
   async doAssign(): Promise<void> {

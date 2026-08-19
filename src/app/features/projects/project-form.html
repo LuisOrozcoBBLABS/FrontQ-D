@@ -2,7 +2,7 @@
   <div class="page__head enter">
     <p class="eyebrow">Nuevo proyecto</p>
     <h1 class="page__title">Registrar una idea de innovación</h1>
-    <p class="page__sub">Describe la propuesta. Luego podrás enriquecerla con IA, calcular su score y enviarla al comité.</p>
+    <p class="page__sub">Describe la propuesta. Quedá registrada para el área y podés asignarla a alguien del equipo.</p>
   </div>
 
   <div class="card enter" style="max-width:760px">
@@ -62,6 +62,7 @@
       <textarea id="pl" class="textarea" rows="3" [ngModel]="plusIA()" (ngModelChange)="plusIA.set($event)" placeholder="¿Qué agregarías con IA para diferenciarte de esas apps que ya existen?"></textarea>
     </div>
 
+    @if (ia) {
     <div class="field">
       <button class="btn btn--ghost btn--sm" type="button" (click)="checkDuplicates()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -83,6 +84,7 @@
         }
       }
     </div>
+    }
 
     @if (error()) { <p class="login__error" style="margin-bottom:16px">{{ error() }}</p> }
 

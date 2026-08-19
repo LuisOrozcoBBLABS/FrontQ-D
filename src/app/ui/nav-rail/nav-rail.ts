@@ -3,6 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
+import { environment } from '../../../environments/environment';
 
 export type RailIcon =
   | 'inicio'
@@ -49,12 +50,18 @@ export class NavRail {
       { path: '/inicio', label: 'Inicio', icon: 'inicio' as RailIcon, show: true },
       { path: '/proyectos', label: 'Proyectos', icon: 'proyectos' as RailIcon, show: true },
       { path: '/asignaciones', label: 'Asignaciones', icon: 'asignaciones' as RailIcon, show: true },
-      { path: '/conocimiento', label: 'Conocimiento', icon: 'conocimiento' as RailIcon, show: true },
+      // Modulos de IA: ocultos mientras el motor no sea real (environment.funcionesIA).
+      {
+        path: '/conocimiento',
+        label: 'Conocimiento',
+        icon: 'conocimiento' as RailIcon,
+        show: environment.funcionesIA,
+      },
       {
         path: '/oportunidades',
         label: 'Oportunidades',
         icon: 'oportunidades' as RailIcon,
-        show: this.auth.can('reports.view'),
+        show: environment.funcionesIA && this.auth.can('reports.view'),
       },
       { path: '/grupos', label: 'Grupos', icon: 'grupos' as RailIcon, show: this.auth.can('groups.manage') },
       { path: '/usuarios', label: 'Usuarios', icon: 'usuarios' as RailIcon, show: this.auth.can('users.manage') },

@@ -55,8 +55,10 @@
     @if (auth.can('projects.create')) {
       <a class="card quick__card" routerLink="/proyectos/nuevo"><h3>Registrar una idea</h3><p class="text-2">Crea un proyecto de innovación.</p></a>
     }
-    <a class="card quick__card" routerLink="/conocimiento"><h3>Buscar conocimiento</h3><p class="text-2">Consulta proyectos en lenguaje natural.</p></a>
-    @if (auth.can('reports.view')) {
+    @if (ia) {
+      <a class="card quick__card" routerLink="/conocimiento"><h3>Buscar conocimiento</h3><p class="text-2">Consulta proyectos en lenguaje natural.</p></a>
+    }
+    @if (ia && auth.can('reports.view')) {
       <a class="card quick__card" routerLink="/oportunidades"><h3>Radar de oportunidades</h3><p class="text-2">Hallazgos de IA sobre datos internos.</p></a>
     }
     @if (auth.can('groups.manage')) {

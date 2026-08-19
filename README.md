@@ -65,10 +65,12 @@ a propósito: la barra superior solo lleva identidad y utilidades.
 
 ## Estado actual
 
-Los módulos están construidos y navegables, pero **los servicios de `core/`
-todavía leen y escriben en `localStorage`**: la conexión con la API de BackQ-D
-es el siguiente trabajo. Hasta que eso esté, el login real del backend no se
-usa y los datos viven en el navegador de cada persona.
+Conectado a la API de BackQ-D: el login, los permisos y todos los datos vienen
+del servidor. El interceptor renueva el token de acceso solo, y con una
+contraseña temporal la plataforma no deja operar hasta cambiarla.
+
+Para trabajar en local hacen falta las dos piezas: la API en `localhost:3000` y
+este front en `localhost:4300`.
 
 Las 7 funciones de IA quedan fuera del MVP: sus resultados son deterministas y
 simulados, no hay modelo detrás. Se reactivarán cuando exista el motor con
@@ -78,4 +80,6 @@ OpenAI en el backend.
 
 | Rama | Qué cambió |
 |---|---|
+| `main` | MVP: funciones de IA ocultas detras de `environment.funcionesIA` (dock, rutas con `iaGuard`, pestana del detalle, buscador de duplicados y accesos del inicio), y textos que ya no prometen lo que no hay. |
+| `main` | Conexion con la API de BackQ-D: interceptor con renovacion de token, guards asincronos, pantalla de cambio de clave obligatorio y los 4 servicios sobre HTTP. |
 | `main` | Traslado desde `portafolio-ia/plataforma-id/web`. Sistema de diseño alineado al manual de marca (Montserrat, paleta oficial, escala tipográfica, ritmo de 4pt). Dock de módulos en cristal líquido reemplazando la barra de navegación superior y el drawer móvil. Corregido el subrayado involuntario de todos los enlaces. Logos oficiales en `public/brand/`. |

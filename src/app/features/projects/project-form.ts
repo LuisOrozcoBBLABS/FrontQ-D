@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ProjectsService } from '../../core/projects.service';
 import { AuthService } from '../../core/auth.service';
 import { GroupsService } from '../../core/groups.service';
+import { environment } from '../../../environments/environment';
 import { AiService, DupMatch } from '../../core/ai.service';
 import { AppSimilar, SECTORES } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
@@ -24,6 +25,8 @@ export class ProjectForm {
 
   protected sectores = SECTORES;
   protected grupos = this.groupsSvc.groups;
+  /** Las funciones de IA estan fuera del MVP. */
+  protected readonly ia = environment.funcionesIA;
 
   nombre = signal('');
   sector = signal<string>('');

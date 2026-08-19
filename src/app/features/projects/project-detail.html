@@ -18,7 +18,9 @@
 
     <div class="tabs enter">
       <button class="tab" type="button" [class.tab--on]="tab()==='resumen'" (click)="tab.set('resumen')">Resumen</button>
-      <button class="tab" type="button" [class.tab--on]="tab()==='ia'" (click)="tab.set('ia')">IA</button>
+      @if (ia) {
+        <button class="tab" type="button" [class.tab--on]="tab()==='ia'" (click)="tab.set('ia')">IA</button>
+      }
       @if (canAssign() || canManage()) {
         <button class="tab" type="button" [class.tab--on]="tab()==='gestion'" (click)="tab.set('gestion')">Gestión</button>
       }
@@ -62,7 +64,7 @@
       }
     }
 
-    @if (tab() === 'ia') {
+    @if (ia && tab() === 'ia') {
       <div class="card enter" style="max-width:760px">
         <h3 style="font-size:16px;margin-bottom:6px">Funciones de IA</h3>
         <p class="text-2" style="font-size:13.5px;margin-bottom:14px">Simuladas (deterministas). En producción: Claude/Ollama + pgvector + n8n.</p>
