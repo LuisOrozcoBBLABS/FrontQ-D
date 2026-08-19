@@ -1,0 +1,21 @@
+.th-sort { display: inline-flex; align-items: center; gap: 6px; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+.th-sort:hover { color: var(--text); }
+.th-sort__ind { color: var(--accent-text); font-family: var(--font-mono); min-width: 8px; }
+
+.perm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.check--base {
+  opacity: 0.7;
+  cursor: default;
+}
+.modal__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}

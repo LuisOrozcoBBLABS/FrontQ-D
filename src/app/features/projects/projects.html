@@ -1,0 +1,51 @@
+<div class="page">
+  <div class="page__head">
+    <p class="eyebrow">Innovación</p>
+    <h1 class="page__title">Proyectos</h1>
+    <p class="page__sub">Ideas y propuestas de innovación del área. {{ auth.can('projects.viewAll') ? 'Ves todos los proyectos.' : 'Ves los tuyos y los de tu grupo.' }}</p>
+  </div>
+
+  <div class="toolbar">
+    @if (auth.can('projects.create')) {
+      <a class="btn btn--primary" routerLink="/proyectos/nuevo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Nuevo proyecto
+      </a>
+    }
+    <span class="chip">{{ filtered().length }} de {{ visible().length }}</span>
+  </div>
+
+  <div class="filters">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Buscar por nombre, problema o sector…" />
+    </div>
+    <select class="select" style="max-width:200px" [ngModel]="sectorF()" (ngModelChange)="sectorF.set($event)">
+      <option value="all">Todos los sectores</option>
+      @for (s of sectores; track s) { <option [value]="s">{{ s }}</option> }
+    </select>
+    <select class="select" style="max-width:180px" [ngModel]="estadoF()" (ngModelChange)="estadoF.set($event)">
+      <option value="all">Todos los estados</option>
+      @for (e of estados; track e.value) { <option [value]="e.value">{{ e.label }}</option> }
+    </select>
+  </div>
+
+  <div class="proj-grid">
+    @for (p of filtered(); track p.id) {
+      <a class="card proj-card" [routerLink]="['/proyectos', p.id]">
+        <div class="proj-card__top">
+          <span class="tag-mono">{{ p.sector }}</span>
+          <span [class]="'estado estado--' + p.estado">{{ estadoLabel(p.estado) }}</span>
+        </div>
+        <h3 class="proj-card__name">{{ p.nombre }}</h3>
+        <p class="proj-card__desc">{{ p.problema }}</p>
+        <div class="proj-card__foot">
+          <span>{{ p.grupo ? 'Grupo ' + p.grupo : 'Sin grupo' }} · {{ autorNombre(p.autorId) }}</span>
+          @if (p.score != null) { <span class="proj-card__score">Score {{ p.score }}</span> }
+        </div>
+      </a>
+    } @empty {
+      <app-empty title="No hay proyectos que coincidan" hint="Ajusta la búsqueda o los filtros para ver más resultados."></app-empty>
+    }
+  </div>
+</div>

@@ -1,0 +1,87 @@
+<div class="page">
+  <div class="page__head enter">
+    <p class="eyebrow">Mi perfil</p>
+    <h1 class="page__title">{{ auth.currentUser()?.nombre }}</h1>
+    <p class="page__sub">Actualiza tu foto, tu LinkedIn y tus datos. El cargo solo lo puede cambiar tu jefe o un administrador.</p>
+  </div>
+
+  <div class="profile enter">
+    <!-- Identidad (solo lectura) -->
+    <aside class="card profile__id">
+      <div class="profile__avatar">
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()" alt="Foto de perfil" />
+        } @else {
+          <span>{{ initials(auth.currentUser()?.nombre ?? '?') }}</span>
+        }
+      </div>
+      <h3 class="profile__name">{{ auth.currentUser()?.nombre }}</h3>
+      <span class="badge" [class.badge--on]="auth.isAdmin()">{{ auth.isAdmin() ? 'Administrador' : 'Colaborador' }}</span>
+
+      <dl class="profile__meta">
+        <div><dt>Correo</dt><dd>{{ auth.currentUser()?.email }}</dd></div>
+        <div><dt>Grupo</dt><dd>{{ auth.currentUser()?.grupo ?? '—' }}</dd></div>
+        <div>
+          <dt>Cargo <span class="lock" title="Solo tu jefe o un administrador puede cambiarlo">bloqueado</span></dt>
+          <dd>{{ auth.currentUser()?.cargo || '—' }}</dd>
+        </div>
+        <div><dt>Género</dt><dd>{{ generoLabel(auth.currentUser()?.genero ?? null) }}</dd></div>
+      </dl>
+    </aside>
+
+    <!-- Editable -->
+    <section class="card profile__form">
+      <h3 class="profile__section">Editar mi información</h3>
+
+      <div class="field">
+        <label>Foto de perfil</label>
+        <div class="photo-row">
+          <div class="profile__avatar profile__avatar--sm">
+            @if (avatarUrl()) { <img [src]="avatarUrl()" alt="" /> } @else { <span>{{ initials(auth.currentUser()?.nombre ?? '?') }}</span> }
+          </div>
+          <label class="btn btn--ghost btn--sm photo-btn">
+            <input type="file" accept="image/*" (change)="onFile($event)" hidden />
+            Subir foto
+          </label>
+          @if (avatarUrl()) {
+            <button class="btn btn--ghost btn--sm" type="button" (click)="removePhoto()">Quitar</button>
+          }
+        </div>
+      </div>
+
+      <div class="field-inline">
+        <div class="field">
+          <label for="li">LinkedIn</label>
+          <input id="li" class="input" type="url" [ngModel]="linkedin()" (ngModelChange)="linkedin.set($event)" placeholder="https://www.linkedin.com/in/tuusuario" />
+        </div>
+        <div class="field">
+          <label for="tel">Teléfono (WhatsApp)</label>
+          <input id="tel" class="input" type="tel" [ngModel]="telefono()" (ngModelChange)="telefono.set($event)" placeholder="+57 3xx xxx xxxx" />
+        </div>
+      </div>
+
+      <div class="field-inline">
+        <div class="field">
+          <label for="fn">Fecha de nacimiento</label>
+          <input id="fn" class="input" type="date" [ngModel]="fechaNacimiento()" (ngModelChange)="fechaNacimiento.set($event)" />
+        </div>
+        <div class="field">
+          <label for="gn">Género</label>
+          <select id="gn" class="select" [ngModel]="genero()" (ngModelChange)="genero.set($event)">
+            <option [ngValue]="null">Sin especificar</option>
+            @for (g of generos; track g.value) { <option [ngValue]="g.value">{{ g.label }}</option> }
+          </select>
+        </div>
+      </div>
+
+      <div class="profile__actions">
+        <button class="btn btn--primary" type="button" (click)="save()">Guardar cambios</button>
+      </div>
+
+      <div class="sim-note" style="margin-top:18px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <span>SIMULADO: la foto se guarda como imagen embebida en localStorage. En producción iría a un storage (S3/Blob).</span>
+      </div>
+    </section>
+  </div>
+</div>

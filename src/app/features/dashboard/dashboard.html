@@ -1,0 +1,66 @@
+<div class="page">
+  <div class="page__head">
+    <p class="eyebrow">Inicio</p>
+    <h1 class="page__title">Hola, {{ nombre() }}</h1>
+    <p class="page__sub">Panel del área de Innovación y Desarrollo.</p>
+  </div>
+
+  <div class="stat-grid">
+    <a class="stat" routerLink="/proyectos"><div class="stat__label">Proyectos</div><div class="stat__value">{{ projects.count() }}</div></a>
+    <a class="stat" routerLink="/grupos"><div class="stat__label">Grupos</div><div class="stat__value">{{ groups.count() }}</div></a>
+    @if (auth.can('users.manage')) {
+      <a class="stat" routerLink="/usuarios"><div class="stat__label">Usuarios</div><div class="stat__value">{{ users.count() }}</div></a>
+    } @else {
+      <div class="stat"><div class="stat__label">Tu grupo</div><div class="stat__value" style="font-size:20px">{{ auth.currentUser()?.grupo ?? '—' }}</div></div>
+    }
+    <div class="stat"><div class="stat__label">Tu rol</div><div class="stat__value" style="font-size:20px">{{ auth.isAdmin() ? 'Admin' : 'Colaborador' }}</div></div>
+  </div>
+
+  <div class="home-cols">
+    <!-- Mis asignaciones -->
+    <section class="home-col">
+      <div class="home-col__head"><h3>Mis asignaciones</h3><a routerLink="/asignaciones" class="home-col__more">Ver todas</a></div>
+      @for (a of misAsignaciones(); track a.id) {
+        <a class="row" [routerLink]="['/proyectos', a.projectId]">
+          <div class="row__main">
+            <b>{{ projectName(a.projectId) }}</b>
+            <span class="row__sub">{{ estadoLabel(a.estado) }}</span>
+          </div>
+          <span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span>
+        </a>
+      } @empty {
+        <div class="row row--empty">Sin asignaciones por ahora.</div>
+      }
+    </section>
+
+    <!-- Proyectos recientes -->
+    <section class="home-col">
+      <div class="home-col__head"><h3>Proyectos recientes</h3><a routerLink="/proyectos" class="home-col__more">Ver todos</a></div>
+      @for (p of recientes(); track p.id) {
+        <a class="row" [routerLink]="['/proyectos', p.id]">
+          <div class="row__main">
+            <b>{{ p.nombre }}</b>
+            <span class="row__sub">{{ p.sector }}</span>
+          </div>
+          @if (p.score != null) { <span class="tag-mono">{{ p.score }}</span> }
+        </a>
+      } @empty {
+        <div class="row row--empty">Aún no hay proyectos.</div>
+      }
+    </section>
+  </div>
+
+  <!-- Accesos rápidos -->
+  <div class="quick">
+    @if (auth.can('projects.create')) {
+      <a class="card quick__card" routerLink="/proyectos/nuevo"><h3>Registrar una idea</h3><p class="text-2">Crea un proyecto de innovación.</p></a>
+    }
+    <a class="card quick__card" routerLink="/conocimiento"><h3>Buscar conocimiento</h3><p class="text-2">Consulta proyectos en lenguaje natural.</p></a>
+    @if (auth.can('reports.view')) {
+      <a class="card quick__card" routerLink="/oportunidades"><h3>Radar de oportunidades</h3><p class="text-2">Hallazgos de IA sobre datos internos.</p></a>
+    }
+    @if (auth.can('groups.manage')) {
+      <a class="card quick__card" routerLink="/grupos"><h3>Gestionar grupos</h3><p class="text-2">Manglar, Delta, Bravo, Alpha.</p></a>
+    }
+  </div>
+</div>

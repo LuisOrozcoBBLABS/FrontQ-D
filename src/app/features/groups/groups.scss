@@ -1,0 +1,19 @@
+.groups-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+.group-card { display: flex; flex-direction: column; gap: 16px; }
+.group-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.group-card__name { font-size: 20px; }
+.group-card__lema { color: var(--text-2); font-size: 13.5px; margin-top: 4px; }
+.group-card__members { display: flex; flex-wrap: wrap; gap: 6px; min-height: 36px; align-items: center; }
+.group-card__members .avatar { width: 32px; height: 32px; font-size: 11px; }
+.group-card__actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
+
+.member-list { display: grid; gap: 8px; max-height: 46vh; overflow-y: auto; }
+.member-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer;
+}
+.member-row:hover { border-color: var(--line-strong); background: var(--surface-2); }

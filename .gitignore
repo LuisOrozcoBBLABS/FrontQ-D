@@ -1,0 +1,33 @@
+# Compilados y dependencias
+/dist/
+/tmp/
+/out-tsc/
+/bazel-out/
+/node_modules/
+npm-debug.log
+yarn-error.log
+
+# Caché de Angular
+/.angular/cache
+.sass-cache/
+
+# Secretos y entorno local
+.env
+.env.local
+.env.*.local
+/src/environments/environment.local.ts
+
+# Editores
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vscode/*
+!.vscode/extensions.json
+
+# Sistema
+.DS_Store
+Thumbs.db

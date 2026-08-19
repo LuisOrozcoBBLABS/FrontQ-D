@@ -1,0 +1,40 @@
+.login {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.login__top {
+  position: fixed;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  right: calc(16px + env(safe-area-inset-right, 0px));
+  z-index: 10;
+}
+.login__card {
+  width: min(100%, 440px);
+  padding: clamp(28px, 5vw, 40px);
+}
+.login__mark {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 20px;
+}
+.login__mark svg { width: 22px; height: 22px; }
+.login__title {
+  font-size: clamp(28px, 6vw, 34px);
+  margin: 12px 0 10px;
+}
+.login__sub { margin-bottom: 26px; font-size: 15px; }
+.login__error {
+  color: var(--text);
+  font-size: 13.5px;
+  padding: 11px 14px;
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  margin-bottom: 16px;
+}
+.login__submit { width: 100%; margin-top: 4px; }
+.login__sim { margin-top: 22px; align-items: flex-start; line-height: 1.5; }
+.login__sim b { color: var(--text-2); }

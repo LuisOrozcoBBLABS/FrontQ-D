@@ -1,0 +1,9 @@
+.opp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.opp-card { display: flex; flex-direction: column; gap: 12px; }
+.opp-card__top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.opp-card__title { font-size: 18px; }
+.opp-card__patron { color: var(--text-2); font-size: 14px; }
+.opp-card__meta { font-size: 12px; color: var(--text-dim); }
+.opp-card__cta { margin-top: auto; align-self: flex-start; }
+.bar { height: 8px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+.bar__fill { height: 100%; background: var(--accent); }

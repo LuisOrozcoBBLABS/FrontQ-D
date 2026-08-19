@@ -1,0 +1,81 @@
+# FrontQ-D — Plataforma I+D
+
+Interfaz de la plataforma de Innovación y Desarrollo de Blackbird Labs (equipo QR&D).
+Consume la API de [BackQ-D](https://github.com/LuisOrozcoBBLABS/BackQ-D).
+
+- **Stack:** Angular 21 (standalone components, signals, control flow `@if`/`@for`) + SCSS
+- **Identidad:** manual de marca Blackbird Labs powered by Riwi — tipografía Montserrat,
+  Neon Lime `#B2EA36` como acento, Obsidian Black `#0B0A07` como base.
+
+## Arrancar en local
+
+```bash
+npm install
+```
+
+```bash
+npm start
+```
+
+Queda en `http://localhost:4300` (el CORS del backend espera ese puerto).
+Para que la aplicación tenga datos, la API de BackQ-D debe estar corriendo en
+`http://localhost:3000`.
+
+## Cómo está organizado
+
+```
+src/
+├── styles.scss          sistema de diseño: paleta de marca, escala tipográfica, 4pt
+├── index.html           carga Montserrat
+└── app/
+    ├── core/            servicios de datos, modelos y guards
+    ├── ui/              componentes compartidos
+    │   ├── nav-rail/    dock de módulos en cristal líquido
+    │   └── theme-toggle
+    └── features/        una carpeta por módulo (login, proyectos, grupos, …)
+public/brand/            isotipo y logo oficiales, en blanco y negro
+docs/                    documentación de la fase simulada, como referencia histórica
+```
+
+## Sistema de diseño
+
+Todo sale de tokens en `styles.scss`; no hay colores ni tamaños escritos a mano
+en los componentes.
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--accent` | `#B2EA36` Neon Lime | Indicador activo, botón primario, foco |
+| `--on-accent` | `#0B0A07` Obsidian | Texto e iconos **sobre** el lime |
+| `--accent-text` | lime en oscuro · `#55730F` en claro | Texto en color de acento |
+| `--fs-*` | 11 → 40px, paso 1.20 | Escala tipográfica |
+| `--sp-*` | 4 → 64px | Ritmo de espaciado de 4pt |
+| `--r-*` | 10 → 28px, `999px` | Radios |
+
+El lime nunca se usa como color de texto sobre fondo claro: no alcanza 4.5:1 de
+contraste. Para ese caso está `--accent-text`, que en tema claro es una sombra
+del mismo tono.
+
+## Navegación
+
+Los módulos viven en un **dock flotante** (`ui/nav-rail`): cápsula de cristal
+líquido con iconos, el nombre se despliega al pasar el cursor o al enfocar con
+teclado, y el indicador activo se desliza entre posiciones. En pantallas
+angostas el dock baja y se acuesta. Es el único patrón de navegación de la app,
+a propósito: la barra superior solo lleva identidad y utilidades.
+
+## Estado actual
+
+Los módulos están construidos y navegables, pero **los servicios de `core/`
+todavía leen y escriben en `localStorage`**: la conexión con la API de BackQ-D
+es el siguiente trabajo. Hasta que eso esté, el login real del backend no se
+usa y los datos viven en el navegador de cada persona.
+
+Las 7 funciones de IA quedan fuera del MVP: sus resultados son deterministas y
+simulados, no hay modelo detrás. Se reactivarán cuando exista el motor con
+OpenAI en el backend.
+
+## Registro de cambios
+
+| Rama | Qué cambió |
+|---|---|
+| `main` | Traslado desde `portafolio-ia/plataforma-id/web`. Sistema de diseño alineado al manual de marca (Montserrat, paleta oficial, escala tipográfica, ritmo de 4pt). Dock de módulos en cristal líquido reemplazando la barra de navegación superior y el drawer móvil. Corregido el subrayado involuntario de todos los enlaces. Logos oficiales en `public/brand/`. |

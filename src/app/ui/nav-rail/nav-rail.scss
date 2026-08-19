@@ -1,0 +1,208 @@
+/* =============================================================
+   Dock de módulos — cristal líquido
+   Iconos solos; el nombre se despliega al pasar el cursor o al enfocar.
+   El indicador activo se desliza entre posiciones con curva de resorte.
+   ============================================================= */
+
+:host {
+  --item: 46px; // área táctil mínima
+  --gap: 6px;
+  --pad: 7px;
+}
+
+.rail {
+  position: fixed;
+  left: var(--rail-gap);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  pointer-events: none; // solo las piezas reciben eventos
+}
+
+.rail > * { pointer-events: auto; }
+
+/* ---------- Cristal compartido ---------- */
+.rail__logo,
+.rail__dock,
+.rail__tip {
+  background: var(--glass-rail);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--glass-line);
+  box-shadow:
+    var(--shadow-rail),
+    inset 0 1px 0 var(--glass-hi),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+}
+
+/* Reflejo especular: la banda de luz que hace que el cristal parezca cristal. */
+.rail__logo::before,
+.rail__dock::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--glass-hi), transparent 42%);
+  pointer-events: none;
+}
+
+/* ---------- Isotipo ---------- */
+.rail__logo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(var(--item) + var(--pad) * 2);
+  height: calc(var(--item) + var(--pad) * 2);
+  border-radius: var(--r-full);
+  transition: transform var(--dur) var(--ease-spring);
+}
+.rail__logo:hover { transform: scale(1.06); }
+.rail__logo:active { transform: scale(0.97); }
+.rail__logo img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+/* En tema claro el isotipo blanco se perdería: se invierte a obsidiana. */
+html[data-theme="light"] .rail__logo img { filter: invert(1); }
+
+/* ---------- Dock ---------- */
+.rail__dock {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  padding: var(--pad);
+  border-radius: var(--r-full);
+}
+
+/* ---------- Indicador que se desliza ---------- */
+.rail__ind {
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+  width: var(--item);
+  height: var(--item);
+  border-radius: var(--r-full);
+  background: var(--accent);
+  box-shadow:
+    0 0 0 1px rgba(178, 234, 54, 0.45),
+    0 8px 22px -8px rgba(178, 234, 54, 0.6);
+  transform: translateY(calc(var(--i) * (var(--item) + var(--gap))));
+  transition:
+    transform var(--dur-slow) var(--ease-spring),
+    opacity var(--dur) var(--ease);
+}
+.rail__ind--hidden { opacity: 0; }
+
+/* ---------- Iconos ---------- */
+.rail__item {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--item);
+  height: var(--item);
+  border-radius: var(--r-full);
+  color: var(--text-2);
+  transition:
+    color var(--dur) var(--ease),
+    transform var(--dur) var(--ease-spring);
+}
+.rail__item svg {
+  width: 20px;
+  height: 20px;
+  transition: transform var(--dur) var(--ease-spring);
+}
+.rail__item:hover { color: var(--text); }
+.rail__item:hover svg { transform: scale(1.12); }
+.rail__item:active { transform: scale(0.94); }
+
+/* Sobre el lime, el icono va en obsidiana: 11:1 de contraste. */
+.rail__item.on { color: var(--on-accent); }
+.rail__item.on:hover { color: var(--on-accent); }
+
+.rail__item:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ---------- Etiqueta desplegable ---------- */
+.rail__tip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  padding: 7px 13px;
+  border-radius: var(--r-full);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-8px, -50%) scale(0.94);
+  transform-origin: left center;
+  transition:
+    opacity var(--dur-fast) var(--ease),
+    transform var(--dur) var(--ease-spring);
+  pointer-events: none;
+}
+.rail__item:hover .rail__tip,
+.rail__item:focus-visible .rail__tip {
+  opacity: 1;
+  transform: translate(0, -50%) scale(1);
+}
+
+/* ---------- Móvil: el dock baja y se acuesta ---------- */
+@media (max-width: 900px) {
+  .rail {
+    left: 50%;
+    top: auto;
+    bottom: calc(var(--rail-gap) + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    flex-direction: row;
+    gap: var(--sp-2);
+  }
+  .rail__logo { display: none; } // el logo ya está en la barra superior
+  .rail__dock { flex-direction: row; }
+  .rail__ind { transform: translateX(calc(var(--i) * (var(--item) + var(--gap)))); }
+  .rail__tip {
+    left: 50%;
+    top: auto;
+    bottom: calc(100% + 12px);
+    transform: translate(-50%, 8px) scale(0.94);
+    transform-origin: center bottom;
+  }
+  .rail__item:hover .rail__tip,
+  .rail__item:focus-visible .rail__tip {
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+/* Pantallas muy angostas: que el dock quepa sin desbordar. */
+@media (max-width: 420px) {
+  :host { --item: 42px; --gap: 3px; --pad: 5px; }
+  .rail__item svg { width: 19px; height: 19px; }
+}
+
+/* ---------- Sin animación si el sistema lo pide ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .rail__ind,
+  .rail__item,
+  .rail__item svg,
+  .rail__tip,
+  .rail__logo {
+    transition: none;
+  }
+}
+
+/* Si el navegador no soporta backdrop-filter, el cristal se vuelve superficie sólida. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .rail__logo,
+  .rail__dock,
+  .rail__tip {
+    background: var(--surface);
+  }
+}

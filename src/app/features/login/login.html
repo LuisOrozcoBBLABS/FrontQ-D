@@ -1,0 +1,38 @@
+<div class="login">
+  <div class="login__top">
+    <app-theme-toggle />
+  </div>
+
+  <div class="login__card card enter">
+    <div class="brand__mark login__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.8L18.7 9.7l-3.8 3.1 1.2 4.9L12 15.1 7.9 17.7l1.2-4.9L5.3 9.7l4.8-1.9L12 3z"/></svg></div>
+    <p class="eyebrow">Plataforma I+D · Blackbird Labs</p>
+    <h1 class="login__title display">Innovación y Desarrollo</h1>
+    <p class="text-2 login__sub">Ingresa con tu cuenta corporativa para gestionar proyectos, grupos y propuestas de innovación.</p>
+
+    <form (ngSubmit)="submit()">
+      <div class="field">
+        <label for="email">Correo corporativo</label>
+        <input id="email" class="input" type="email" name="email" autocomplete="username" autofocus
+               [ngModel]="email()" (ngModelChange)="email.set($event)" placeholder="tucorreo@bblabs.io" required />
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input id="password" class="input" type="password" name="password" autocomplete="current-password"
+               [ngModel]="password()" (ngModelChange)="password.set($event)" placeholder="••••••••" required />
+      </div>
+
+      @if (error()) {
+        <p class="login__error">{{ error() }}</p>
+      }
+
+      <button class="btn btn--primary login__submit" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Entrando…' : 'Ingresar' }}
+      </button>
+    </form>
+
+    <div class="sim-note login__sim">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      <span>Acceso SIMULADO. Prueba con <b>admin&#64;bblabs.io</b> (administrador) o <b>ana&#64;bblabs.io</b> (colaboradora). Contraseña: cualquiera.</span>
+    </div>
+  </div>
+</div>

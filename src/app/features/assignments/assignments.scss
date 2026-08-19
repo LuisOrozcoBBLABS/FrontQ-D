@@ -1,0 +1,13 @@
+.asg-h { font-size: 16px; margin-bottom: 14px; }
+.asg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.asg-card { display: flex; flex-direction: column; gap: 10px; }
+.asg-card__top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.asg-card__name { font-family: var(--font-display); font-weight: 600; font-size: 18px; text-decoration: none; }
+.asg-card__name:hover { text-decoration: underline; }
+.asg-card__note { color: var(--text-2); font-size: 14px; }
+.asg-card__meta { font-size: 12px; color: var(--text-dim); display: flex; gap: 6px; flex-wrap: wrap; }
+
+.outbox { display: grid; gap: 10px; }
+.outbox__to { font-size: 14px; color: var(--text-2); margin-bottom: 10px; }
+.outbox__channels { display: flex; flex-direction: column; gap: 6px; }
+.envio-chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); }

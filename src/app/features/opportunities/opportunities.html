@@ -1,0 +1,26 @@
+<div class="page">
+  <div class="page__head enter">
+    <p class="eyebrow">Radar de oportunidades</p>
+    <h1 class="page__title">Descubrimiento con IA</h1>
+    <p class="page__sub">La IA analiza fuentes internas (PQRS, incidentes, ERP/CRM, indicadores) y detecta oportunidades de innovación. Simulado; en producción un job de n8n lo actualizaría periódicamente.</p>
+  </div>
+
+  <div class="opp-grid enter">
+    @for (o of items; track o.id) {
+      <div class="card opp-card">
+        <div class="opp-card__top">
+          <span class="tag-mono">{{ o.fuente }}</span>
+          <span class="badge" [class.badge--on]="o.impacto >= 70">Impacto {{ o.impacto }}</span>
+        </div>
+        <h3 class="opp-card__title">{{ o.titulo }}</h3>
+        <p class="opp-card__patron">{{ o.patron }}</p>
+        <div class="opp-card__meta">Área: {{ o.area }} · Sector sugerido: {{ o.sectorSugerido }}</div>
+        <div class="bar"><div class="bar__fill" [style.width.%]="o.impacto"></div></div>
+        <button class="btn btn--primary btn--sm opp-card__cta" type="button" (click)="convertir(o)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Convertir en idea
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,9 @@
+.proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+.proj-card { display: flex; flex-direction: column; gap: 12px; text-decoration: none; transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.proj-card:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+.proj-card__top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.proj-card__name { font-size: 19px; }
+.proj-card__desc { color: var(--text-2); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.proj-card__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--text-dim); }
+.proj-card__score { font-family: var(--font-mono); color: var(--text-2); white-space: nowrap; }
+@media (hover: none) { .proj-card:hover { transform: none; } }

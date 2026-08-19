@@ -1,0 +1,170 @@
+<div class="page">
+  <div class="page__head enter">
+    <p class="eyebrow">Administración</p>
+    <h1 class="page__title">Usuarios, roles y permisos</h1>
+    <p class="page__sub">Crea cuentas del equipo de I+D, asigna su rol y afina permisos individuales. El cargo y los permisos solo los edita un administrador.</p>
+  </div>
+
+  <div class="toolbar enter">
+    <button class="btn btn--primary" type="button" (click)="openCreate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      Nuevo usuario
+    </button>
+    <span class="chip">{{ sorted().length }} de {{ list().length }}</span>
+    <div class="toolbar__spacer"></div>
+    <button class="btn btn--ghost btn--sm" type="button" (click)="resetSeed()">Restaurar ejemplo</button>
+  </div>
+
+  <div class="filters enter">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Buscar por nombre, correo, cargo o grupo…" />
+    </div>
+    <select class="select" style="max-width:180px" [ngModel]="rolF()" (ngModelChange)="rolF.set($event)">
+      <option value="all">Todos los roles</option>
+      <option value="admin">Administrador</option>
+      <option value="colaborador">Colaborador</option>
+    </select>
+    <select class="select" style="max-width:160px" [ngModel]="estadoF()" (ngModelChange)="estadoF.set($event)">
+      <option value="all">Todos</option>
+      <option value="activo">Activos</option>
+      <option value="inactivo">Inactivos</option>
+    </select>
+  </div>
+
+  <div class="table-wrap enter">
+    <table class="table">
+      <thead>
+        <tr>
+          <th><button class="th-sort" type="button" (click)="sortBy('nombre')">Usuario <span class="th-sort__ind">{{ sortKey()==='nombre' ? (sortDir()==='asc' ? '↑' : '↓') : '' }}</span></button></th>
+          <th><button class="th-sort" type="button" (click)="sortBy('rol')">Rol <span class="th-sort__ind">{{ sortKey()==='rol' ? (sortDir()==='asc' ? '↑' : '↓') : '' }}</span></button></th>
+          <th><button class="th-sort" type="button" (click)="sortBy('grupo')">Grupo <span class="th-sort__ind">{{ sortKey()==='grupo' ? (sortDir()==='asc' ? '↑' : '↓') : '' }}</span></button></th>
+          <th>Cargo</th>
+          <th>Permisos</th>
+          <th><button class="th-sort" type="button" (click)="sortBy('estado')">Estado <span class="th-sort__ind">{{ sortKey()==='estado' ? (sortDir()==='asc' ? '↑' : '↓') : '' }}</span></button></th>
+          <th style="text-align:right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of sorted(); track u.id) {
+          <tr>
+            <td>
+              <div class="user-cell">
+                <span class="avatar">
+                  @if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }
+                </span>
+                <div>
+                  <div class="user-cell__name">{{ u.nombre }}</div>
+                  <div class="user-cell__mail">{{ u.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="badge" [class.badge--on]="u.rol === 'admin'">{{ u.rol === 'admin' ? 'Admin' : 'Colaborador' }}</span></td>
+            <td>{{ u.grupo ?? '—' }}</td>
+            <td>{{ u.cargo || '—' }}</td>
+            <td><span class="tag-mono">{{ effectiveCount(u) }} permisos</span></td>
+            <td>
+              <span class="badge badge--dot" [class.badge--muted]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</span>
+            </td>
+            <td>
+              <div class="table__actions">
+                <button class="btn btn--ghost btn--sm" type="button" (click)="openEdit(u)">Editar</button>
+                <button class="btn btn--ghost btn--sm" type="button" (click)="toggleActivo(u)">{{ u.activo ? 'Desactivar' : 'Activar' }}</button>
+                <button class="btn btn--danger btn--sm" type="button" (click)="remove(u)" aria-label="Eliminar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sim-note enter" style="margin-top:20px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    <span>SIMULADO: usuarios en memoria (localStorage de este navegador). En producción: NestJS + Postgres + hash de contraseña y auth real.</span>
+  </div>
+</div>
+
+@if (modalOpen() && draft(); as d) {
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Formulario de usuario">
+    <div class="modal__backdrop" (click)="close()"></div>
+    <div class="modal__panel" appTrapFocus (dismiss)="close()">
+      <div class="modal__head">
+        <div>
+          <p class="eyebrow">{{ isEdit() ? 'Editar' : 'Nuevo' }} usuario</p>
+          <h2 class="modal__title">{{ isEdit() ? d.nombre || 'Usuario' : 'Crear usuario' }}</h2>
+        </div>
+        <button class="theme-fab" type="button" (click)="close()" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="field-inline">
+        <div class="field">
+          <label for="n">Nombre</label>
+          <input id="n" class="input" [ngModel]="d.nombre" (ngModelChange)="patch('nombre', $event)" placeholder="Nombre y apellido" />
+        </div>
+        <div class="field">
+          <label for="e">Correo</label>
+          <input id="e" class="input" type="email" [ngModel]="d.email" (ngModelChange)="patch('email', $event)" placeholder="correo@bblabs.io" />
+        </div>
+      </div>
+
+      <div class="field-inline">
+        <div class="field">
+          <label for="r">Rol</label>
+          <select id="r" class="select" [ngModel]="d.rol" (ngModelChange)="patch('rol', $event)">
+            @for (r of roles; track r.id) { <option [value]="r.id">{{ r.label }}</option> }
+          </select>
+        </div>
+        <div class="field">
+          <label for="g">Grupo</label>
+          <select id="g" class="select" [ngModel]="d.grupo" (ngModelChange)="patch('grupo', $event)">
+            <option [ngValue]="null">Sin grupo</option>
+            @for (grp of grupos; track grp) { <option [ngValue]="grp">Grupo {{ grp }}</option> }
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="c">Cargo</label>
+        <input id="c" class="input" [ngModel]="d.cargo" (ngModelChange)="patch('cargo', $event)" placeholder="Ej. AI Engineer" />
+      </div>
+
+      <div class="field">
+        <label>Estado de la cuenta</label>
+        <label class="switch">
+          <input type="checkbox" [ngModel]="d.activo" (ngModelChange)="patch('activo', $event)" />
+          <span class="switch__track"></span>
+          <span>{{ d.activo ? 'Activa' : 'Inactiva' }}</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label>Permisos</label>
+        <p class="text-dim" style="font-size:12.5px;margin:-2px 0 10px">Los marcados en gris vienen del rol. Marca extras para dar permisos adicionales a esta persona.</p>
+        <div class="perm-grid">
+          @for (p of permisos; track p.id) {
+            <label class="check" [class.check--base]="isBase(p.id)">
+              <input type="checkbox" [checked]="isChecked(p.id)" [disabled]="isBase(p.id)" (change)="toggleExtra(p.id)" />
+              <span class="check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+              <span class="check__meta">
+                <b>{{ p.label }}</b>
+                <span>{{ isBase(p.id) ? 'Incluido por el rol' : p.desc }}</span>
+              </span>
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="modal__foot">
+        <button class="btn btn--ghost" type="button" (click)="close()">Cancelar</button>
+        <button class="btn btn--primary" type="button" (click)="save()" [disabled]="!d.nombre.trim() || !d.email.trim()">
+          {{ isEdit() ? 'Guardar cambios' : 'Crear usuario' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
