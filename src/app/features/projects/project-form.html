@@ -23,7 +23,7 @@
         <label for="g">Grupo</label>
         <select id="g" class="select" [ngModel]="grupo()" (ngModelChange)="grupo.set($event)">
           <option [ngValue]="null">Sin grupo</option>
-          @for (gr of grupos(); track gr.id) { <option [ngValue]="gr.nombre">Grupo {{ gr.nombre }}</option> }
+          @for (gr of grupos(); track gr.id) { <option [ngValue]="gr.id">Grupo {{ gr.nombre }}</option> }
         </select>
       </div>
     </div>

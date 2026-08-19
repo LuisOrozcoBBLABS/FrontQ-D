@@ -94,7 +94,7 @@ export class AssignmentsService {
     nota: string,
     fechaLimite: string | null,
     canales: Canal[],
-  ): Promise<Assignment> {
+  ): Promise<{ asignacion: Assignment; envios: CanalEnvio[] }> {
     const creada = await firstValueFrom(
       this.http.post<AssignmentApi>(`${this.base}/assignments`, {
         projectId,
@@ -107,7 +107,17 @@ export class AssignmentsService {
     );
     const asignacion = aAsignacion(creada);
     this._assignments.update(l => [asignacion, ...l]);
-    return asignacion;
+
+    // Los envios vienen en la respuesta: son de la notificacion del destinatario,
+    // asi que no se pueden leer desde /notifications de quien asigna.
+    const envios = (creada.notificaciones ?? []).flatMap(n =>
+      n.envios.map<CanalEnvio>(e => ({
+        canal: e.canal,
+        destino: e.destino,
+        estado: etiquetaEnvio(e.estado, e.detalle),
+      })),
+    );
+    return { asignacion, envios };
   }
 
   async updateEstado(assignmentId: string, estado: AssignmentStatus): Promise<void> {

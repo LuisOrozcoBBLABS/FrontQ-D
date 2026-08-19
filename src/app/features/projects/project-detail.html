@@ -109,8 +109,10 @@
 
           @if (result(); as envios) {
             <div class="assign-done">
-              <p class="assign-done__title">Asignación creada · notificación enviada (simulada)</p>
-              <p class="text-2" style="font-size:14px;margin-bottom:14px">Se notificó a <b>{{ userName(assignee()) }}</b>. En producción esto lo dispararía n8n.</p>
+              <p class="assign-done__title">Asignación creada</p>
+              <p class="text-2" style="font-size:14px;margin-bottom:14px">
+                <b>{{ userName(assignee()) }}</b> ya la ve en su bandeja. Estado de los avisos por canal:
+              </p>
               @for (e of envios; track e.canal) {
                 <div class="envio">
                   <span class="badge badge--on">{{ e.canal }}</span>

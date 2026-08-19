@@ -105,14 +105,12 @@ export class ProjectDetail {
     if (!this.assignee() || this.asignando()) return;
     this.asignando.set(true);
     try {
-      const a = await this.assignSvc.assign(
+      // El estado de cada canal lo decide el despachador del backend.
+      const { envios } = await this.assignSvc.assign(
         this.id, this.assignee(), this.auth.currentUser()?.id ?? '',
         this.prioridad(), this.nota().trim(), this.fechaLimite() || null, this.canalesSel(),
       );
-      // El estado de cada canal lo decide el despachador del backend.
-      await this.assignSvc.loadNotificaciones();
-      const notif = this.assignSvc.notifications().find(n => n.assignmentId === a.id);
-      this.result.set(notif?.envios ?? []);
+      this.result.set(envios);
     } catch (e) {
       this.toast.error(mensajeDeError(e, 'No se pudo crear la asignación.'));
     } finally {

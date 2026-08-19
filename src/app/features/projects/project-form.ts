@@ -31,12 +31,14 @@ export class ProjectForm {
   dolores = signal('');
   solucion = signal('');
   plusIA = signal('');
-  grupo = signal<string | null>(this.auth.currentUser()?.grupo ?? null);
+  grupo = signal<string | null>(this.auth.currentUser()?.groupId ?? null);
   similares = signal<AppSimilar[]>([{ name: '', url: '' }]);
   error = signal<string | null>(null);
   dupResults = signal<DupMatch[] | null>(null);
 
   constructor() {
+    void this.groupsSvc.load();
+
     // Prellenado desde una oportunidad (#5)
     const d = this.ai.draft();
     if (d) {
