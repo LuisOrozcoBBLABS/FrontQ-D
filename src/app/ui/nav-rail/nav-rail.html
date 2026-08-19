@@ -1,9 +1,11 @@
-<nav class="rail" aria-label="Módulos">
-  <a class="rail__logo" routerLink="/inicio" aria-label="Inicio · Blackbird Labs">
-    <img src="brand/isotipo-blanco.png" alt="" width="26" height="26" />
+<nav class="rail" aria-label="Navegación de la plataforma">
+  <!-- Marca: el isotipo oficial viene sobre su cuadro negro, así que se usa como
+       baldosa y no como icono suelto, que es como se veía sucio en oscuro. -->
+  <a class="rail__marca" routerLink="/inicio" aria-label="Inicio · Plataforma I+D de Blackbird Labs">
+    <img src="brand/isotipo.png" alt="" width="40" height="40" />
   </a>
 
-  <div class="rail__dock" [style.--n]="items().length">
+  <div class="rail__dock">
     <span
       class="rail__ind"
       [class.rail__ind--hidden]="activeIndex() < 0"
@@ -12,12 +14,7 @@
     ></span>
 
     @for (item of items(); track item.path) {
-      <a
-        class="rail__item"
-        [routerLink]="item.path"
-        routerLinkActive="on"
-        [attr.aria-label]="item.label"
-      >
+      <a class="rail__item" [routerLink]="item.path" routerLinkActive="on" [attr.aria-label]="item.label">
         @switch (item.icon) {
           @case ('inicio') {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
@@ -35,7 +32,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6"/></svg>
           }
           @case ('grupos') {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <!-- Tres nodos unidos: equipo. Antes era el mismo icono que Usuarios. -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.6"/><circle cx="5" cy="18" r="2.6"/><circle cx="19" cy="18" r="2.6"/><path d="M10.3 7.1 6.7 15.4"/><path d="M13.7 7.1l3.6 8.3"/><path d="M7.6 18h8.8"/></svg>
           }
           @case ('usuarios') {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -44,5 +42,77 @@
         <span class="rail__tip" role="tooltip">{{ item.label }}</span>
       </a>
     }
+  </div>
+
+  <!-- Utilidades: lo que antes vivía en la barra superior -->
+  <div class="rail__dock rail__dock--util">
+    <div class="rail__notif">
+      <button
+        class="rail__item rail__item--btn"
+        type="button"
+        (click)="toggleNotif()"
+        aria-label="Avisos"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="notifOpen()"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        @if (sinLeer() > 0) { <span class="rail__badge">{{ sinLeer() }}</span> }
+        <span class="rail__tip" role="tooltip">Avisos</span>
+      </button>
+
+      @if (notifOpen()) {
+        <div class="rail__scrim" (click)="closeNotif()"></div>
+        <div class="avisos" role="menu">
+          <div class="avisos__head">
+            <span class="eyebrow">Avisos</span>
+            @if (sinLeer() > 0) {
+              <button class="avisos__marcar" type="button" (click)="marcarTodos()">Marcar leídos</button>
+            }
+          </div>
+          <div class="avisos__lista">
+            @for (n of misAvisos(); track n.id) {
+              <button
+                class="avisos__item"
+                [class.avisos__item--nuevo]="!n.leida"
+                type="button"
+                (click)="abrirAviso(n)"
+              >
+                <b>{{ n.titulo }}</b>
+                <span>{{ n.detalle }}</span>
+              </button>
+            } @empty {
+              <p class="avisos__vacio">Sin avisos por ahora.</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <button class="rail__item rail__item--btn" type="button" (click)="toggleTema()"
+            [attr.aria-label]="esOscuro() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'">
+      @if (esOscuro()) {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4"/><path d="M12 19.6V22"/><path d="M2 12h2.4"/><path d="M19.6 12H22"/><path d="m4.9 4.9 1.7 1.7"/><path d="m17.4 17.4 1.7 1.7"/><path d="m19.1 4.9-1.7 1.7"/><path d="m6.6 17.4-1.7 1.7"/></svg>
+      } @else {
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>
+      }
+      <span class="rail__tip" role="tooltip">{{ esOscuro() ? 'Tema claro' : 'Tema oscuro' }}</span>
+    </button>
+
+    <a class="rail__item rail__perfil" routerLink="/perfil" [class.on]="enPerfil()" aria-label="Mi perfil">
+      @if (auth.currentUser()?.avatarUrl) {
+        <img [src]="auth.currentUser()!.avatarUrl" alt="" />
+      } @else {
+        <span class="rail__ini">{{ iniciales() }}</span>
+      }
+      <span class="rail__tip rail__tip--doble" role="tooltip">
+        <b>{{ auth.currentUser()?.nombre }}</b>
+        <span>{{ rolLabel() }}</span>
+      </span>
+    </a>
+
+    <button class="rail__item rail__item--btn rail__item--salir" type="button" (click)="salir()" aria-label="Cerrar sesión">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      <span class="rail__tip" role="tooltip">Cerrar sesión</span>
+    </button>
   </div>
 </nav>

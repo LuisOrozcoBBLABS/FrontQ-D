@@ -1,7 +1,7 @@
 /* =============================================================
-   Dock de módulos — cristal líquido
-   Iconos solos; el nombre se despliega al pasar el cursor o al enfocar.
-   El indicador activo se desliza entre posiciones con curva de resorte.
+   Riel de navegación — cristal líquido
+   Única pieza de chrome de la app: marca, módulos y utilidades. Solo iconos;
+   el nombre se despliega al pasar el cursor o al enfocar con teclado.
    ============================================================= */
 
 :host {
@@ -20,15 +20,16 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sp-3);
+  max-height: calc(100dvh - var(--rail-gap) * 2);
   pointer-events: none; // solo las piezas reciben eventos
 }
-
 .rail > * { pointer-events: auto; }
 
 /* ---------- Cristal compartido ---------- */
-.rail__logo,
+.rail__marca,
 .rail__dock,
-.rail__tip {
+.rail__tip,
+.avisos {
   background: var(--glass-rail);
   backdrop-filter: blur(22px) saturate(180%);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
@@ -39,8 +40,8 @@
     inset 0 -1px 0 rgba(0, 0, 0, 0.18);
 }
 
-/* Reflejo especular: la banda de luz que hace que el cristal parezca cristal. */
-.rail__logo::before,
+/* Reflejo especular: lo que hace que el cristal parezca cristal */
+.rail__marca::before,
 .rail__dock::before {
   content: "";
   position: absolute;
@@ -50,25 +51,28 @@
   pointer-events: none;
 }
 
-/* ---------- Isotipo ---------- */
-.rail__logo {
+/* ---------- Marca ---------- */
+.rail__marca {
   position: relative;
   display: grid;
   place-items: center;
   width: calc(var(--item) + var(--pad) * 2);
   height: calc(var(--item) + var(--pad) * 2);
-  border-radius: var(--r-full);
+  border-radius: var(--r-xl);
+  overflow: hidden;
   transition: transform var(--dur) var(--ease-spring);
+  flex: 0 0 auto;
 }
-.rail__logo:hover { transform: scale(1.06); }
-.rail__logo:active { transform: scale(0.97); }
-.rail__logo img {
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
+.rail__marca:hover { transform: scale(1.05); }
+.rail__marca:active { transform: scale(0.97); }
+/* El PNG oficial ya trae su fondo obsidiana: se usa como baldosa, recortada
+   en el radio del riel, y así no choca en ningún tema. */
+.rail__marca img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: calc(var(--r-xl) - 2px);
 }
-/* En tema claro el isotipo blanco se perdería: se invierte a obsidiana. */
-html[data-theme="light"] .rail__logo img { filter: invert(1); }
 
 /* ---------- Dock ---------- */
 .rail__dock {
@@ -78,7 +82,15 @@ html[data-theme="light"] .rail__logo img { filter: invert(1); }
   gap: var(--gap);
   padding: var(--pad);
   border-radius: var(--r-full);
+  min-height: 0;
 }
+/* Si la ventana es baja, el dock de módulos hace scroll sin barra visible */
+.rail__dock:not(.rail__dock--util) {
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rail__dock:not(.rail__dock--util)::-webkit-scrollbar { display: none; }
+.rail__dock--util { flex: 0 0 auto; }
 
 /* ---------- Indicador que se desliza ---------- */
 .rail__ind {
@@ -92,7 +104,7 @@ html[data-theme="light"] .rail__logo img { filter: invert(1); }
   box-shadow:
     0 0 0 1px rgba(178, 234, 54, 0.45),
     0 8px 22px -8px rgba(178, 234, 54, 0.6);
-  transform: translateY(calc(var(--i) * (var(--item) + var(--gap))));
+  transform: translateY(calc(var(--i, 0) * (var(--item) + var(--gap))));
   transition:
     transform var(--dur-slow) var(--ease-spring),
     opacity var(--dur) var(--ease);
@@ -109,8 +121,10 @@ html[data-theme="light"] .rail__logo img { filter: invert(1); }
   height: var(--item);
   border-radius: var(--r-full);
   color: var(--text-2);
+  flex: 0 0 auto;
   transition:
     color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
     transform var(--dur) var(--ease-spring);
 }
 .rail__item svg {
@@ -121,12 +135,56 @@ html[data-theme="light"] .rail__logo img { filter: invert(1); }
 .rail__item:hover { color: var(--text); }
 .rail__item:hover svg { transform: scale(1.12); }
 .rail__item:active { transform: scale(0.94); }
+.rail__item:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-/* Sobre el lime, el icono va en obsidiana: 11:1 de contraste. */
-.rail__item.on { color: var(--on-accent); }
+/* Sobre el lime, el icono va en obsidiana: 11:1 de contraste */
+.rail__item.on,
 .rail__item.on:hover { color: var(--on-accent); }
 
-.rail__item:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* Las utilidades no tienen indicador deslizante: marcan su estado al pasar */
+.rail__item--btn:hover { background: var(--surface-2); }
+.rail__item--salir:hover { color: var(--danger); }
+
+/* Perfil: el avatar es el propio botón */
+.rail__perfil { overflow: hidden; }
+.rail__perfil img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-full); }
+.rail__ini {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--text-2);
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.rail__perfil:hover .rail__ini { color: var(--text); border-color: var(--line-strong); }
+.rail__perfil.on .rail__ini { border-color: var(--accent); color: var(--text); }
+
+/* Contador de avisos sin leer */
+.rail__badge {
+  position: absolute;
+  top: 4px;
+  right: 3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-size: 9.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border: 2px solid var(--bg);
+}
 
 /* ---------- Etiqueta desplegable ---------- */
 .rail__tip {
@@ -139,7 +197,6 @@ html[data-theme="light"] .rail__logo img { filter: invert(1); }
   font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--fs-xs);
-  letter-spacing: 0.01em;
   white-space: nowrap;
   opacity: 0;
   transform: translate(-8px, -50%) scale(0.94);
@@ -154,8 +211,74 @@ html[data-theme="light"] .rail__logo img { filter: invert(1); }
   opacity: 1;
   transform: translate(0, -50%) scale(1);
 }
+/* La del perfil lleva nombre y rol en dos líneas */
+.rail__tip--doble {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: var(--r-md);
+  text-align: left;
+}
+.rail__tip--doble span { font-weight: 500; font-size: var(--fs-2xs); color: var(--text-dim); }
 
-/* ---------- Móvil: el dock baja y se acuesta ---------- */
+/* ---------- Panel de avisos ---------- */
+.rail__notif { position: relative; }
+.rail__scrim { position: fixed; inset: 0; z-index: 54; }
+.avisos {
+  position: absolute;
+  left: calc(100% + 14px);
+  bottom: 0;
+  z-index: 60;
+  width: min(330px, calc(100vw - var(--rail-w) - var(--rail-gap) * 4));
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  animation: avisosIn var(--dur) var(--ease-spring) both;
+}
+@keyframes avisosIn {
+  from { opacity: 0; transform: translateX(-8px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+.avisos__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4) var(--sp-3);
+  border-bottom: 1px solid var(--line);
+}
+.avisos__marcar {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+}
+.avisos__marcar:hover { color: var(--text); }
+.avisos__lista { max-height: 56vh; overflow-y: auto; padding: var(--sp-2); }
+.avisos__item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  text-align: left;
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  transition: background-color var(--dur) var(--ease);
+}
+.avisos__item:hover { background: var(--surface-2); }
+.avisos__item b { color: var(--text); font-size: var(--fs-sm); font-weight: 600; }
+.avisos__item span { font-size: var(--fs-xs); line-height: var(--lh-snug); }
+.avisos__item--nuevo { border-left: 2px solid var(--accent); }
+.avisos__vacio { padding: var(--sp-5) var(--sp-4); text-align: center; color: var(--text-dim); font-size: var(--fs-sm); }
+
+/* ---------- Ventanas bajas: apretar un poco ---------- */
+@media (max-height: 780px) {
+  :host { --item: 40px; --gap: 4px; --pad: 6px; }
+  .rail__item svg { width: 18px; height: 18px; }
+  .rail__ini { width: 28px; height: 28px; font-size: 10px; }
+}
+
+/* ---------- Móvil: el riel baja y se acuesta ---------- */
 @media (max-width: 900px) {
   .rail {
     left: 50%;
@@ -163,11 +286,16 @@ html[data-theme="light"] .rail__logo img { filter: invert(1); }
     bottom: calc(var(--rail-gap) + env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
     flex-direction: row;
+    align-items: center;
     gap: var(--sp-2);
+    max-width: calc(100vw - var(--rail-gap) * 2);
+    max-height: none;
   }
-  .rail__logo { display: none; } // el logo ya está en la barra superior
+  .rail__marca { display: none; } // la marca vive en el fondo de la página
   .rail__dock { flex-direction: row; }
-  .rail__ind { transform: translateX(calc(var(--i) * (var(--item) + var(--gap)))); }
+  .rail__dock:not(.rail__dock--util) { overflow-x: auto; overflow-y: visible; }
+  .rail__ind { transform: translateX(calc(var(--i, 0) * (var(--item) + var(--gap)))); }
+
   .rail__tip {
     left: 50%;
     top: auto;
@@ -176,15 +304,25 @@ html[data-theme="light"] .rail__logo img { filter: invert(1); }
     transform-origin: center bottom;
   }
   .rail__item:hover .rail__tip,
-  .rail__item:focus-visible .rail__tip {
-    transform: translate(-50%, 0) scale(1);
+  .rail__item:focus-visible .rail__tip { transform: translate(-50%, 0) scale(1); }
+  .rail__tip--doble { align-items: center; text-align: center; }
+
+  .avisos {
+    left: 50%;
+    bottom: calc(100% + 14px);
+    transform: translateX(-50%);
+    width: min(330px, calc(100vw - var(--sp-6)));
+  }
+  @keyframes avisosIn {
+    from { opacity: 0; transform: translate(-50%, 8px) scale(.98); }
+    to { opacity: 1; transform: translateX(-50%); }
   }
 }
 
-/* Pantallas muy angostas: que el dock quepa sin desbordar. */
-@media (max-width: 420px) {
-  :host { --item: 42px; --gap: 3px; --pad: 5px; }
-  .rail__item svg { width: 19px; height: 19px; }
+@media (max-width: 480px) {
+  :host { --item: 40px; --gap: 3px; --pad: 5px; }
+  .rail { gap: var(--sp-1); }
+  .rail__item svg { width: 18px; height: 18px; }
 }
 
 /* ---------- Sin animación si el sistema lo pide ---------- */
@@ -193,16 +331,19 @@ html[data-theme="light"] .rail__logo img { filter: invert(1); }
   .rail__item,
   .rail__item svg,
   .rail__tip,
-  .rail__logo {
+  .rail__marca,
+  .avisos {
     transition: none;
+    animation: none;
   }
 }
 
-/* Si el navegador no soporta backdrop-filter, el cristal se vuelve superficie sólida. */
+/* Sin backdrop-filter, el cristal pasa a superficie sólida */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .rail__logo,
+  .rail__marca,
   .rail__dock,
-  .rail__tip {
+  .rail__tip,
+  .avisos {
     background: var(--surface);
   }
 }

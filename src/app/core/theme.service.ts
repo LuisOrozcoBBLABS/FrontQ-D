@@ -17,7 +17,7 @@ export class ThemeService {
     const root = document.documentElement;
     root.setAttribute('data-theme', mode);
     const tc = document.querySelector('meta[name="theme-color"]');
-    if (tc) tc.setAttribute('content', mode === 'dark' ? '#0A0A0A' : '#FFFFFF');
+    if (tc) tc.setAttribute('content', mode === 'dark' ? '#0B0A07' : '#FFFFFF');
     try { localStorage.setItem('theme', mode); } catch { /* ignore */ }
   }
 

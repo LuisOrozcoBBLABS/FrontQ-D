@@ -161,6 +161,12 @@ export const CANALES: { value: Canal; label: string; nota: string }[] = [
 export interface Assignment {
   id: string;
   projectId: string;
+  /** Nombres que la API ya resuelve: evitan depender de otra lista cargada. */
+  projectNombre?: string;
+  asignadoANombre?: string;
+  asignadoPorNombre?: string;
+  /** Estado real de cada canal de aviso, tal como lo dejo el despachador. */
+  envios?: CanalEnvio[];
   asignadoA: string;   // userId del trabajador
   asignadoPor: string; // userId del jefe/admin
   prioridad: Prioridad;

@@ -57,11 +57,19 @@ del mismo tono.
 
 ## Navegación
 
-Los módulos viven en un **dock flotante** (`ui/nav-rail`): cápsula de cristal
-líquido con iconos, el nombre se despliega al pasar el cursor o al enfocar con
-teclado, y el indicador activo se desliza entre posiciones. En pantallas
-angostas el dock baja y se acuesta. Es el único patrón de navegación de la app,
-a propósito: la barra superior solo lleva identidad y utilidades.
+**No hay barra superior.** Todo el chrome vive en un riel flotante
+(`ui/nav-rail`): la baldosa de marca, los módulos y las utilidades (avisos,
+tema, perfil, salir). Cápsula de cristal líquido con iconos; el nombre se
+despliega al pasar el cursor o al enfocar con teclado, y el indicador activo se
+desliza entre posiciones. En pantallas angostas el riel baja y se acuesta.
+
+El fondo lleva la identidad del área: **I+D** en grande, con relleno degradado
+al 7% en oscuro y 12% en claro, y trazo hairline. Va detrás de todo y no recibe
+eventos.
+
+El isotipo oficial viene sobre su cuadro obsidiana, así que se usa como
+**baldosa redondeada** y no como icono suelto: de la otra forma se veía sucio
+sobre el cristal en tema oscuro.
 
 ## Estado actual
 
@@ -80,6 +88,7 @@ OpenAI en el backend.
 
 | Rama | Qué cambió |
 |---|---|
+| `main` | Rediseño: se elimina la barra superior y su contenido pasa al riel; marca de agua `I+D` en el fondo; baldosa de marca en lugar del isotipo suelto; icono propio para Grupos; Proyectos con resumen de una línea (antes cuatro tarjetas) y Asignaciones como tablero por estado con un único avance por tarjeta. |
 | `main` | MVP: funciones de IA ocultas detras de `environment.funcionesIA` (dock, rutas con `iaGuard`, pestana del detalle, buscador de duplicados y accesos del inicio), y textos que ya no prometen lo que no hay. |
 | `main` | Conexion con la API de BackQ-D: interceptor con renovacion de token, guards asincronos, pantalla de cambio de clave obligatorio y los 4 servicios sobre HTTP. |
 | `main` | Traslado desde `portafolio-ia/plataforma-id/web`. Sistema de diseño alineado al manual de marca (Montserrat, paleta oficial, escala tipográfica, ritmo de 4pt). Dock de módulos en cristal líquido reemplazando la barra de navegación superior y el drawer móvil. Corregido el subrayado involuntario de todos los enlaces. Logos oficiales en `public/brand/`. |

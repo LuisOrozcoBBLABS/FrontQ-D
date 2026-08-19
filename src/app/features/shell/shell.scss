@@ -1,21 +1,47 @@
-/* Campana de notificaciones */
-.notif { position: relative; }
-.notif__badge { position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px; padding: 0 5px; display: grid; place-items: center; border-radius: var(--r-full); background: var(--accent); color: var(--on-accent); font-family: var(--font-mono); font-size: 10px; font-weight: 700; }
-.notif__panel { position: absolute; top: calc(100% + 12px); right: 0; z-index: 61; width: min(340px, calc(100vw - 32px)); background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-lg); box-shadow: var(--shadow-lg); overflow: hidden; animation: notifIn var(--dur) var(--ease-spring) both; }
-@keyframes notifIn { from { opacity: 0; transform: translateY(-6px) scale(.98); } to { opacity: 1; transform: none; } }
-.notif__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-4) var(--sp-4) var(--sp-3); border-bottom: 1px solid var(--line); }
-.notif__mark { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-2xs); letter-spacing: .06em; color: var(--text-2); }
-.notif__mark:hover { color: var(--text); }
-.notif__list { max-height: 60vh; overflow-y: auto; padding: var(--sp-2); }
-.notif__item { display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left; padding: var(--sp-3); border-radius: var(--r-md); color: var(--text-2); transition: background-color var(--dur) var(--ease); }
-.notif__item:hover { background: var(--surface-2); }
-.notif__item b { color: var(--text); font-size: var(--fs-sm); font-weight: 600; }
-.notif__item span { font-size: var(--fs-xs); line-height: var(--lh-snug); }
-.notif__item--unread { border-left: 2px solid var(--accent); }
-.notif__empty { padding: var(--sp-5) var(--sp-4); text-align: center; color: var(--text-dim); font-size: var(--fs-sm); }
+/* =============================================================
+   Marca de agua del área: "I+D" en grande, detrás del contenido.
+   Relleno degradado muy tenue + filo hairline: se percibe como material del
+   fondo, no como texto que compita con la lectura.
+   ============================================================= */
 
-.scrim { position: fixed; inset: 0; z-index: 60; }
+.marca-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
 
-@media (max-width: 720px) {
-  .usermenu__info { display: none; }
+.marca-fondo__txt {
+  /* Se sale por el borde derecho a propósito: da escala y no cierra la composicion */
+  transform: translateX(8%);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(240px, 34vw, 620px);
+  line-height: .78;
+  letter-spacing: -.06em;
+
+  /* El relleno es un degradado casi invisible; el contorno hace el dibujo. */
+  background: linear-gradient(160deg, var(--bb-lime) 0%, var(--bb-mint) 55%, transparent 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: .07;
+  -webkit-text-stroke: 1.5px var(--glass-line);
+
+  user-select: none;
+}
+
+@media (max-width: 900px) {
+  .marca-fondo {
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .marca-fondo__txt {
+    transform: translateY(-6%);
+    font-size: clamp(200px, 56vw, 420px);
+  }
 }

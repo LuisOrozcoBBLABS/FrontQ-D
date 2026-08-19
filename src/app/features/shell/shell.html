@@ -1,48 +1,8 @@
-<header class="topbar">
-  <a class="brand" routerLink="/inicio" aria-label="Inicio">
-    <img class="brand__logo brand__logo--on-dark" src="brand/logo-blanco.png"
-         alt="Blackbird Labs powered by Riwi" width="150" height="28" />
-    <img class="brand__logo brand__logo--on-light" src="brand/logo-negro.png"
-         alt="" aria-hidden="true" width="150" height="28" />
-    <span class="brand__sep" aria-hidden="true"></span>
-    <span class="brand__app">Plataforma I+D</span>
-  </a>
-
-  <div class="topbar__right">
-    <div class="notif">
-      <button class="theme-fab" type="button" (click)="toggleNotif()" aria-label="Notificaciones" aria-haspopup="menu" [attr.aria-expanded]="notifOpen()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        @if (unread() > 0) { <span class="notif__badge">{{ unread() }}</span> }
-      </button>
-      @if (notifOpen()) {
-        <div class="scrim" (click)="closeNotif()"></div>
-        <div class="notif__panel" role="menu">
-          <div class="notif__head">
-            <span class="eyebrow">Notificaciones</span>
-            @if (unread() > 0) { <button class="notif__mark" type="button" (click)="markAll()">Marcar leídas</button> }
-          </div>
-          <div class="notif__list">
-            @for (n of myNotifs(); track n.id) {
-              <button class="notif__item" [class.notif__item--unread]="!n.leida" type="button" (click)="openNotif(n)">
-                <b>{{ n.titulo }}</b><span>{{ n.detalle }}</span>
-              </button>
-            } @empty { <p class="notif__empty">Sin notificaciones.</p> }
-          </div>
-        </div>
-      }
-    </div>
-    <app-theme-toggle />
-    <div class="usermenu">
-      <div class="usermenu__info"><b>{{ auth.currentUser()?.nombre }}</b><br><span>{{ auth.isAdmin() ? 'Administrador' : 'Colaborador' }}</span></div>
-      <a class="avatar" routerLink="/perfil" aria-label="Mi perfil">
-        @if (auth.currentUser()?.avatarUrl) { <img [src]="auth.currentUser()!.avatarUrl" alt="Foto de perfil" /> } @else { {{ initials(auth.currentUser()?.nombre ?? '?') }} }
-      </a>
-      <button class="theme-fab" type="button" (click)="logout()" aria-label="Cerrar sesión">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
-      </button>
-    </div>
-  </div>
-</header>
+<!-- Marca de agua: la identidad del área ocupando el fondo, sin robar lectura.
+     Vive detrás de todo y no recibe eventos. -->
+<div class="marca-fondo" aria-hidden="true">
+  <span class="marca-fondo__txt">I+D</span>
+</div>
 
 <app-nav-rail />
 

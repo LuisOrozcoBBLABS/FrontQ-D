@@ -215,40 +215,41 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* ---------- Layout de la app ----------
    El dock de módulos flota fijo a la izquierda (app-nav-rail), así que el
    contenido reserva ese carril. En móvil el dock baja y reserva altura abajo. */
-body:has(app-nav-rail){ padding-left:calc(var(--rail-w) + var(--rail-gap) * 2); }
+:root{ --rail-clear:calc(var(--rail-w) + var(--rail-gap) * 2); }
+body:has(app-nav-rail){ padding-left:var(--rail-clear); }
 @media (max-width:900px){
+  :root{ --rail-clear:0px; }
   body:has(app-nav-rail){
     padding-left:0;
     padding-bottom:calc(var(--rail-w) + var(--rail-gap) * 2 + env(safe-area-inset-bottom,0px));
   }
 }
 
-.topbar{
-  position:sticky; top:0; z-index:50;
-  display:flex; align-items:center; gap:var(--sp-4);
-  padding:var(--sp-3) clamp(var(--sp-4),3vw,var(--sp-8));
-  background:var(--glass);
-  backdrop-filter:saturate(160%) blur(16px); -webkit-backdrop-filter:saturate(160%) blur(16px);
-  border-bottom:1px solid var(--line);
+/* Ya no hay barra superior: el riel lateral lleva marca, modulos y utilidades.
+   Se conservan .theme-fab y .avatar porque los usan el perfil y el login. */
+.avatar{
+  display:grid; place-items:center; width:36px; height:36px; border-radius:var(--r-full);
+  background:var(--surface-2); border:1px solid var(--line); overflow:hidden;
+  font-family:var(--font-display); font-size:12px; font-weight:700; color:var(--text-2); flex:0 0 auto;
+}
+.avatar img{ width:100%; height:100%; object-fit:cover; }
+
+.page{
+  position:relative; z-index:1;
+  max-width:var(--maxw); margin:0 auto;
+  /* Sin barra superior, el aire de arriba lo pone la propia pagina. */
+  padding:clamp(var(--sp-10),6vw,var(--sp-16)) clamp(var(--sp-4),4vw,var(--sp-8)) var(--sp-16);
+}
+/* Marca de agua del area: la variante de tema va aca porque una regla con
+   prefijo html[data-theme] dentro de un componente Angular nunca matchea
+   (la encapsulacion le agrega el atributo de scope al propio html). */
+html[data-theme="light"] .marca-fondo__txt{
+  opacity:.12;
+  -webkit-text-stroke:1.5px rgba(11,10,7,.1);
 }
 
-.brand{ display:flex; align-items:center; gap:var(--sp-3); color:var(--text); flex:0 0 auto; min-width:0; }
-.brand__logo{ height:26px; width:auto; flex:0 0 auto; }
-html[data-theme="dark"] .brand__logo--on-light{ display:none; }
-html[data-theme="light"] .brand__logo--on-dark{ display:none; }
-.brand__sep{ width:1px; height:22px; background:var(--line-strong); flex:0 0 auto; }
-.brand__app{
-  font-family:var(--font-display); font-weight:600; font-size:var(--fs-xs);
-  letter-spacing:.14em; text-transform:uppercase; color:var(--text-2); white-space:nowrap;
-}
-
-.topbar__right{ margin-left:auto; display:flex; align-items:center; gap:clamp(var(--sp-1),1.4vw,var(--sp-3)); flex:0 0 auto; }
-.usermenu{ display:flex; align-items:center; gap:var(--sp-3); }
-.usermenu__info{ text-align:right; line-height:var(--lh-snug); }
-.usermenu__info b{ font-size:var(--fs-sm); font-weight:600; }
-.usermenu__info span{ font-size:var(--fs-2xs); color:var(--text-dim); }
-
-.page{ max-width:var(--maxw); margin:0 auto; padding:clamp(var(--sp-8),5vw,var(--sp-12)) clamp(var(--sp-4),4vw,var(--sp-8)) var(--sp-16); }
+/* Para vistas de tablero, que necesitan mas ancho que una columna de lectura. */
+.page--ancha{ max-width:1440px; }
 .page__head{ margin-bottom:var(--sp-8); }
 .page__title{ font-family:var(--font-display); font-weight:700; font-size:clamp(var(--fs-xl),5vw,var(--fs-3xl)); letter-spacing:-.02em; line-height:var(--lh-tight); }
 .page__sub{ color:var(--text-2); margin-top:var(--sp-2); max-width:62ch; font-size:var(--fs-base); }
@@ -256,9 +257,6 @@ html[data-theme="light"] .brand__logo--on-dark{ display:none; }
 .toolbar{ display:flex; align-items:center; gap:var(--sp-3); flex-wrap:wrap; margin-bottom:var(--sp-5); }
 .toolbar__spacer{ margin-left:auto; }
 
-@media (max-width:560px){
-  .brand__sep,.brand__app{ display:none; }
-}
 
 /* Aviso "simulado" */
 .sim-note{ display:flex; align-items:center; gap:10px; padding:11px 14px; border:1px dashed var(--line-strong); border-radius:var(--r-md); color:var(--text-dim); font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; }
@@ -284,7 +282,6 @@ html[data-theme="light"] .brand__logo--on-dark{ display:none; }
   .btn:hover,.theme-fab:hover{ transform:none; }
 }
 @media (max-width:640px){
-  .brand__name{ display:none; }
   .table th:nth-child(4),.table td:nth-child(4){ display:none; }
 }
 

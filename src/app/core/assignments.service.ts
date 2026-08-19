@@ -17,6 +17,7 @@ interface AssignmentApi {
   createdAt: string;
   project?: { id: string; nombre: string };
   asignadoA?: { id: string; nombre: string };
+  asignadoPor?: { id: string; nombre: string };
   notificaciones?: NotificationApi[];
 }
 
@@ -37,28 +38,42 @@ export class AssignmentsService {
   private http = inject(HttpClient);
   private base = environment.apiUrl;
 
+  /** Las mias: /assignments?mias=true */
   private readonly _assignments = signal<Assignment[]>([]);
+  /** Las del area completa: /assignments?mias=false (pide assignments.create) */
+  private readonly _todas = signal<Assignment[]>([]);
   private readonly _notifications = signal<NotificationItem[]>([]);
   private readonly _cargando = signal(false);
 
   readonly assignments = this._assignments.asReadonly();
+  readonly todas = this._todas.asReadonly();
   readonly notifications = this._notifications.asReadonly();
   readonly cargando = this._cargando.asReadonly();
 
-  /** `todas` requiere el permiso assignments.create; el servidor lo valida. */
-  async load(todas = false): Promise<void> {
+  /** Carga las asignaciones de la persona autenticada. */
+  async load(): Promise<void> {
     this._cargando.set(true);
     try {
       const lista = await firstValueFrom(
-        this.http.get<AssignmentApi[]>(`${this.base}/assignments`, {
-          params: { mias: todas ? 'false' : 'true' },
-        }),
+        this.http.get<AssignmentApi[]>(`${this.base}/assignments`, { params: { mias: 'true' } }),
       );
       this._assignments.set(lista.map(aAsignacion));
     } catch {
       /* la vista muestra su propio estado vacío */
     } finally {
       this._cargando.set(false);
+    }
+  }
+
+  /** Todas las del area. Requiere assignments.create; el servidor lo valida. */
+  async loadTodas(): Promise<void> {
+    try {
+      const lista = await firstValueFrom(
+        this.http.get<AssignmentApi[]>(`${this.base}/assignments`, { params: { mias: 'false' } }),
+      );
+      this._todas.set(lista.map(aAsignacion));
+    } catch {
+      /* sin permiso o sin conexion: la tabla queda vacia con su mensaje */
     }
   }
 
@@ -106,7 +121,11 @@ export class AssignmentsService {
       }),
     );
     const asignacion = aAsignacion(creada);
-    this._assignments.update(l => [asignacion, ...l]);
+    // La recien creada puede ser para otra persona: entra en la lista del area.
+    this._todas.update(l => [asignacion, ...l]);
+    if (asignacion.asignadoA === asignacion.asignadoPor) {
+      this._assignments.update(l => [asignacion, ...l]);
+    }
 
     // Los envios vienen en la respuesta: son de la notificacion del destinatario,
     // asi que no se pueden leer desde /notifications de quien asigna.
@@ -126,6 +145,7 @@ export class AssignmentsService {
     );
     const a = aAsignacion(actualizada);
     this._assignments.update(l => l.map(x => (x.id === a.id ? a : x)));
+    this._todas.update(l => l.map(x => (x.id === a.id ? a : x)));
   }
 
   async markRead(notifId: string): Promise<void> {
@@ -148,6 +168,16 @@ function aAsignacion(a: AssignmentApi): Assignment {
   return {
     id: a.id,
     projectId: a.projectId,
+    projectNombre: a.project?.nombre,
+    asignadoANombre: a.asignadoA?.nombre,
+    asignadoPorNombre: a.asignadoPor?.nombre,
+    envios: (a.notificaciones ?? []).flatMap(n =>
+      n.envios.map<CanalEnvio>(e => ({
+        canal: e.canal,
+        destino: e.destino,
+        estado: etiquetaEnvio(e.estado, e.detalle),
+      })),
+    ),
     asignadoA: a.asignadoAId,
     asignadoPor: a.asignadoPorId,
     prioridad: a.prioridad,

@@ -32,7 +32,10 @@ export class ProjectDetail {
   constructor() {
     // Entrar por URL directa tiene que funcionar sin pasar por la lista.
     void this.projectsSvc.fetchOne(this.route.snapshot.paramMap.get('id') ?? '');
-    void this.usersSvc.load();
+    // La lista de personas solo hace falta para asignar, y requiere permiso.
+    if (this.auth.can('assignments.create') || this.auth.can('users.manage')) {
+      void this.usersSvc.load();
+    }
   }
   protected auth = inject(AuthService);
 
@@ -62,7 +65,11 @@ export class ProjectDetail {
   protected canalesSel = signal<Canal[]>(['correo']);
   protected result = signal<CanalEnvio[] | null>(null);
 
-  autor(): string { return this.usersSvc.byId(this.project()?.autorId ?? '')?.nombre ?? '—'; }
+  /** La API ya trae el autor resuelto; la lista de usuarios es el respaldo. */
+  autor(): string {
+    const p = this.project();
+    return p?.autorNombre ?? this.usersSvc.byId(p?.autorId ?? '')?.nombre ?? '—';
+  }
   estadoLabel(e: ProjectStatus): string { return ESTADOS_PROYECTO.find(x => x.value === e)?.label ?? e; }
   assignableUsers(): User[] { return this.usersSvc.users().filter(u => u.activo); }
   userName(id: string): string { return this.usersSvc.byId(id)?.nombre ?? '—'; }
