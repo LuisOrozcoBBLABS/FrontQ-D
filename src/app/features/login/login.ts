@@ -1,23 +1,31 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
-import { ThemeToggle } from '../../ui/theme-toggle';
+import { ThemeService } from '../../core/theme.service';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, ThemeToggle],
+  imports: [FormsModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
 export class Login {
   private auth = inject(AuthService);
+  private tema = inject(ThemeService);
   private router = inject(Router);
 
   email = signal('');
   password = signal('');
+  verClave = signal(false);
   error = signal<string | null>(null);
   loading = signal(false);
+
+  protected esOscuro = computed(() => this.tema.mode() === 'dark');
+
+  toggleTema(): void {
+    this.tema.toggle();
+  }
 
   async submit(): Promise<void> {
     if (this.loading()) return;

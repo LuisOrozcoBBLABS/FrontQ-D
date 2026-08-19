@@ -243,6 +243,52 @@ body:has(app-nav-rail){ padding-left:var(--rail-clear); }
 /* Marca de agua del area: la variante de tema va aca porque una regla con
    prefijo html[data-theme] dentro de un componente Angular nunca matchea
    (la encapsulacion le agrega el atributo de scope al propio html). */
+/* =============================================================
+   Marca de agua "I+D": identidad del area ocupando el fondo, sin robar lectura.
+   Global porque la usan el marco de la app y las pantallas de acceso.
+   ============================================================= */
+.marca-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.marca-fondo__txt {
+  /* Se sale por el borde derecho a propósito: da escala y no cierra la composicion */
+  transform: translateX(8%);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(240px, 34vw, 620px);
+  line-height: .78;
+  letter-spacing: -.06em;
+
+  /* El relleno es un degradado casi invisible; el contorno hace el dibujo. */
+  background: linear-gradient(160deg, var(--bb-lime) 0%, var(--bb-mint) 55%, transparent 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: .07;
+  -webkit-text-stroke: 1.5px var(--glass-line);
+
+  user-select: none;
+}
+
+@media (max-width: 900px) {
+  .marca-fondo {
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .marca-fondo__txt {
+    transform: translateY(-6%);
+    font-size: clamp(200px, 56vw, 420px);
+  }
+}
+
 html[data-theme="light"] .marca-fondo__txt{
   opacity:.12;
   -webkit-text-stroke:1.5px rgba(11,10,7,.1);

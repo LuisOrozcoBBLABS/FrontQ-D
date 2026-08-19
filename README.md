@@ -71,6 +71,23 @@ El isotipo oficial viene sobre su cuadro obsidiana, así que se usa como
 **baldosa redondeada** y no como icono suelto: de la otra forma se veía sucio
 sobre el cristal en tema oscuro.
 
+## Pantallas de acceso
+
+Ingreso, recuperación y cambio de contraseña comparten un mismo lenguaje
+minimalista: sin tarjeta ni caja, el contenido apoyado directo en el fondo con la
+marca de agua `I+D` detrás, y campos que son **líneas** en lugar de cajones.
+Los estilos viven en `features/login/login.scss` y los reusan las tres.
+
+**Recuperar contraseña** (`/recuperar`) no manda enlaces por correo: registra el
+pedido, le llega a los administradores, y ellos asignan una clave temporal desde
+el módulo de usuarios. La persona entra con esa clave y la plataforma le exige
+cambiarla. Se responde siempre lo mismo, exista o no la cuenta.
+
+En **Usuarios**, los pedidos pendientes aparecen arriba de todo con la nota que
+escribió la persona, y hay un botón `Clave` por fila. El modal permite generar
+una sugerencia en el navegador (no la inventa el servidor) y muestra la clave en
+claro a propósito: hay que poder leerla para comunicarla.
+
 ## Estado actual
 
 Conectado a la API de BackQ-D: el login, los permisos y todos los datos vienen
@@ -88,6 +105,7 @@ OpenAI en el backend.
 
 | Rama | Qué cambió |
 |---|---|
+| `main` | Login rediseñado en clave minimalista (sin tarjeta, campos de línea, ver/ocultar contraseña) y pantalla de recuperación; el módulo de usuarios atiende los pedidos y asigna la clave temporal. |
 | `main` | Rediseño: se elimina la barra superior y su contenido pasa al riel; marca de agua `I+D` en el fondo; baldosa de marca en lugar del isotipo suelto; icono propio para Grupos; Proyectos con resumen de una línea (antes cuatro tarjetas) y Asignaciones como tablero por estado con un único avance por tarjeta. |
 | `main` | MVP: funciones de IA ocultas detras de `environment.funcionesIA` (dock, rutas con `iaGuard`, pestana del detalle, buscador de duplicados y accesos del inicio), y textos que ya no prometen lo que no hay. |
 | `main` | Conexion con la API de BackQ-D: interceptor con renovacion de token, guards asincronos, pantalla de cambio de clave obligatorio y los 4 servicios sobre HTTP. |

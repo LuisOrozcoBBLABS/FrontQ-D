@@ -1,38 +1,87 @@
-<div class="login">
-  <div class="login__top">
-    <app-theme-toggle />
+<div class="acceso">
+  <div class="marca-fondo" aria-hidden="true">
+    <span class="marca-fondo__txt">I+D</span>
   </div>
 
-  <div class="login__card card enter">
-    <img class="login__isotipo" src="brand/isotipo.png" alt="Blackbird Labs" width="52" height="52" />
-    <p class="eyebrow">Plataforma I+D · Blackbird Labs</p>
-    <h1 class="login__title display">Innovación y Desarrollo</h1>
-    <p class="text-2 login__sub">Ingresa con tu cuenta corporativa para gestionar proyectos, grupos y propuestas de innovación.</p>
+  <button
+    class="acceso__tema"
+    type="button"
+    (click)="toggleTema()"
+    [attr.aria-label]="esOscuro() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+  >
+    @if (esOscuro()) {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4"/><path d="M12 19.6V22"/><path d="M2 12h2.4"/><path d="M19.6 12H22"/><path d="m4.9 4.9 1.7 1.7"/><path d="m17.4 17.4 1.7 1.7"/><path d="m19.1 4.9-1.7 1.7"/><path d="m6.6 17.4-1.7 1.7"/></svg>
+    } @else {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>
+    }
+  </button>
 
-    <form (ngSubmit)="submit()">
-      <div class="field">
-        <label for="email">Correo corporativo</label>
-        <input id="email" class="input" type="email" name="email" autocomplete="username" autofocus
-               [ngModel]="email()" (ngModelChange)="email.set($event)" placeholder="tucorreo@bblabs.io" required />
+  <main class="acceso__col">
+    <img class="acceso__marca" src="brand/isotipo.png" alt="Blackbird Labs" width="46" height="46" />
+
+    <h1 class="acceso__t">Plataforma I+D</h1>
+    <p class="acceso__sub">Innovación y Desarrollo · Blackbird Labs</p>
+
+    <form class="acceso__form" (ngSubmit)="submit()">
+      <div class="campo">
+        <label class="campo__l" for="email">Correo corporativo</label>
+        <input
+          class="campo__i"
+          id="email"
+          type="email"
+          name="email"
+          autocomplete="username"
+          inputmode="email"
+          autofocus
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
+          placeholder="tunombre@bblabs.io"
+          required
+        />
       </div>
-      <div class="field">
-        <label for="password">Contraseña</label>
-        <input id="password" class="input" type="password" name="password" autocomplete="current-password"
-               [ngModel]="password()" (ngModelChange)="password.set($event)" placeholder="••••••••" required />
+
+      <div class="campo">
+        <label class="campo__l" for="password">Contraseña</label>
+        <div class="campo__conBoton">
+          <input
+            class="campo__i"
+            id="password"
+            [type]="verClave() ? 'text' : 'password'"
+            name="password"
+            autocomplete="current-password"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            placeholder="••••••••"
+            required
+          />
+          <button
+            class="campo__ojo"
+            type="button"
+            (click)="verClave.set(!verClave())"
+            [attr.aria-label]="verClave() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          >
+            @if (verClave()) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 10 8 10 8a18 18 0 0 1-2.16 3.19"/><path d="M6.61 6.61A18 18 0 0 0 2 12s3 8 10 8a9 9 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            }
+          </button>
+        </div>
       </div>
 
       @if (error()) {
-        <p class="login__error">{{ error() }}</p>
+        <p class="acceso__error" role="alert">{{ error() }}</p>
       }
 
-      <button class="btn btn--primary login__submit" type="submit" [disabled]="loading()">
+      <button class="btn btn--primary acceso__enviar" type="submit" [disabled]="loading()">
         {{ loading() ? 'Entrando…' : 'Ingresar' }}
       </button>
-    </form>
 
-    <p class="login__ayuda text-dim">
-      Si es tu primer ingreso, usa la contraseña temporal que te dio un administrador.
-      Te vamos a pedir que la cambies.
-    </p>
-  </div>
+      <a class="acceso__link" routerLink="/recuperar">¿Olvidaste tu contraseña?</a>
+    </form>
+  </main>
+
+  <p class="acceso__pie">
+    Acceso restringido al equipo de Innovación y Desarrollo.
+  </p>
 </div>

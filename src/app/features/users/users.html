@@ -5,6 +5,40 @@
     <p class="page__sub">Crea cuentas del equipo de I+D, asigna su rol y afina permisos individuales. El cargo y los permisos solo los edita un administrador.</p>
   </div>
 
+  <!-- Pedidos de restablecimiento: lo primero que hay que atender -->
+  @if (solicitudes().length) {
+    <section class="pedidos enter">
+      <header class="pedidos__head">
+        <h2 class="pedidos__t">
+          Piden restablecer contraseña
+          <span class="pedidos__n mono">{{ solicitudes().length }}</span>
+        </h2>
+        <p class="pedidos__nota">
+          Asignales una clave temporal y comunicasela. Al entrar, la plataforma les
+          exige cambiarla.
+        </p>
+      </header>
+
+      <div class="pedidos__lista">
+        @for (s of solicitudes(); track s.id) {
+          <article class="pedido">
+            <span class="pedido__ini" aria-hidden="true">{{ initials(s.user.nombre) }}</span>
+            <div class="pedido__quien">
+              <b>{{ s.user.nombre }}</b>
+              <span>{{ s.user.email }} · {{ hace(s.createdAt) }}</span>
+              @if (s.nota) { <p class="pedido__nota">“{{ s.nota }}”</p> }
+              @if (!s.user.activo) { <span class="pedido__inactivo">La cuenta está desactivada</span> }
+            </div>
+            <div class="pedido__acciones">
+              <button class="btn btn--primary btn--sm" type="button" (click)="atender(s)">Asignar clave</button>
+              <button class="btn btn--ghost btn--sm" type="button" (click)="descartar(s)">Descartar</button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+
   <div class="toolbar enter">
     <button class="btn btn--primary" type="button" (click)="openCreate()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
@@ -68,6 +102,7 @@
             <td>
               <div class="table__actions">
                 <button class="btn btn--ghost btn--sm" type="button" (click)="openEdit(u)">Editar</button>
+                <button class="btn btn--ghost btn--sm" type="button" (click)="abrirReset(u)">Clave</button>
                 <button class="btn btn--ghost btn--sm" type="button" (click)="toggleActivo(u)">{{ u.activo ? 'Desactivar' : 'Activar' }}</button>
                 <button class="btn btn--danger btn--sm" type="button" (click)="remove(u)" aria-label="Eliminar">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
@@ -171,6 +206,61 @@
         <button class="btn btn--ghost" type="button" (click)="close()">Cancelar</button>
         <button class="btn btn--primary" type="button" (click)="save()" [disabled]="!d.nombre.trim() || !d.email.trim()">
           {{ isEdit() ? 'Guardar cambios' : 'Crear usuario' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Restablecer contraseña -->
+@if (resetPara(); as u) {
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Restablecer contraseña">
+    <div class="modal__backdrop" (click)="cerrarReset()"></div>
+    <div class="modal__panel" appTrapFocus (dismiss)="cerrarReset()">
+      <div class="modal__head">
+        <div>
+          <p class="eyebrow">Restablecer contraseña</p>
+          <h2 class="modal__title">{{ u.nombre }}</h2>
+        </div>
+        <button class="theme-fab" type="button" (click)="cerrarReset()" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <p class="reset__aviso">
+        Se le cierran las sesiones abiertas y al entrar la plataforma le exige cambiarla.
+        <b>Comunicasela vos</b>: la plataforma todavía no manda correos.
+      </p>
+
+      <div class="field">
+        <label for="nuevaClave">Contraseña temporal</label>
+        <div class="reset__campo">
+          <input
+            id="nuevaClave"
+            class="input"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            [ngModel]="claveNueva()"
+            (ngModelChange)="claveNueva.set($event)"
+            [placeholder]="'Mínimo ' + minReset + ' caracteres'"
+          />
+          <button class="btn btn--ghost btn--sm" type="button" (click)="sugerirClave()">Generar</button>
+        </div>
+        <span class="field__hint">
+          Se muestra en claro a propósito: tenés que poder leerla para pasársela.
+        </span>
+      </div>
+
+      <div class="modal__foot">
+        <button class="btn btn--ghost" type="button" (click)="cerrarReset()">Cancelar</button>
+        <button
+          class="btn btn--primary"
+          type="button"
+          [disabled]="!resetValido() || reseteando()"
+          (click)="confirmarReset()"
+        >
+          {{ reseteando() ? 'Guardando…' : 'Asignar clave temporal' }}
         </button>
       </div>
     </div>

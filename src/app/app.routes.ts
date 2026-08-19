@@ -16,6 +16,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/login/login').then(m => m.Login),
   },
   {
+    path: 'recuperar',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/recover/recover').then(m => m.Recover),
+  },
+  {
     path: 'cambiar-clave',
     canActivate: [cambioClaveGuard],
     loadComponent: () => import('./features/change-password/change-password').then(m => m.ChangePassword),

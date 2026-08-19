@@ -11,6 +11,5 @@ import { NavRail } from '../../ui/nav-rail/nav-rail';
   selector: 'app-shell',
   imports: [RouterOutlet, NavRail],
   templateUrl: './shell.html',
-  styleUrl: './shell.scss',
 })
 export class Shell {}

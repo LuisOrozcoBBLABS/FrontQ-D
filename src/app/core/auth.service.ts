@@ -53,6 +53,21 @@ export class AuthService {
     }
   }
 
+  /**
+   * Pide que un administrador restablezca la contraseña. El backend responde
+   * igual exista o no la cuenta, para no revelar qué correos están registrados.
+   */
+  async forgotPassword(email: string, nota?: string): Promise<{ ok: boolean; error?: string }> {
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.base}/auth/forgot-password`, { email, nota: nota || undefined }),
+      );
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: mensajeDeError(e, 'No se pudo registrar el pedido.') };
+    }
+  }
+
   async logout(): Promise<void> {
     try {
       // Invalida el refresh en el servidor; si falla, igual limpiamos local.

@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UsersService } from '../../core/users.service';
 import { GroupsService } from '../../core/groups.service';
+import { SolicitudReset } from '../../core/users.service';
 import { mensajeDeError } from '../../core/auth.service';
 import { PERMISSIONS, ROLES, RoleId, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
@@ -40,10 +41,12 @@ export class Users {
   protected roles = Object.values(ROLES);
   /** Los grupos llegan de la API: el select necesita el id, no el nombre. */
   protected grupos = this.groupsSvc.groups;
+  protected solicitudes = this.usersSvc.solicitudes;
 
   constructor() {
     void this.usersSvc.load();
     void this.groupsSvc.load();
+    void this.usersSvc.loadSolicitudes();
   }
 
   protected query = signal('');
@@ -181,6 +184,82 @@ export class Users {
     } catch (e) {
       this.toast.error(mensajeDeError(e, 'No se pudo archivar la cuenta.'));
     }
+  }
+
+  // ---------------- Restablecer contrasena ----------------
+
+  protected resetPara = signal<User | null>(null);
+  protected claveNueva = signal('');
+  protected reseteando = signal(false);
+  protected readonly minReset = 10;
+
+  protected resetValido = computed(() => this.claveNueva().length >= this.minReset);
+
+  abrirReset(u: User): void {
+    this.claveNueva.set('');
+    this.resetPara.set(u);
+  }
+  cerrarReset(): void {
+    this.resetPara.set(null);
+    this.claveNueva.set('');
+  }
+
+  /**
+   * Sugerencia generada en el navegador. No la inventa el servidor ni viaja en
+   * ninguna respuesta: quien la asigna es quien se la va a comunicar.
+   */
+  sugerirClave(): void {
+    const alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+    const bytes = new Uint32Array(14);
+    crypto.getRandomValues(bytes);
+    this.claveNueva.set([...bytes].map(b => alfabeto[b % alfabeto.length]).join(''));
+  }
+
+  async confirmarReset(): Promise<void> {
+    const u = this.resetPara();
+    if (!u || !this.resetValido() || this.reseteando()) return;
+
+    this.reseteando.set(true);
+    try {
+      await this.usersSvc.resetPassword(u.id, this.claveNueva());
+      this.toast.success(`Clave temporal asignada a ${u.nombre}. Pasasela: se le pedira cambiarla al entrar.`);
+      this.cerrarReset();
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo restablecer la contrasena.'));
+    } finally {
+      this.reseteando.set(false);
+    }
+  }
+
+  /** Atender el pedido desde la seccion de solicitudes. */
+  atender(s: SolicitudReset): void {
+    const u = this.usersSvc.byId(s.user.id);
+    if (u) this.abrirReset(u);
+  }
+
+  async descartar(s: SolicitudReset): Promise<void> {
+    const ok = await this.confirm.ask({
+      title: 'Descartar el pedido',
+      message: `Se descarta el pedido de ${s.user.nombre} sin tocar su contrasena. Se usa cuando el pedido fue un error o ya lo resolviste por otro lado.`,
+      confirmText: 'Descartar',
+    });
+    if (!ok) return;
+    try {
+      await this.usersSvc.descartarSolicitud(s.id);
+      this.toast.info('Pedido descartado');
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo descartar el pedido.'));
+    }
+  }
+
+  hace(iso: string): string {
+    const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    if (min < 1) return 'ahora mismo';
+    if (min < 60) return `hace ${min} min`;
+    const h = Math.floor(min / 60);
+    if (h < 24) return h === 1 ? 'hace una hora' : `hace ${h} horas`;
+    const d = Math.floor(h / 24);
+    return d === 1 ? 'ayer' : `hace ${d} dias`;
   }
 
   initials(n: string): string { return n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase(); }

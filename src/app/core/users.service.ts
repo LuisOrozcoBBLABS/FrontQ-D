@@ -4,6 +4,15 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Permission, User } from './models';
 
+/** Pedido de restablecimiento hecho desde la pantalla de recuperacion. */
+export interface SolicitudReset {
+  id: string;
+  estado: 'pendiente' | 'atendida' | 'descartada';
+  nota: string | null;
+  createdAt: string;
+  user: { id: string; nombre: string; email: string; activo: boolean; avatarUrl: string | null };
+}
+
 export interface NuevoUsuario {
   nombre: string;
   email: string;
@@ -34,11 +43,13 @@ export class UsersService {
   private readonly _cargando = signal(false);
   private readonly _error = signal<string | null>(null);
   private readonly _permisos = signal<Permission[]>([]);
+  private readonly _solicitudes = signal<SolicitudReset[]>([]);
 
   readonly users = this._users.asReadonly();
   readonly cargando = this._cargando.asReadonly();
   readonly error = this._error.asReadonly();
   readonly permisos = this._permisos.asReadonly();
+  readonly solicitudes = this._solicitudes.asReadonly();
 
   readonly count = computed(() => this._users().length);
   readonly activos = computed(() => this._users().filter(u => u.activo).length);
@@ -114,8 +125,33 @@ export class UsersService {
     this.reemplazar(actualizado);
   }
 
+  /** Quienes pidieron que les restablezcan la contrasena. */
+  async loadSolicitudes(): Promise<void> {
+    try {
+      const lista = await firstValueFrom(
+        this.http.get<SolicitudReset[]>(`${this.base}/reset-requests`),
+      );
+      this._solicitudes.set(lista);
+    } catch {
+      /* sin permiso o sin conexion: la seccion no se muestra */
+    }
+  }
+
+  /**
+   * Asigna una clave temporal. El servidor marca `debeCambiarPassword`, cierra
+   * las sesiones de esa persona y da por atendido su pedido.
+   */
   async resetPassword(id: string, nueva: string): Promise<void> {
     await firstValueFrom(this.http.post(`${this.base}/users/${id}/reset-password`, { nueva }));
+    this._solicitudes.update(l => l.filter(s => s.user.id !== id));
+    // Vuelve con debeCambiarPassword en true: la tabla lo refleja.
+    await this.load();
+  }
+
+  /** Descarta un pedido sin tocar la contrasena. */
+  async descartarSolicitud(id: string): Promise<void> {
+    await firstValueFrom(this.http.patch(`${this.base}/reset-requests/${id}/dismiss`, {}));
+    this._solicitudes.update(l => l.filter(s => s.id !== id));
   }
 
   private reemplazar(u: User): void {

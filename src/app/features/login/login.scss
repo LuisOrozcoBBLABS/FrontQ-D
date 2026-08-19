@@ -1,49 +1,208 @@
-.login {
+/* =============================================================
+   Pantallas de acceso — minimalistas
+   Sin tarjeta ni caja: el contenido se apoya directo en el fondo, con la marca
+   de agua del área detrás. Los campos son líneas, no cajones: menos cromo para
+   dos campos que no necesitan más.
+   Compartido por ingreso, recuperación y cambio de contraseña.
+   ============================================================= */
+
+.acceso {
+  position: relative;
   min-height: 100dvh;
   display: grid;
+  grid-template-rows: 1fr auto;
   place-items: center;
-  padding: 24px;
+  padding: var(--sp-8) var(--sp-6) var(--sp-6);
 }
-.login__top {
+
+.acceso__tema {
   position: fixed;
-  top: calc(16px + env(safe-area-inset-top, 0px));
-  right: calc(16px + env(safe-area-inset-right, 0px));
+  top: calc(var(--sp-5) + env(safe-area-inset-top, 0px));
+  right: calc(var(--sp-5) + env(safe-area-inset-right, 0px));
   z-index: 10;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-full);
+  color: var(--text-dim);
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
 }
-.login__card {
-  width: min(100%, 440px);
-  padding: clamp(28px, 5vw, 40px);
+.acceso__tema svg { width: 18px; height: 18px; }
+.acceso__tema:hover { color: var(--text); background: var(--surface-2); }
+
+.acceso__col {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 372px);
+  display: flex;
+  flex-direction: column;
+  animation: entraAcceso 500ms var(--ease) both;
 }
-.login__mark {
+@keyframes entraAcceso {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* El isotipo oficial viene sobre su cuadro obsidiana: baldosa, no icono suelto. */
+.acceso__marca {
+  width: 46px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-6);
+}
+
+.acceso__t {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-2xl);
+  letter-spacing: -.03em;
+  line-height: 1.05;
+}
+.acceso__sub {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.acceso__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  margin-top: var(--sp-10);
+}
+
+/* ---------- Campos: línea inferior en lugar de cajón ---------- */
+.campo { display: flex; flex-direction: column; gap: var(--sp-2); }
+.campo__l {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.campo__i {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line-strong);
+  border-radius: 0;
+  padding: var(--sp-2) 0;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 500;
+  transition: border-color var(--dur) var(--ease);
+}
+.campo__i::placeholder { color: var(--text-dim); font-weight: 500; }
+.campo__i:hover { border-bottom-color: var(--text-dim); }
+.campo__i:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+/* El foco se ve en la línea, así que el anillo del navegador sobra acá */
+.campo__i:focus-visible { outline: none; }
+
+.campo__conBoton { display: flex; align-items: center; gap: var(--sp-2); }
+.campo__conBoton .campo__i { flex: 1 1 auto; min-width: 0; }
+.campo__ojo {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-full);
+  color: var(--text-dim);
+  flex: 0 0 auto;
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.campo__ojo svg { width: 17px; height: 17px; }
+.campo__ojo:hover { color: var(--text); background: var(--surface-2); }
+
+.campo__ayuda {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  line-height: var(--lh-snug);
+}
+
+/* ---------- Mensajes ---------- */
+.acceso__error {
+  display: flex;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--danger);
+  background: var(--danger-bg);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+}
+
+.acceso__enviar { width: 100%; margin-top: var(--sp-1); }
+
+.acceso__link {
+  align-self: flex-start;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-2);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--line-strong);
+  transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
+}
+.acceso__link:hover { color: var(--text); text-decoration-color: var(--accent); }
+.acceso__link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+.acceso__pie {
+  position: relative;
+  z-index: 1;
+  margin-top: var(--sp-10);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  text-align: center;
+  max-width: 44ch;
+}
+
+/* ---------- Estado de "listo" en la recuperación ---------- */
+.acceso__ok {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+}
+.acceso__okIcono {
+  display: grid;
+  place-items: center;
   width: 44px;
   height: 44px;
-  margin-bottom: 20px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--on-accent);
 }
-.login__mark svg { width: 22px; height: 22px; }
-.login__title {
-  font-size: clamp(28px, 6vw, 34px);
-  margin: 12px 0 10px;
+.acceso__okIcono svg { width: 22px; height: 22px; }
+.acceso__pasos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin: var(--sp-2) 0 var(--sp-4);
+  padding-left: var(--sp-5);
+  border-left: 1px solid var(--line);
 }
-.login__sub { margin-bottom: 26px; font-size: 15px; }
-.login__error {
-  color: var(--text);
-  font-size: 13.5px;
-  padding: 11px 14px;
-  border: 1px solid var(--line-strong);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--r-md);
-  background: var(--surface-2);
-  margin-bottom: 16px;
+.acceso__paso {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  line-height: var(--lh-snug);
 }
-.login__submit { width: 100%; margin-top: 4px; }
-.login__sim { margin-top: 22px; align-items: flex-start; line-height: 1.5; }
-.login__sim b { color: var(--text-2); }
+.acceso__paso b { color: var(--text); font-weight: 600; }
 
-/* El isotipo oficial viene sobre su cuadro obsidiana: se usa como baldosa
-   redondeada, que es como lo presenta el manual, y sirve en los dos temas. */
-.login__isotipo {
-  width: 52px; height: 52px; object-fit: cover;
-  border-radius: var(--r-md);
-  margin-bottom: var(--sp-4);
+@media (prefers-reduced-motion: reduce) {
+  .acceso__col { animation: none; }
 }
-.login__ayuda { margin-top: var(--sp-5); font-size: var(--fs-xs); line-height: var(--lh-snug); }
+
+@media (max-width: 480px) {
+  .acceso { padding: var(--sp-10) var(--sp-5) var(--sp-5); }
+  .acceso__form { margin-top: var(--sp-8); }
+}

@@ -1,0 +1,103 @@
+<div class="acceso">
+  <div class="marca-fondo" aria-hidden="true">
+    <span class="marca-fondo__txt">I+D</span>
+  </div>
+
+  <button
+    class="acceso__tema"
+    type="button"
+    (click)="toggleTema()"
+    [attr.aria-label]="esOscuro() ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'"
+  >
+    @if (esOscuro()) {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4"/><path d="M12 19.6V22"/><path d="M2 12h2.4"/><path d="M19.6 12H22"/><path d="m4.9 4.9 1.7 1.7"/><path d="m17.4 17.4 1.7 1.7"/><path d="m19.1 4.9-1.7 1.7"/><path d="m6.6 17.4-1.7 1.7"/></svg>
+    } @else {
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.6 6.6 0 0 0 9.8 9.8z"/></svg>
+    }
+  </button>
+
+  <main class="acceso__col">
+    @if (!enviado()) {
+      <img class="acceso__marca" src="brand/isotipo.png" alt="Blackbird Labs" width="46" height="46" />
+
+      <h1 class="acceso__t">Recuperar acceso</h1>
+      <p class="acceso__sub">Te asigna una clave un administrador</p>
+
+      <form class="acceso__form" (ngSubmit)="submit()">
+        <div class="campo">
+          <label class="campo__l" for="email">Tu correo corporativo</label>
+          <input
+            class="campo__i"
+            id="email"
+            type="email"
+            name="email"
+            autocomplete="username"
+            inputmode="email"
+            autofocus
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            placeholder="tunombre@bblabs.io"
+            required
+          />
+        </div>
+
+        <div class="campo">
+          <label class="campo__l" for="nota">Algo que quieras agregar (opcional)</label>
+          <input
+            class="campo__i"
+            id="nota"
+            type="text"
+            name="nota"
+            maxlength="300"
+            [ngModel]="nota()"
+            (ngModelChange)="nota.set($event)"
+            placeholder="Ej. cambié de teléfono y perdí la clave"
+          />
+          <span class="campo__ayuda">Le da contexto a quien lo va a atender.</span>
+        </div>
+
+        @if (error()) {
+          <p class="acceso__error" role="alert">{{ error() }}</p>
+        }
+
+        <button class="btn btn--primary acceso__enviar" type="submit" [disabled]="loading() || !valido()">
+          {{ loading() ? 'Enviando…' : 'Pedir una contraseña nueva' }}
+        </button>
+
+        <a class="acceso__link" routerLink="/login">Volver al ingreso</a>
+      </form>
+    } @else {
+      <div class="acceso__ok">
+        <span class="acceso__okIcono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
+        </span>
+
+        <h1 class="acceso__t">Pedido registrado</h1>
+        <p class="acceso__sub">Qué pasa ahora</p>
+
+        <div class="acceso__pasos">
+          <p class="acceso__paso">
+            <b>1.</b> Un administrador ve tu pedido en el módulo de usuarios de la plataforma.
+          </p>
+          <p class="acceso__paso">
+            <b>2.</b> Te asigna una <b>contraseña temporal</b> y te la comunica.
+          </p>
+          <p class="acceso__paso">
+            <b>3.</b> Entrás con esa clave y la plataforma te pide cambiarla antes de dejarte seguir.
+          </p>
+        </div>
+
+        <p class="campo__ayuda">
+          Si el correo que escribiste no está registrado, no pasa nada: por seguridad no
+          decimos qué cuentas existen.
+        </p>
+
+        <a class="btn btn--ghost acceso__enviar" routerLink="/login">Volver al ingreso</a>
+      </div>
+    }
+  </main>
+
+  <p class="acceso__pie">
+    Acceso restringido al equipo de Innovación y Desarrollo.
+  </p>
+</div>
