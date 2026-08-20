@@ -1,5 +1,5 @@
 /* =============================================================
-   SISTEMA DE DISEÑO — Plataforma I+D
+   SISTEMA DE DISEÑO — Plataforma R&D
    Basado en el manual de marca Blackbird Labs powered by Riwi (2026):
    tipografía Montserrat, Neon Lime como acento, Obsidian Black como base.
    ============================================================= */
@@ -301,7 +301,7 @@ body:has(app-nav-rail){ padding-left:var(--rail-clear); }
    prefijo html[data-theme] dentro de un componente Angular nunca matchea
    (la encapsulacion le agrega el atributo de scope al propio html). */
 /* =============================================================
-   Marca de agua "I+D": identidad del area ocupando el fondo, sin robar lectura.
+   Marca de agua "R&D": identidad del area ocupando el fondo, sin robar lectura.
    Global porque la usan el marco de la app y las pantallas de acceso.
    ============================================================= */
 .marca-fondo {

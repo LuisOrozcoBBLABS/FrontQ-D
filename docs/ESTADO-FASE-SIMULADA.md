@@ -1,4 +1,4 @@
-# Plataforma I+D · Blackbird Labs — Estado del proyecto
+# Plataforma R&D · Blackbird Labs — Estado del proyecto
 
 > Documento vivo. Se actualiza en cada avance.
 > **Enfoque técnico elegido:** Front en **Angular 21** (standalone components, signals, control flow `@if/@for`) con **los mismos estilos** de la SPA de portafolio ya desplegada. **IA y base de datos SIMULADAS** al inicio (mock en el front); se conectan de verdad en una fase posterior.

@@ -1,4 +1,4 @@
-# FrontQ-D — Plataforma I+D
+# FrontQ-D — Plataforma R&D
 
 Interfaz de la plataforma de Innovación y Desarrollo de Blackbird Labs (equipo QR&D).
 Consume la API de [BackQ-D](https://github.com/LuisOrozcoBBLABS/BackQ-D).
@@ -63,7 +63,7 @@ tema, perfil, salir). Cápsula de cristal líquido con iconos; el nombre se
 despliega al pasar el cursor o al enfocar con teclado, y el indicador activo se
 desliza entre posiciones. En pantallas angostas el riel baja y se acuesta.
 
-El fondo lleva la identidad del área: **I+D** en grande, con relleno degradado
+El fondo lleva la identidad del área: **R&D** en grande, con relleno degradado
 al 7% en oscuro y 12% en claro, y trazo hairline. Va detrás de todo y no recibe
 eventos.
 
@@ -75,7 +75,7 @@ sobre el cristal en tema oscuro.
 
 Ingreso, recuperación y cambio de contraseña comparten un mismo lenguaje
 minimalista: sin tarjeta ni caja, el contenido apoyado directo en el fondo con la
-marca de agua `I+D` detrás, y campos que son **líneas** en lugar de cajones.
+marca de agua `R&D` detrás, y campos que son **líneas** en lugar de cajones.
 Los estilos viven en `features/login/login.scss` y los reusan las tres.
 
 **Recuperar contraseña** (`/recuperar`) no manda enlaces por correo: registra el
@@ -131,9 +131,10 @@ OpenAI en el backend.
 
 | Rama | Qué cambió |
 |---|---|
+| `main` | Nomenclatura del área: **I+D** pasa a **R&D** en el título de la pestaña, la marca de agua de las cuatro pantallas, el riel y los textos de Grupos y Usuarios. La del login decía `Q&D` y queda alineada. |
 | `main` | Tarjetas fuera: proyectos, usuarios, grupos, asignaciones y pedidos pasan a tablas con paginación de 8 filas (`ui/paginador`). Proyectos y usuarios paginan y filtran contra el servidor. Los avisos de la campana llevan a la acción concreta. |
 | `main` | Login rediseñado en clave minimalista (sin tarjeta, campos de línea, ver/ocultar contraseña) y pantalla de recuperación; el módulo de usuarios atiende los pedidos y asigna la clave temporal. |
-| `main` | Rediseño: se elimina la barra superior y su contenido pasa al riel; marca de agua `I+D` en el fondo; baldosa de marca en lugar del isotipo suelto; icono propio para Grupos; Proyectos con resumen de una línea (antes cuatro tarjetas) y Asignaciones como tablero por estado con un único avance por tarjeta. |
+| `main` | Rediseño: se elimina la barra superior y su contenido pasa al riel; marca de agua `R&D` en el fondo; baldosa de marca en lugar del isotipo suelto; icono propio para Grupos; Proyectos con resumen de una línea (antes cuatro tarjetas) y Asignaciones como tablero por estado con un único avance por tarjeta. |
 | `main` | MVP: funciones de IA ocultas detras de `environment.funcionesIA` (dock, rutas con `iaGuard`, pestana del detalle, buscador de duplicados y accesos del inicio), y textos que ya no prometen lo que no hay. |
 | `main` | Conexion con la API de BackQ-D: interceptor con renovacion de token, guards asincronos, pantalla de cambio de clave obligatorio y los 4 servicios sobre HTTP. |
 | `main` | Traslado desde `portafolio-ia/plataforma-id/web`. Sistema de diseño alineado al manual de marca (Montserrat, paleta oficial, escala tipográfica, ritmo de 4pt). Dock de módulos en cristal líquido reemplazando la barra de navegación superior y el drawer móvil. Corregido el subrayado involuntario de todos los enlaces. Logos oficiales en `public/brand/`. |
