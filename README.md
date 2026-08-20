@@ -7,6 +7,12 @@ Consume la API de [BackQ-D](https://github.com/LuisOrozcoBBLABS/BackQ-D).
 - **Identidad:** manual de marca Blackbird Labs powered by Riwi — tipografía Montserrat,
   Neon Lime `#B2EA36` como acento, Obsidian Black `#0B0A07` como base.
 
+## Prerrequisitos
+
+- Node.js 20+ (recomendado: 22 LTS)
+- npm 11+
+- [BackQ-D](https://github.com/LuisOrozcoBBLABS/BackQ-D) corriendo en `localhost:3000`
+
 ## Arrancar en local
 
 ```bash
@@ -20,6 +26,19 @@ npm start
 Queda en `http://localhost:4300` (el CORS del backend espera ese puerto).
 Para que la aplicación tenga datos, la API de BackQ-D debe estar corriendo en
 `http://localhost:3000`.
+
+## Testing
+
+```bash
+npm test
+```
+
+Los tests usan **Vitest** y cubren componentes, servicios y modelos.
+
+## Variables de entorno
+
+El front no necesita `.env` — la URL de la API está en `src/environments/`. Si
+necesitás apuntar a otro backend, editá `environment.ts`.
 
 ## Cómo está organizado
 
@@ -126,6 +145,15 @@ este front en `localhost:4300`.
 Las 7 funciones de IA quedan fuera del MVP: sus resultados son deterministas y
 simulados, no hay modelo detrás. Se reactivarán cuando exista el motor con
 OpenAI en el backend.
+
+## Scripts disponibles
+
+| Comando | Qué hace |
+|---|---|
+| `npm start` | Levanta el dev server en `localhost:4300` |
+| `npm run build` | Build de producción en `dist/` |
+| `npm test` | Ejecuta los tests con Vitest |
+| `npm run watch` | Build en watch mode para desarrollo |
 
 ## Registro de cambios
 
