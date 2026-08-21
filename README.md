@@ -167,6 +167,28 @@ OpenAI en el backend.
 | `main` | Conexion con la API de BackQ-D: interceptor con renovacion de token, guards asincronos, pantalla de cambio de clave obligatorio y los 4 servicios sobre HTTP. |
 | `main` | Traslado desde `portafolio-ia/plataforma-id/web`. Sistema de diseño alineado al manual de marca (Montserrat, paleta oficial, escala tipográfica, ritmo de 4pt). Dock de módulos en cristal líquido reemplazando la barra de navegación superior y el drawer móvil. Corregido el subrayado involuntario de todos los enlaces. Logos oficiales en `public/brand/`. |
 
+## Entornos
+
+| Entorno | Front | API |
+|---|---|---|
+| Local | `http://localhost:4300` | `http://localhost:3000/api` (BackQ-D corriendo en la máquina) |
+| Producción | https://luisorozcobblabs.github.io/FrontQ-D/ | https://backq-d.onrender.com/api |
+
+Documentación interactiva de la API: https://backq-d.onrender.com/api/docs
+
+El valor lo resuelve `src/environments/environment.ts` en desarrollo y
+`environment.prod.ts` en el build de producción (`fileReplacements` en
+`angular.json`). No hay URLs de API escritas en los servicios.
+
+Dos cosas a tener en cuenta con el entorno de producción:
+
+- **CORS.** La API solo responde a los orígenes que estén en su variable
+  `FRONTEND_URL`. Si el front se publica en un dominio nuevo, hay que agregarlo
+  ahí o el navegador bloquea todas las peticiones.
+- **Arranque en frío.** El plan gratuito de Render duerme la instancia tras unos
+  minutos sin tráfico: la primera petición puede tardar cerca de un minuto y las
+  siguientes responden normal.
+
 ## Licencia
 
 Software propietario de Blackbird Labs. El repositorio es visible públicamente
