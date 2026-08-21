@@ -363,3 +363,16 @@
     background: var(--surface);
   }
 }
+
+
+/* El riel no cambia entre rutas: si entra en la foto de la transición de vista,
+   se cruza consigo mismo y el indicador deja un fantasma en la posición
+   anterior. Con nombre propio queda fuera de ese cruce y solo se desliza. */
+.rail {
+  view-transition-name: rail;
+}
+::view-transition-old(rail),
+::view-transition-new(rail) {
+  animation: none;
+  mix-blend-mode: normal;
+}
