@@ -5,7 +5,6 @@ import { UsersService } from '../../core/users.service';
 import { GroupsService } from '../../core/groups.service';
 import { ProjectsService } from '../../core/projects.service';
 import { AssignmentsService } from '../../core/assignments.service';
-import { environment } from '../../../environments/environment';
 import { ASIG_ESTADOS, PRIORIDADES, Project } from '../../core/models';
 
 @Component({
@@ -22,7 +21,6 @@ export class Dashboard {
   private assignSvc = inject(AssignmentsService);
 
   /** Las funciones de IA estan fuera del MVP. */
-  protected readonly ia = environment.funcionesIA;
 
   constructor() {
     void this.projects.load();

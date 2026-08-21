@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FILAS_POR_PAGINA } from '../ui/paginador/paginador';
-import { AppSimilar, Enrichment, Project, ProjectStatus } from './models';
+import { AppSimilar, Project, ProjectStatus } from './models';
 
 /** Lo que el servidor necesita para devolver una pagina de proyectos. */
 export interface FiltroProyectos {
@@ -129,13 +129,6 @@ export class ProjectsService {
     return actualizado;
   }
 
-  /** Guarda resultados del motor de IA (hoy sin uso: la IA está fuera del MVP). */
-  async saveAi(id: string, datos: { enriquecido?: boolean; score?: number; enrichment?: Enrichment }): Promise<void> {
-    const actualizado = aProyecto(
-      await firstValueFrom(this.http.patch<ProjectApi>(`${this.base}/projects/${id}/ai`, datos)),
-    );
-    this._projects.update(l => l.map(p => (p.id === id ? actualizado : p)));
-  }
 
   /** "Eliminar" en la interfaz = archivar: sale de las listas, no se pierde. */
   async archivar(id: string): Promise<void> {
@@ -160,8 +153,5 @@ function aProyecto(p: ProjectApi): Project {
     autorNombre: p.autor?.nombre ?? null,
     estado: p.estado,
     createdAt: p.createdAt,
-    enriquecido: p.enriquecido,
-    score: p.score ?? undefined,
-    enrichment: p.enrichment,
   };
 }

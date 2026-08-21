@@ -11,7 +11,4 @@ export const environment = {
 
   /** API de BackQ-D en producción. Swagger: https://backq-d.onrender.com/api/docs */
   apiUrl: 'https://backq-d.onrender.com/api',
-
-  /** Las funciones de IA siguen fuera del MVP. */
-  funcionesIA: false,
 };

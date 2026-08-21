@@ -41,33 +41,8 @@ export interface User {
   createdAt?: string;
 }
 
-// Catálogo de permisos de la plataforma
-export const PERMISSIONS: Permission[] = [
-  { id: 'users.manage',      label: 'Gestionar usuarios',        desc: 'Crear, editar, activar/desactivar usuarios y asignar permisos.', group: 'Administración' },
-  { id: 'roles.manage',      label: 'Gestionar roles',           desc: 'Definir permisos base de cada rol.',                             group: 'Administración' },
-  { id: 'groups.manage',     label: 'Gestionar grupos',          desc: 'Crear grupos (Manglar, Delta…) y elegir integrantes.',          group: 'Grupos' },
-  { id: 'assignments.create',label: 'Asignar proyectos',         desc: 'Asignar un proyecto a un grupo/persona con prioridad.',          group: 'Grupos' },
-  { id: 'projects.create',   label: 'Crear proyectos',           desc: 'Registrar nuevas ideas/proyectos de innovación.',                group: 'Proyectos' },
-  { id: 'projects.viewAll',  label: 'Ver todos los proyectos',   desc: 'Ver proyectos de todos los grupos, no solo los propios.',        group: 'Proyectos' },
-  { id: 'ai.use',            label: 'Usar funciones de IA',      desc: 'Enriquecer ideas, score, comité y búsqueda semántica.',          group: 'IA' },
-  { id: 'reports.view',      label: 'Ver reportes',              desc: 'Acceder a tableros e informes del área.',                        group: 'Reportes' },
-];
 
-export const ROLES: Record<RoleId, Role> = {
-  admin: {
-    id: 'admin',
-    label: 'Administrador (Jefe de Innovación)',
-    permissions: PERMISSIONS.map(p => p.id), // todos
-  },
-  colaborador: {
-    id: 'colaborador',
-    label: 'Colaborador',
-    permissions: ['projects.create', 'ai.use'],
-  },
-};
 
-// Nombres de grupos tipo RIWI (equipos de alto rendimiento)
-export const GRUPOS = ['Manglar', 'Delta', 'Bravo', 'Alpha'] as const;
 
 // Opciones de género (inclusivo)
 export const GENEROS: { value: Exclude<Genero, null>; label: string }[] = [
@@ -126,21 +101,8 @@ export interface Project {
   autorNombre?: string | null; // la API ya trae el autor resuelto
   estado: ProjectStatus;
   createdAt: string;
-  // Campos de IA (módulo 6, simulados de momento)
-  enriquecido?: boolean;
-  score?: number;
-  enrichment?: Enrichment;
 }
 
-export interface Enrichment {
-  objetivo: string;
-  beneficios: string[];
-  riesgos: string[];
-  areas: string[];
-  kpis: string[];
-  impacto: number;    // 0-100
-  viabilidad: number; // 0-100
-}
 
 // ------------------------- Asignaciones + notificaciones -------------------------
 export type AssignmentStatus = 'pendiente' | 'aceptada' | 'en-curso' | 'completada';
@@ -194,7 +156,7 @@ export interface NotificationItem {
   createdAt: string;
   assignmentId: string;
   projectId: string;
-  envios: CanalEnvio[]; // registro simulado de envíos por canal
+  envios: CanalEnvio[]; // estado de cada canal, resuelto por el despachador del backend
 }
 
 

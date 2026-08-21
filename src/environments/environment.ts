@@ -7,10 +7,4 @@ export const environment = {
 
   /** Base de la API de BackQ-D. */
   apiUrl: 'http://localhost:3000/api',
-
-  /**
-   * Las 7 funciones de IA quedan fuera del MVP: sus resultados son simulados.
-   * Se reactivan poniendo esto en true cuando exista el motor en el backend.
-   */
-  funcionesIA: false,
 };

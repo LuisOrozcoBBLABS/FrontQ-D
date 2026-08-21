@@ -53,7 +53,6 @@ src/
     │   └── theme-toggle
     └── features/        una carpeta por módulo (login, proyectos, grupos, …)
 public/brand/            isotipo y logo oficiales, en blanco y negro
-docs/                    documentación de la fase simulada, como referencia histórica
 ```
 
 ## Sistema de diseño
