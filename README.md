@@ -166,3 +166,10 @@ OpenAI en el backend.
 | `main` | MVP: funciones de IA ocultas detras de `environment.funcionesIA` (dock, rutas con `iaGuard`, pestana del detalle, buscador de duplicados y accesos del inicio), y textos que ya no prometen lo que no hay. |
 | `main` | Conexion con la API de BackQ-D: interceptor con renovacion de token, guards asincronos, pantalla de cambio de clave obligatorio y los 4 servicios sobre HTTP. |
 | `main` | Traslado desde `portafolio-ia/plataforma-id/web`. Sistema de diseño alineado al manual de marca (Montserrat, paleta oficial, escala tipográfica, ritmo de 4pt). Dock de módulos en cristal líquido reemplazando la barra de navegación superior y el drawer móvil. Corregido el subrayado involuntario de todos los enlaces. Logos oficiales en `public/brand/`. |
+
+## Licencia
+
+Software propietario de Blackbird Labs. El repositorio es visible públicamente
+para consulta y referencia técnica, pero **no es código abierto**: no se
+autoriza su uso, copia, modificación ni distribución sin permiso escrito.
+Los términos completos están en [LICENSE](LICENSE).
