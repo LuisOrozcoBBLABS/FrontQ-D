@@ -169,3 +169,5 @@
 @media (prefers-reduced-motion: reduce) {
   .kard:hover { transform: none; }
 }
+
+.cerrada-fila { display: inline-flex; align-items: center; gap: 10px; }

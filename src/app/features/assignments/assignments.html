@@ -172,10 +172,16 @@
                         >
                           {{ moviendo() === a.id ? 'Guardando…' : paso.verbo }}
                         </button>
-                      } @else {
-                        <span class="cerrada">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
-                          Cerrada
+                      } @else if (retroceso(a); as atras) {
+                        <span class="cerrada-fila">
+                          <span class="cerrada">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
+                            Cerrada
+                          </span>
+                          <button class="btn btn--ghost btn--sm" type="button" [disabled]="moviendo() === a.id"
+                                  (click)="mover(a, atras)">
+                            {{ moviendo() === a.id ? 'Guardando…' : 'Reabrir' }}
+                          </button>
                         </span>
                       }
                     </td>

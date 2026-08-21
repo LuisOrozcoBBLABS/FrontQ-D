@@ -22,12 +22,15 @@ describe('máquina de estados de una asignación', () => {
     expect(retrocesoDe('pendiente')).toBeNull();
   });
 
-  it('trata completada como estado final', () => {
-    expect(esFinal('completada')).toBe(true);
-    expect(retrocesoDe('completada')).toBeNull();
-    for (const destino of SECUENCIA) {
-      if (destino !== 'completada') expect(puedeIr('completada', destino)).toBe(false);
-    }
+  it('deja reabrir lo completado, devolviéndolo a en curso', () => {
+    expect(puedeIr('completada', 'en-curso')).toBe(true);
+    expect(retrocesoDe('completada')).toBe('en-curso');
+    expect(esFinal('completada')).toBe(false);
+  });
+
+  it('reabrir no salta más atrás que en curso', () => {
+    expect(puedeIr('completada', 'aceptada')).toBe(false);
+    expect(puedeIr('completada', 'pendiente')).toBe(false);
   });
 
   it('acepta reenviar el mismo estado, igual que el servidor', () => {
