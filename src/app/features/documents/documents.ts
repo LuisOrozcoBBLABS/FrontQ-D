@@ -3,9 +3,12 @@ import { Component } from '@angular/core';
 /**
  * Documentos — módulo anunciado, todavía sin funcionalidad.
  *
- * La idea: subir PDF y DOCX, extraer su contenido y que la IA proponga
- * proyectos a partir de eso. Por ahora la pantalla solo anuncia el módulo, sin
- * simular nada: no hay carga de archivos ni resultados de mentira.
+ * La idea: dejar de cargar proyectos a mano. Si el proyecto ya está escrito en
+ * un PDF o un DOCX, se sube el archivo, la IA lo lee y crea el proyecto con
+ * esos datos, mapeados a los campos del formulario.
+ *
+ * Por ahora la pantalla solo anuncia el módulo, sin simular nada: no hay carga
+ * de archivos ni resultados de mentira.
  */
 @Component({
   selector: 'app-documents',
@@ -17,17 +20,17 @@ export class Documents {
     {
       n: '01',
       titulo: 'Subís el documento',
-      texto: 'PDF o DOCX: una convocatoria, un acta, un informe, un pliego.',
+      texto: 'El PDF o el DOCX donde ya está escrito el proyecto.',
     },
     {
       n: '02',
-      titulo: 'Se extrae el contenido',
-      texto: 'Texto, tablas y campos clave quedan estructurados y legibles.',
+      titulo: 'La IA lo lee y lo mapea',
+      texto: 'Reconoce nombre, sector, problema, dolores, solución y diferencial.',
     },
     {
       n: '03',
-      titulo: 'La IA propone proyectos',
-      texto: 'Del documento salen ideas con problema, solución y diferencial.',
+      titulo: 'Revisás y queda creado',
+      texto: 'Corregís lo que haga falta y el proyecto entra a la plataforma.',
     },
   ];
 }
