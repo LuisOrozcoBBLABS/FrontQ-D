@@ -190,7 +190,7 @@
         <div class="field">
           <label for="r">Rol</label>
           <select id="r" class="select" [ngModel]="d.rol" (ngModelChange)="patch('rol', $event)">
-            @for (r of roles; track r.id) { <option [value]="r.id">{{ r.label }}</option> }
+            @for (r of roles(); track r.id) { <option [value]="r.id">{{ r.label }}</option> }
           </select>
         </div>
         <div class="field">
@@ -229,7 +229,7 @@
         <label>Permisos</label>
         <p class="text-dim" style="font-size:12.5px;margin:-2px 0 10px">Los marcados en gris vienen del rol. Marca extras para dar permisos adicionales a esta persona.</p>
         <div class="perm-grid">
-          @for (p of permisos; track p.id) {
+          @for (p of permisos(); track p.id) {
             <label class="check" [class.check--base]="isBase(p.id)">
               <input type="checkbox" [checked]="isChecked(p.id)" [disabled]="isBase(p.id)" (change)="toggleExtra(p.id)" />
               <span class="check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>

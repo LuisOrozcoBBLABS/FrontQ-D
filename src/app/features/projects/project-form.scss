@@ -10,10 +10,3 @@
   .similar-row .input:nth-child(2) { grid-column: 1 / -1; }
 }
 .login__error { color: var(--text); font-size: 13.5px; padding: 11px 14px; border: 1px solid var(--line-strong); border-left: 3px solid var(--accent); border-radius: var(--r-md); background: var(--surface-2); }
-
-.dup { margin-top: 12px; border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface-2); padding: 14px; }
-.dup__title { font-size: 13.5px; color: var(--text); margin-bottom: 10px; }
-.dup__item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
-.dup__item:first-of-type { border-top: none; }
-.dup__pct { font-family: var(--font-mono); font-size: 12px; color: var(--text-2); white-space: nowrap; }
-.dup__ok { margin-top: 10px; font-size: 13.5px; color: var(--text-dim); }

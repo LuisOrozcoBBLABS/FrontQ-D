@@ -8,16 +8,9 @@ import { UsersService } from '../../core/users.service';
 import { ToastService } from '../../core/toast.service';
 import { ASIG_ESTADOS, Assignment, AssignmentStatus, PRIORIDADES, Prioridad } from '../../core/models';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
+import { SECUENCIA, SIGUIENTE, esFinal, puedeIr, retrocesoDe } from '../../core/transiciones';
 
-/** Mismo orden que la máquina de estados del backend. */
-const SECUENCIA: AssignmentStatus[] = ['pendiente', 'aceptada', 'en-curso', 'completada'];
 
-/** Único avance válido desde cada estado, con el verbo de la acción. */
-const SIGUIENTE: Partial<Record<AssignmentStatus, { estado: AssignmentStatus; verbo: string }>> = {
-  pendiente: { estado: 'aceptada', verbo: 'Aceptar' },
-  aceptada: { estado: 'en-curso', verbo: 'Empezar' },
-  'en-curso': { estado: 'completada', verbo: 'Completar' },
-};
 
 @Component({
   selector: 'app-assignments',
@@ -187,5 +180,104 @@ export class Assignments {
   }
   prioridadLabel(p: Prioridad): string {
     return PRIORIDADES.find(x => x.value === p)?.label ?? p;
+  }
+
+  // ----------------------------------------------------------------- tablero
+  /** La vista elegida se recuerda: quien trabaja con el tablero lo quiere de entrada. */
+  protected vista = signal<'tabla' | 'tablero'>(leerVista());
+
+  protected cambiarVista(v: 'tabla' | 'tablero'): void {
+    this.vista.set(v);
+    try {
+      localStorage.setItem(CLAVE_VISTA, v);
+    } catch {
+      /* sin localStorage la preferencia dura lo que la sesión */
+    }
+  }
+
+  /** Una columna por estado, en el orden de la máquina de estados. */
+  protected columnas = computed(() =>
+    SECUENCIA.map(estado => ({
+      estado,
+      label: this.estadoLabel(estado),
+      items: this.misOrdenadas().filter(a => a.estado === estado),
+    })),
+  );
+
+  /** Tarjeta que se está arrastrando; null cuando no hay arrastre en curso. */
+  protected arrastrando = signal<Assignment | null>(null);
+  protected columnaSobre = signal<AssignmentStatus | null>(null);
+
+  protected puedeSoltar(destino: AssignmentStatus): boolean {
+    const a = this.arrastrando();
+    return !!a && puedeIr(a.estado, destino);
+  }
+
+  protected alIniciarArrastre(a: Assignment, e: DragEvent): void {
+    // Completada es final: sus tarjetas no se mueven.
+    if (esFinal(a.estado)) {
+      e.preventDefault();
+      return;
+    }
+    this.arrastrando.set(a);
+    e.dataTransfer?.setData('text/plain', a.id);
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+  }
+
+  protected alTerminarArrastre(): void {
+    this.arrastrando.set(null);
+    this.columnaSobre.set(null);
+  }
+
+  protected alPasarSobre(destino: AssignmentStatus, e: DragEvent): void {
+    if (!this.puedeSoltar(destino)) return;
+    // Sin preventDefault el navegador no considera la zona como destino válido.
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    this.columnaSobre.set(destino);
+  }
+
+  protected alSalirDeColumna(destino: AssignmentStatus): void {
+    if (this.columnaSobre() === destino) this.columnaSobre.set(null);
+  }
+
+  protected async alSoltar(destino: AssignmentStatus, e: DragEvent): Promise<void> {
+    e.preventDefault();
+    const a = this.arrastrando();
+    this.alTerminarArrastre();
+    if (!a || a.estado === destino) return;
+    await this.mover(a, destino);
+  }
+
+  /** Paso hacia atrás válido, si el estado actual admite volver. */
+  protected retroceso(a: Assignment): AssignmentStatus | null {
+    return retrocesoDe(a.estado);
+  }
+
+  /**
+   * Mueve una tarjeta. El tablero ya filtró los destinos imposibles, pero el
+   * servidor manda: si rechaza, se muestra su mensaje tal cual.
+   */
+  protected async mover(a: Assignment, estado: AssignmentStatus): Promise<void> {
+    if (this.moviendo()) return;
+    this.moviendo.set(a.id);
+    try {
+      await this.assignSvc.updateEstado(a.id, estado);
+      this.toast.success(`${this.projectName(a)} · ahora está ${this.estadoLabel(estado).toLowerCase()}`);
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo cambiar el estado.'));
+    } finally {
+      this.moviendo.set(null);
+    }
+  }
+}
+
+const CLAVE_VISTA = 'plataforma-id.asignaciones-vista';
+
+function leerVista(): 'tabla' | 'tablero' {
+  try {
+    return localStorage.getItem(CLAVE_VISTA) === 'tablero' ? 'tablero' : 'tabla';
+  } catch {
+    return 'tabla';
   }
 }

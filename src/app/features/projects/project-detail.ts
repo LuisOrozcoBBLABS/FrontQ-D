@@ -5,13 +5,11 @@ import { ProjectsService } from '../../core/projects.service';
 import { UsersService } from '../../core/users.service';
 import { AuthService } from '../../core/auth.service';
 import { AssignmentsService } from '../../core/assignments.service';
-import { AiService, PLANTILLAS } from '../../core/ai.service';
 import { CANALES, Canal, CanalEnvio, ESTADOS_PROYECTO, PRIORIDADES, Prioridad, Project, ProjectStatus, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { mensajeDeError } from '../../core/auth.service';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-project-detail',
@@ -24,7 +22,6 @@ export class ProjectDetail {
   private projectsSvc = inject(ProjectsService);
   private usersSvc = inject(UsersService);
   private assignSvc = inject(AssignmentsService);
-  private ai = inject(AiService);
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
   private router = inject(Router);
@@ -42,19 +39,11 @@ export class ProjectDetail {
   protected estados = ESTADOS_PROYECTO;
   protected prioridades = PRIORIDADES;
   protected canales = CANALES;
-  protected plantillas = PLANTILLAS;
 
-  // ---- IA ----
-  protected aiView = signal<'none' | 'enrich' | 'score' | 'committee' | 'docs'>('none');
-  protected docPlantilla = signal<string>(PLANTILLAS[0]);
-  protected enrichResult = computed(() => { const p = this.project(); return p ? this.ai.enrich(p) : null; });
-  protected scoreResult = computed(() => { const p = this.project(); return p ? this.ai.score(p) : null; });
-  protected committeeResult = computed(() => { const p = this.project(); return p ? this.ai.committee(p) : null; });
-  protected docResult = computed(() => { const p = this.project(); return p ? this.ai.generateDoc(p, this.docPlantilla()) : null; });
 
   private id = this.route.snapshot.paramMap.get('id') ?? '';
   protected project = computed<Project | null>(() => this.projectsSvc.byId(this.id) ?? null);
-  protected tab = signal<'resumen' | 'ia' | 'gestion'>('resumen');
+  protected tab = signal<'resumen' | 'gestion'>('resumen');
 
   // ---- Asignar ----
   protected assignOpen = signal(false);
@@ -120,8 +109,6 @@ export class ProjectDetail {
     const has = this.canalesSel().includes(c);
     this.canalesSel.set(has ? this.canalesSel().filter(x => x !== c) : [...this.canalesSel(), c]);
   }
-  /** Las funciones de IA estan fuera del MVP. */
-  protected readonly ia = environment.funcionesIA;
 
   protected asignando = signal(false);
 
@@ -143,31 +130,4 @@ export class ProjectDetail {
   }
   closeAssign(): void { this.assignOpen.set(false); }
 
-  // ---- IA ----
-  openAi(v: 'enrich' | 'score' | 'committee' | 'docs'): void { this.aiView.set(v); }
-  closeAi(): void { this.aiView.set('none'); }
-  async applyEnrich(): Promise<void> {
-    const e = this.enrichResult();
-    if (e) {
-      await this.projectsSvc.saveAi(this.id, { enriquecido: true, enrichment: e });
-      this.toast.success('Proyecto enriquecido con IA');
-    }
-    this.closeAi();
-  }
-  async applyScore(): Promise<void> {
-    const s = this.scoreResult();
-    if (s) {
-      await this.projectsSvc.saveAi(this.id, { score: s.total });
-      this.toast.success('Score guardado');
-    }
-    this.closeAi();
-  }
-  downloadDoc(): void {
-    const d = this.docResult(); if (!d) return;
-    const text = d.titulo + '\n\n' + d.secciones.map(s => s.h.toUpperCase() + '\n' + s.body).join('\n\n');
-    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-    const a = document.createElement('a');
-    a.href = url; a.download = d.titulo.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.txt';
-    a.click(); URL.revokeObjectURL(url);
-  }
 }

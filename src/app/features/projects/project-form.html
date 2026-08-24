@@ -72,29 +72,6 @@
       <textarea id="pl" class="textarea" rows="3" [ngModel]="plusIA()" (ngModelChange)="plusIA.set($event)" placeholder="¿Qué agregarías con IA para diferenciarte de esas apps que ya existen?"></textarea>
     </div>
 
-    @if (ia) {
-    <div class="field">
-      <button class="btn btn--ghost btn--sm" type="button" (click)="checkDuplicates()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        Buscar ideas parecidas (IA)
-      </button>
-      @if (dupResults(); as dups) {
-        @if (dups.length) {
-          <div class="dup enter">
-            <p class="dup__title">Se encontraron ideas parecidas. Considera reutilizarlas o fusionarlas (no bloquea el guardado).</p>
-            @for (m of dups; track m.project.id) {
-              <div class="dup__item">
-                <div><b>{{ m.project.nombre }}</b> <span class="text-dim">· {{ m.project.sector }}</span></div>
-                <span class="dup__pct">{{ pct(m.similitud) }}% similar</span>
-              </div>
-            }
-          </div>
-        } @else {
-          <p class="dup__ok enter">No se encontraron ideas parecidas. Puedes continuar.</p>
-        }
-      }
-    </div>
-    }
 
     @if (error()) { <p class="login__error" style="margin-bottom:16px">{{ error() }}</p> }
 

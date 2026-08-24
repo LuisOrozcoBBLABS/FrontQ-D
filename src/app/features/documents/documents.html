@@ -1,0 +1,36 @@
+<div class="page proximo">
+  <!-- Halos de color detrás del titular. Decorativos: no reciben eventos. -->
+  <div class="proximo__aura" aria-hidden="true">
+    <span class="proximo__orbe proximo__orbe--1"></span>
+    <span class="proximo__orbe proximo__orbe--2"></span>
+  </div>
+
+  <div class="proximo__centro enter">
+    <p class="eyebrow">Documentos</p>
+
+    <h1 class="proximo__titulo">
+      <span class="proximo__brillo">Coming soon</span>
+    </h1>
+
+    <span class="proximo__pill">
+      <span class="proximo__punto" aria-hidden="true"></span>
+      De muy pronto
+    </span>
+
+    <p class="proximo__bajada">
+      Se acaba cargar proyectos a mano. Si el proyecto ya está escrito en un <b>PDF</b> o un
+      <b>DOCX</b>, subís el archivo: la IA lo lee, reconoce cada campo del formulario y crea el
+      proyecto con los datos del documento. Vos solo revisás y confirmás.
+    </p>
+
+    <ol class="proximo__pasos">
+      @for (p of pasos; track p.n) {
+        <li class="proximo__paso">
+          <span class="proximo__n">{{ p.n }}</span>
+          <h2 class="proximo__paso-t">{{ p.titulo }}</h2>
+          <p class="proximo__paso-x">{{ p.texto }}</p>
+        </li>
+      }
+    </ol>
+  </div>
+</div>

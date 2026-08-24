@@ -1,0 +1,99 @@
+LICENCIA DE USO — SOFTWARE PROPIETARIO
+Plataforma R&D · FrontQ-D
+
+Copyright (c) 2026 Blackbird Labs. Todos los derechos reservados.
+
+
+1. TITULARIDAD
+
+Este repositorio, su código fuente, documentación, recursos gráficos, textos y
+cualquier material derivado (en adelante, "el Software") son propiedad exclusiva
+de Blackbird Labs y están protegidos por la Ley 23 de 1982, la Decisión Andina
+351 de 1993 y demás normas colombianas e internacionales sobre derecho de autor.
+
+Que el repositorio sea visible públicamente no altera esta titularidad ni
+constituye liberación del Software como código abierto.
+
+
+2. ALCANCE DE LA AUTORIZACIÓN
+
+Se autoriza únicamente la consulta y lectura del Software con fines de
+evaluación, referencia técnica o revisión académica.
+
+Queda expresamente prohibido, sin autorización previa y por escrito de Blackbird
+Labs:
+
+  a) usar el Software, total o parcialmente, en entornos productivos o
+     comerciales, propios o de terceros;
+  b) copiar, reproducir, modificar, adaptar, traducir o crear obras derivadas;
+  c) distribuir, publicar, sublicenciar, vender, arrendar o ceder el Software;
+  d) integrarlo en otro producto, servicio o plataforma;
+  e) usarlo para entrenar, ajustar o evaluar modelos de aprendizaje automático;
+  f) retirar u ocultar los avisos de autoría, copyright o titularidad.
+
+La autorización de lectura no otorga licencia alguna sobre patentes, secretos
+empresariales ni conocimientos técnicos incorporados al Software.
+
+
+3. MARCAS Y ELEMENTOS DE IDENTIDAD
+
+Los nombres "Blackbird Labs", "Riwi", "Plataforma R&D", sus logotipos, la
+tipografía institucional, la paleta de color y demás elementos del manual de
+marca no se licencian bajo este documento. Su uso requiere autorización escrita
+de sus respectivos titulares.
+
+
+4. CONTRIBUCIONES
+
+Blackbird Labs no solicita contribuciones externas. Toda contribución que se
+envíe de forma espontánea (pull request, parche, sugerencia de código) se
+entiende cedida a título gratuito y sin límite territorial ni temporal a
+Blackbird Labs, quien podrá incorporarla, modificarla o descartarla sin
+obligación de atribución ni contraprestación.
+
+
+5. DATOS Y CONTENIDO DE EJEMPLO
+
+Los datos, nombres, correos y registros que aparezcan en el Software son
+ficticios y existen solo para efectos de demostración. No representan
+información real de clientes, empleados ni aliados de Blackbird Labs. Cualquier
+coincidencia con datos reales debe reportarse al contacto indicado en la
+sección 8.
+
+
+6. AUSENCIA DE GARANTÍA
+
+EL SOFTWARE SE ENTREGA "TAL COMO ESTÁ", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O
+IMPLÍCITA, INCLUIDAS —SIN LIMITARSE A ELLAS— LAS GARANTÍAS DE COMERCIABILIDAD,
+IDONEIDAD PARA UN PROPÓSITO PARTICULAR, DISPONIBILIDAD, EXACTITUD Y NO
+INFRACCIÓN.
+
+
+7. LIMITACIÓN DE RESPONSABILIDAD
+
+EN NINGÚN CASO BLACKBIRD LABS, SUS SOCIOS, DIRECTIVOS O COLABORADORES SERÁN
+RESPONSABLES POR DAÑOS DIRECTOS, INDIRECTOS, INCIDENTALES, ESPECIALES,
+PUNITIVOS O CONSECUENCIALES —INCLUIDOS LUCRO CESANTE, PÉRDIDA DE DATOS O
+INTERRUPCIÓN DE OPERACIONES— DERIVADOS DEL ACCESO AL SOFTWARE O DE SU USO, AUN
+HABIENDO SIDO ADVERTIDOS DE LA POSIBILIDAD DE TALES DAÑOS.
+
+
+8. AUTORIZACIONES Y CONTACTO
+
+Las solicitudes de uso, licenciamiento o cualquier consulta sobre este documento
+deben dirigirse a Blackbird Labs a través del canal corporativo del proyecto.
+
+
+9. TERMINACIÓN
+
+El incumplimiento de cualquiera de estos términos extingue de forma inmediata y
+automática la autorización de consulta concedida en la sección 2, sin necesidad
+de requerimiento previo, y sin perjuicio de las acciones civiles y penales que
+correspondan.
+
+
+10. LEY APLICABLE Y JURISDICCIÓN
+
+Este documento se rige por las leyes de la República de Colombia. Cualquier
+controversia se someterá a los jueces y tribunales competentes de la ciudad de
+Barranquilla, Colombia.

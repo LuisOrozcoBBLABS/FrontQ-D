@@ -26,89 +26,188 @@
         Mis asignaciones
         <span class="bloque__n mono">{{ mias().length }}</span>
       </h2>
-      <p class="bloque__nota">El botón de la última columna es el único paso que el servidor acepta desde el estado actual.</p>
+      <div class="vista">
+        <p class="bloque__nota">
+          @if (vista() === 'tablero') {
+            Arrastrá una tarjeta a la columna siguiente. Las que no admite el servidor se apagan.
+          } @else {
+            El botón de la última columna es el único paso que el servidor acepta desde el estado actual.
+          }
+        </p>
+        <div class="segmento" role="group" aria-label="Forma de ver las asignaciones">
+          <button class="segmento__b" type="button" [class.segmento__b--on]="vista() === 'tabla'"
+                  [attr.aria-pressed]="vista() === 'tabla'" (click)="cambiarVista('tabla')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+            Tabla
+          </button>
+          <button class="segmento__b" type="button" [class.segmento__b--on]="vista() === 'tablero'"
+                  [attr.aria-pressed]="vista() === 'tablero'" (click)="cambiarVista('tablero')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.2"/><rect x="9.5" y="4" width="5" height="11" rx="1.2"/><rect x="16" y="4" width="5" height="14" rx="1.2"/></svg>
+            Tablero
+          </button>
+        </div>
+      </div>
     </header>
 
-    <div class="table-wrap">
-      <div class="table-scroll">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Proyecto</th>
-              <th>Prioridad</th>
-              <th>Estado</th>
-              <th>Plazo</th>
-              <th>Asignó</th>
-              <th class="table__min">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (cargando() && !mias().length) {
-              @for (i of [1, 2, 3]; track i) {
-                <tr>
-                  @for (c of [1, 2, 3, 4, 5, 6]; track c) { <td><span class="esq"></span></td> }
-                </tr>
-              }
-            } @else {
-              @for (a of miasPagina(); track a.id) {
-                <tr [class.destacada]="destacada() === a.id" [attr.id]="'asg-' + a.id">
-                  <td>
-                    <a class="fila__link" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a>
-                    @if (a.nota) { <span class="celda-sub">{{ recorte(a.nota) }}</span> }
-                  </td>
-                  <td><span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span></td>
-                  <td><span [class]="'estado estado--' + a.estado">{{ estadoLabel(a.estado) }}</span></td>
-                  <td [class.plazo--alerta]="vencida(a)">
-                    @if (vencida(a)) {
-                      <svg class="plazo__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
-                    }
-                    {{ plazo(a.fechaLimite) }}
-                  </td>
-                  <td>
-                    <span class="celda-persona">
-                      <span class="celda-ini" aria-hidden="true">{{ iniciales(asignadoPor(a)) }}</span>
-                      {{ asignadoPor(a) }}
-                    </span>
-                  </td>
-                  <td class="table__min">
-                    @if (siguientePaso(a); as paso) {
-                      <button
-                        class="btn btn--primary btn--sm"
-                        type="button"
-                        [disabled]="moviendo() === a.id"
-                        (click)="avanzar(a)"
-                      >
-                        {{ moviendo() === a.id ? 'Guardando…' : paso.verbo }}
-                      </button>
-                    } @else {
-                      <span class="cerrada">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
-                        Cerrada
-                      </span>
-                    }
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="6" class="table__vacia">
-                    <b>No tenés asignaciones</b>
-                    Cuando el jefe de innovación te asigne un proyecto, aparece acá con su prioridad y su plazo.
-                  </td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
-      </div>
+    @if (vista() === 'tablero') {
+      <div class="kanban" [class.kanban--activo]="!!arrastrando()">
+        @for (col of columnas(); track col.estado) {
+          <section
+            class="kcol"
+            [class.kcol--destino]="!!arrastrando() && puedeSoltar(col.estado)"
+            [class.kcol--vetada]="!!arrastrando() && !puedeSoltar(col.estado)"
+            [class.kcol--sobre]="columnaSobre() === col.estado"
+            (dragover)="alPasarSobre(col.estado, $event)"
+            (dragleave)="alSalirDeColumna(col.estado)"
+            (drop)="alSoltar(col.estado, $event)"
+          >
+            <header class="kcol__head">
+              <span [class]="'kcol__punto estado--' + col.estado" aria-hidden="true"></span>
+              <h3 class="kcol__t">{{ col.label }}</h3>
+              <span class="kcol__n mono">{{ col.items.length }}</span>
+            </header>
 
-      <app-paginador
-        [pagina]="pagMias()"
-        [total]="mias().length"
-        [porPagina]="porPagina"
-        etiqueta="asignaciones"
-        (cambia)="pagMias.set($event)"
-      />
-    </div>
+            <div class="kcol__body">
+              @for (a of col.items; track a.id) {
+                <article
+                  class="kard"
+                  [attr.id]="'asg-' + a.id"
+                  [class.destacada]="destacada() === a.id"
+                  [class.kard--vencida]="vencida(a)"
+                  [class.kard--moviendo]="moviendo() === a.id"
+                  [attr.draggable]="retroceso(a) || siguientePaso(a) ? 'true' : 'false'"
+                  (dragstart)="alIniciarArrastre(a, $event)"
+                  (dragend)="alTerminarArrastre()"
+                >
+                  <div class="kard__top">
+                    <span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span>
+                    @if (vencida(a)) {
+                      <svg class="kard__alerta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Vencida"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
+                    }
+                  </div>
+
+                  <a class="kard__proyecto" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a>
+                  @if (a.nota) { <p class="kard__nota">{{ recorte(a.nota, 90) }}</p> }
+
+                  <p class="kard__plazo" [class.kard__plazo--alerta]="vencida(a)">{{ plazo(a.fechaLimite) }}</p>
+
+                  <footer class="kard__pie">
+                    <span class="celda-persona" [title]="'Asignó ' + asignadoPor(a)">
+                      <span class="celda-ini" aria-hidden="true">{{ iniciales(asignadoPor(a)) }}</span>
+                    </span>
+
+                    <div class="kard__acciones">
+                      @if (retroceso(a); as atras) {
+                        <button class="kard__b" type="button" [disabled]="moviendo() === a.id"
+                                (click)="mover(a, atras)"
+                                [attr.aria-label]="'Devolver a ' + estadoLabel(atras)">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                      }
+                      @if (siguientePaso(a); as paso) {
+                        <button class="btn btn--primary btn--sm" type="button"
+                                [disabled]="moviendo() === a.id" (click)="mover(a, paso.estado)">
+                          {{ moviendo() === a.id ? 'Guardando…' : paso.verbo }}
+                        </button>
+                      }
+                    </div>
+                  </footer>
+                </article>
+              } @empty {
+                <p class="kcol__vacia">Nada acá</p>
+              }
+            </div>
+          </section>
+        }
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Proyecto</th>
+                <th>Prioridad</th>
+                <th>Estado</th>
+                <th>Plazo</th>
+                <th>Asignó</th>
+                <th class="table__min">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (cargando() && !mias().length) {
+                @for (i of [1, 2, 3]; track i) {
+                  <tr>
+                    @for (c of [1, 2, 3, 4, 5, 6]; track c) { <td><span class="esq"></span></td> }
+                  </tr>
+                }
+              } @else {
+                @for (a of miasPagina(); track a.id) {
+                  <tr [class.destacada]="destacada() === a.id" [attr.id]="'asg-' + a.id">
+                    <td>
+                      <a class="fila__link" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a>
+                      @if (a.nota) { <span class="celda-sub">{{ recorte(a.nota) }}</span> }
+                    </td>
+                    <td><span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span></td>
+                    <td><span [class]="'estado estado--' + a.estado">{{ estadoLabel(a.estado) }}</span></td>
+                    <td [class.plazo--alerta]="vencida(a)">
+                      @if (vencida(a)) {
+                        <svg class="plazo__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
+                      }
+                      {{ plazo(a.fechaLimite) }}
+                    </td>
+                    <td>
+                      <span class="celda-persona">
+                        <span class="celda-ini" aria-hidden="true">{{ iniciales(asignadoPor(a)) }}</span>
+                        {{ asignadoPor(a) }}
+                      </span>
+                    </td>
+                    <td class="table__min">
+                      @if (siguientePaso(a); as paso) {
+                        <button
+                          class="btn btn--primary btn--sm"
+                          type="button"
+                          [disabled]="moviendo() === a.id"
+                          (click)="avanzar(a)"
+                        >
+                          {{ moviendo() === a.id ? 'Guardando…' : paso.verbo }}
+                        </button>
+                      } @else if (retroceso(a); as atras) {
+                        <span class="cerrada-fila">
+                          <span class="cerrada">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
+                            Cerrada
+                          </span>
+                          <button class="btn btn--ghost btn--sm" type="button" [disabled]="moviendo() === a.id"
+                                  (click)="mover(a, atras)">
+                            {{ moviendo() === a.id ? 'Guardando…' : 'Reabrir' }}
+                          </button>
+                        </span>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="table__vacia">
+                      <b>No tenés asignaciones</b>
+                      Cuando el jefe de innovación te asigne un proyecto, aparece acá con su prioridad y su plazo.
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <app-paginador
+          [pagina]="pagMias()"
+          [total]="mias().length"
+          [porPagina]="porPagina"
+          etiqueta="asignaciones"
+          (cambia)="pagMias.set($event)"
+        />
+      </div>
+    }
   </section>
 
   <!-- ================= Vista de quien asigna ================= -->

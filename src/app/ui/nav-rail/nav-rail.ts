@@ -12,8 +12,7 @@ export type RailIcon =
   | 'inicio'
   | 'proyectos'
   | 'asignaciones'
-  | 'conocimiento'
-  | 'oportunidades'
+  | 'documentos'
   | 'grupos'
   | 'usuarios';
 
@@ -63,19 +62,7 @@ export class NavRail {
       { path: '/inicio', label: 'Inicio', icon: 'inicio' as RailIcon, show: true },
       { path: '/proyectos', label: 'Proyectos', icon: 'proyectos' as RailIcon, show: true },
       { path: '/asignaciones', label: 'Asignaciones', icon: 'asignaciones' as RailIcon, show: true },
-      // Módulos de IA: ocultos mientras el motor no sea real (environment.funcionesIA).
-      {
-        path: '/conocimiento',
-        label: 'Conocimiento',
-        icon: 'conocimiento' as RailIcon,
-        show: environment.funcionesIA,
-      },
-      {
-        path: '/oportunidades',
-        label: 'Oportunidades',
-        icon: 'oportunidades' as RailIcon,
-        show: environment.funcionesIA && this.auth.can('reports.view'),
-      },
+      { path: '/documentos', label: 'Documentos', icon: 'documentos' as RailIcon, show: true },
       { path: '/grupos', label: 'Grupos', icon: 'grupos' as RailIcon, show: this.auth.can('groups.manage') },
       { path: '/usuarios', label: 'Usuarios', icon: 'usuarios' as RailIcon, show: this.auth.can('users.manage') },
     ].filter(i => i.show),

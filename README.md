@@ -7,6 +7,12 @@ Consume la API de [BackQ-D](https://github.com/LuisOrozcoBBLABS/BackQ-D).
 - **Identidad:** manual de marca Blackbird Labs powered by Riwi — tipografía Montserrat,
   Neon Lime `#B2EA36` como acento, Obsidian Black `#0B0A07` como base.
 
+## Prerrequisitos
+
+- Node.js 20+ (recomendado: 22 LTS)
+- npm 11+
+- [BackQ-D](https://github.com/LuisOrozcoBBLABS/BackQ-D) corriendo en `localhost:3000`
+
 ## Arrancar en local
 
 ```bash
@@ -21,6 +27,19 @@ Queda en `http://localhost:4300` (el CORS del backend espera ese puerto).
 Para que la aplicación tenga datos, la API de BackQ-D debe estar corriendo en
 `http://localhost:3000`.
 
+## Testing
+
+```bash
+npm test
+```
+
+Los tests usan **Vitest** y cubren componentes, servicios y modelos.
+
+## Variables de entorno
+
+El front no necesita `.env` — la URL de la API está en `src/environments/`. Si
+necesitás apuntar a otro backend, editá `environment.ts`.
+
 ## Cómo está organizado
 
 ```
@@ -34,7 +53,6 @@ src/
     │   └── theme-toggle
     └── features/        una carpeta por módulo (login, proyectos, grupos, …)
 public/brand/            isotipo y logo oficiales, en blanco y negro
-docs/                    documentación de la fase simulada, como referencia histórica
 ```
 
 ## Sistema de diseño
@@ -205,6 +223,15 @@ Las 7 funciones de IA quedan fuera del MVP: sus resultados son deterministas y
 simulados, no hay modelo detrás. Se reactivarán cuando exista el motor con
 OpenAI en el backend.
 
+## Scripts disponibles
+
+| Comando | Qué hace |
+|---|---|
+| `npm start` | Levanta el dev server en `localhost:4300` |
+| `npm run build` | Build de producción en `dist/` |
+| `npm test` | Ejecuta los tests con Vitest |
+| `npm run watch` | Build en watch mode para desarrollo |
+
 ## Registro de cambios
 
 | Rama | Qué cambió |
@@ -218,3 +245,32 @@ OpenAI en el backend.
 | `main` | MVP: funciones de IA ocultas detras de `environment.funcionesIA` (dock, rutas con `iaGuard`, pestana del detalle, buscador de duplicados y accesos del inicio), y textos que ya no prometen lo que no hay. |
 | `main` | Conexion con la API de BackQ-D: interceptor con renovacion de token, guards asincronos, pantalla de cambio de clave obligatorio y los 4 servicios sobre HTTP. |
 | `main` | Traslado desde `portafolio-ia/plataforma-id/web`. Sistema de diseño alineado al manual de marca (Montserrat, paleta oficial, escala tipográfica, ritmo de 4pt). Dock de módulos en cristal líquido reemplazando la barra de navegación superior y el drawer móvil. Corregido el subrayado involuntario de todos los enlaces. Logos oficiales en `public/brand/`. |
+
+## Entornos
+
+| Entorno | Front | API |
+|---|---|---|
+| Local | `http://localhost:4300` | `http://localhost:3000/api` (BackQ-D corriendo en la máquina) |
+| Producción | https://luisorozcobblabs.github.io/FrontQ-D/ | https://backq-d.onrender.com/api |
+
+Documentación interactiva de la API: https://backq-d.onrender.com/api/docs
+
+El valor lo resuelve `src/environments/environment.ts` en desarrollo y
+`environment.prod.ts` en el build de producción (`fileReplacements` en
+`angular.json`). No hay URLs de API escritas en los servicios.
+
+Dos cosas a tener en cuenta con el entorno de producción:
+
+- **CORS.** La API solo responde a los orígenes que estén en su variable
+  `FRONTEND_URL`. Si el front se publica en un dominio nuevo, hay que agregarlo
+  ahí o el navegador bloquea todas las peticiones.
+- **Arranque en frío.** El plan gratuito de Render duerme la instancia tras unos
+  minutos sin tráfico: la primera petición puede tardar cerca de un minuto y las
+  siguientes responden normal.
+
+## Licencia
+
+Software propietario de Blackbird Labs. El repositorio es visible públicamente
+para consulta y referencia técnica, pero **no es código abierto**: no se
+autoriza su uso, copia, modificación ni distribución sin permiso escrito.
+Los términos completos están en [LICENSE](LICENSE).

@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import {
   authGuard,
   cambioClaveGuard,
-  iaGuard,
   guestGuard,
   onboardedRedirectGuard,
   onboardingGuard,
@@ -50,8 +49,7 @@ export const routes: Routes = [
       },
       { path: 'proyectos', loadComponent: () => import('./features/projects/projects').then(m => m.Projects) },
       { path: 'asignaciones', loadComponent: () => import('./features/assignments/assignments').then(m => m.Assignments) },
-      { path: 'conocimiento', canActivate: [iaGuard, permissionGuard('ai.use')], loadComponent: () => import('./features/knowledge/knowledge').then(m => m.Knowledge) },
-      { path: 'oportunidades', canActivate: [iaGuard, permissionGuard('reports.view')], loadComponent: () => import('./features/opportunities/opportunities').then(m => m.Opportunities) },
+      { path: 'documentos', loadComponent: () => import('./features/documents/documents').then(m => m.Documents) },
       {
         path: 'proyectos/nuevo',
         canActivate: [permissionGuard('projects.create')],

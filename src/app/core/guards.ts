@@ -1,7 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
-import { environment } from '../../environments/environment';
 
 /**
  * Los guards son asíncronos porque al recargar la página hay que resolver la
@@ -65,13 +64,4 @@ export const cambioClaveGuard: CanActivateFn = async () => {
 
   if (!(await auth.asegurarSesion())) return router.createUrlTree(['/login']);
   return auth.debeCambiarPassword() ? true : router.createUrlTree(['/inicio']);
-};
-
-/**
- * Modulos de IA apagados en el MVP: sus resultados son simulados. Si alguien
- * llega por URL directa, vuelve al inicio en lugar de ver numeros inventados.
- */
-export const iaGuard: CanActivateFn = () => {
-  const router = inject(Router);
-  return environment.funcionesIA ? true : router.createUrlTree(['/inicio']);
 };

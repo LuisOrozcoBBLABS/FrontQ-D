@@ -9,8 +9,6 @@
       <div class="proj-head">
         <span class="tag-mono">{{ p.sector }}</span>
         <span class="badge" [class.badge--on]="p.estado === 'aprobado'">{{ estadoLabel(p.estado) }}</span>
-        @if (p.score != null) { <span class="tag-mono">Score {{ p.score }}</span> }
-        @if (p.enriquecido) { <span class="badge">Enriquecido IA</span> }
       </div>
       <h1 class="page__title">{{ p.nombre }}</h1>
       <p class="page__sub">{{ p.grupo ? 'Grupo ' + p.grupo : 'Sin grupo' }} · por {{ autor() }}</p>
@@ -18,9 +16,6 @@
 
     <div class="tabs enter">
       <button class="tab" type="button" [class.tab--on]="tab()==='resumen'" (click)="tab.set('resumen')">Resumen</button>
-      @if (ia) {
-        <button class="tab" type="button" [class.tab--on]="tab()==='ia'" (click)="tab.set('ia')">IA</button>
-      }
       @if (canAssign() || canManage()) {
         <button class="tab" type="button" [class.tab--on]="tab()==='gestion'" (click)="tab.set('gestion')">Gestión</button>
       }
@@ -51,31 +46,8 @@
         </div>
       </div>
 
-      @if (p.enrichment; as e) {
-        <div class="card enter" style="max-width:760px;margin-top:18px">
-          <h3 style="font-size:16px;margin-bottom:12px">Insights de IA</h3>
-          <p class="text-2" style="font-size:14.5px;margin-bottom:14px">{{ e.objetivo }}</p>
-          <div class="ia-bars">
-            <div class="ia-bar"><span>Impacto</span><div class="bar"><div class="bar__fill" [style.width.%]="e.impacto"></div></div><b>{{ e.impacto }}</b></div>
-            <div class="ia-bar"><span>Viabilidad</span><div class="bar"><div class="bar__fill" [style.width.%]="e.viabilidad"></div></div><b>{{ e.viabilidad }}</b></div>
-          </div>
-          <div style="margin-top:14px"><span class="block__label">KPIs sugeridos</span><ul class="ia-list">@for (k of e.kpis; track k) { <li>{{ k }}</li> }</ul></div>
-        </div>
-      }
     }
 
-    @if (ia && tab() === 'ia') {
-      <div class="card enter" style="max-width:760px">
-        <h3 style="font-size:16px;margin-bottom:6px">Funciones de IA</h3>
-        <p class="text-2" style="font-size:13.5px;margin-bottom:14px">Simuladas (deterministas). En producción: Claude/Ollama + pgvector + n8n.</p>
-        <div class="toolbar" style="margin:0">
-          <button class="btn btn--ghost btn--sm" type="button" (click)="openAi('enrich')">Enriquecer con IA</button>
-          <button class="btn btn--ghost btn--sm" type="button" (click)="openAi('score')">Calcular score</button>
-          <button class="btn btn--ghost btn--sm" type="button" (click)="openAi('committee')">Enviar al comité</button>
-          <button class="btn btn--ghost btn--sm" type="button" (click)="openAi('docs')">Generar documentos</button>
-        </div>
-      </div>
-    }
 
     @if (tab() === 'gestion') {
       @if (canAssign()) {
@@ -169,72 +141,6 @@
               <button class="btn btn--ghost" type="button" (click)="closeAssign()">Cancelar</button>
               <button class="btn btn--primary" type="button" (click)="doAssign()" [disabled]="!assignee()">Asignar y notificar</button>
             </div>
-          }
-        </div>
-      </div>
-    }
-    <!-- Modal de IA -->
-    @if (aiView() !== 'none') {
-      <div class="modal" role="dialog" aria-modal="true">
-        <div class="modal__backdrop" (click)="closeAi()"></div>
-        <div class="modal__panel" style="width:min(94vw,640px)" appTrapFocus (dismiss)="closeAi()">
-          <div class="modal__head">
-            <div>
-              <p class="eyebrow">Función de IA · simulada</p>
-              <h2 class="modal__title">{{ aiView()==='enrich' ? 'Enriquecimiento con IA' : aiView()==='score' ? 'Score de innovación' : aiView()==='committee' ? 'Comité de innovación IA' : 'Generación de documentos' }}</h2>
-            </div>
-            <button class="theme-fab" type="button" (click)="closeAi()" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-          </div>
-
-          @if (aiView()==='enrich' && enrichResult(); as e) {
-            <div class="block-sec" style="padding-top:0;border:none"><span class="block__label">Objetivo</span><p>{{ e.objetivo }}</p></div>
-            <div class="block-sec"><span class="block__label">Beneficios</span><ul class="ia-list">@for (b of e.beneficios; track b) { <li>{{ b }}</li> }</ul></div>
-            <div class="block-sec"><span class="block__label">Riesgos</span><ul class="ia-list">@for (r of e.riesgos; track r) { <li>{{ r }}</li> }</ul></div>
-            <div class="block-sec"><span class="block__label">KPIs sugeridos</span><ul class="ia-list">@for (k of e.kpis; track k) { <li>{{ k }}</li> }</ul></div>
-            <div class="ia-bars">
-              <div class="ia-bar"><span>Impacto</span><div class="bar"><div class="bar__fill" [style.width.%]="e.impacto"></div></div><b>{{ e.impacto }}</b></div>
-              <div class="ia-bar"><span>Viabilidad</span><div class="bar"><div class="bar__fill" [style.width.%]="e.viabilidad"></div></div><b>{{ e.viabilidad }}</b></div>
-            </div>
-            <div class="modal__foot"><button class="btn btn--ghost" type="button" (click)="closeAi()">Cerrar</button><button class="btn btn--primary" type="button" (click)="applyEnrich()">Aplicar al proyecto</button></div>
-          }
-
-          @if (aiView()==='score' && scoreResult(); as s) {
-            <div class="score-big">{{ s.total }}<span>/100</span></div>
-            <div class="ia-bars">
-              @for (c of s.criterios; track c.criterio) {
-                <div class="ia-bar"><span>{{ c.criterio }}</span><div class="bar"><div class="bar__fill" [style.width.%]="c.valor"></div></div><b>{{ c.valor }}</b></div>
-              }
-            </div>
-            <div class="modal__foot"><button class="btn btn--ghost" type="button" (click)="closeAi()">Cerrar</button><button class="btn btn--primary" type="button" (click)="applyScore()">Guardar score</button></div>
-          }
-
-          @if (aiView()==='committee' && committeeResult(); as c) {
-            <div class="consol">
-              <div class="consol__top"><span class="badge badge--on">{{ c.consolidado.recomendacion }}</span><span class="score-mini">{{ c.consolidado.score }}/100</span></div>
-              <p class="text-2" style="font-size:14px">{{ c.consolidado.resumen }}</p>
-            </div>
-            @for (a of c.agentes; track a.area) {
-              <div class="agent">
-                <div class="agent__top"><b>{{ a.area }}</b><span class="badge" [class.badge--on]="a.veredicto==='Favorable'">{{ a.veredicto }}</span><span class="agent__score">{{ a.score }}</span></div>
-                <p class="agent__c">{{ a.comentario }}</p>
-                <p class="agent__r">→ {{ a.recomendacion }}</p>
-              </div>
-            }
-            <div class="modal__foot"><button class="btn btn--primary" type="button" (click)="closeAi()">Listo</button></div>
-          }
-
-          @if (aiView()==='docs' && docResult(); as d) {
-            <div class="field">
-              <label for="tpl">Plantilla</label>
-              <select id="tpl" class="select" [ngModel]="docPlantilla()" (ngModelChange)="docPlantilla.set($event)">
-                @for (t of plantillas; track t) { <option [value]="t">{{ t }}</option> }
-              </select>
-            </div>
-            <div class="doc">
-              <h4 class="doc__title">{{ d.titulo }}</h4>
-              @for (s of d.secciones; track s.h) { <div class="doc__sec"><span class="block__label">{{ s.h }}</span><p>{{ s.body }}</p></div> }
-            </div>
-            <div class="modal__foot"><button class="btn btn--ghost" type="button" (click)="closeAi()">Cerrar</button><button class="btn btn--primary" type="button" (click)="downloadDoc()">Descargar .txt</button></div>
           }
         </div>
       </div>

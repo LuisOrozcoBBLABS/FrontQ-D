@@ -6,7 +6,7 @@ import { GroupsService } from '../../core/groups.service';
 import { SolicitudReset } from '../../core/users.service';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
 import { mensajeDeError } from '../../core/auth.service';
-import { PERMISSIONS, ROLES, RoleId, User } from '../../core/models';
+import { RoleId, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
@@ -40,8 +40,9 @@ export class Users {
   protected list = this.usersSvc.users;
   protected cargando = this.usersSvc.cargando;
   protected errorCarga = this.usersSvc.error;
-  protected permisos = PERMISSIONS;
-  protected roles = Object.values(ROLES);
+  /** Catálogos reales: los sirve la API desde la base, no una copia local. */
+  protected permisos = this.usersSvc.permisos;
+  protected roles = this.usersSvc.roles;
   /** Los grupos llegan de la API: el select necesita el id, no el nombre. */
   protected grupos = this.groupsSvc.groups;
   protected solicitudes = this.usersSvc.solicitudes;
@@ -49,6 +50,8 @@ export class Users {
   constructor() {
     void this.groupsSvc.load();
     void this.usersSvc.loadSolicitudes();
+    void this.usersSvc.loadPermisos();
+    void this.usersSvc.loadRoles();
 
     // Filtros y pagina se resuelven en el servidor: con volumen alto, filtrar
     // solo la pagina cargada mostraria resultados incompletos.
@@ -133,7 +136,11 @@ export class Users {
   protected modalOpen = signal(false);
   protected draft = signal<Draft | null>(null);
   protected isEdit = computed(() => !!this.draft()?.id);
-  protected rolePerms = computed(() => (this.draft() ? ROLES[this.draft()!.rol].permissions : []));
+  protected rolePerms = computed<string[]>(() => {
+    const d = this.draft();
+    if (!d) return [];
+    return this.usersSvc.roles().find(r => r.id === d.rol)?.permissions ?? [];
+  });
 
   openCreate(): void {
     this.draft.set({ nombre: '', email: '', cargo: '', rol: 'colaborador', groupId: null, activo: true, permisosExtra: [], password: '' });
@@ -312,6 +319,14 @@ export class Users {
   }
 
   initials(n: string): string { return n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase(); }
-  roleLabel(r: RoleId): string { return ROLES[r].label; }
-  effectiveCount(u: User): number { return u.permisosEfectivos?.length ?? new Set([...ROLES[u.rol].permissions, ...u.permisosExtra]).size; }
+  /** La etiqueta del rol la define la base; mientras carga, se muestra el id. */
+  roleLabel(r: RoleId): string {
+    return this.usersSvc.roles().find(x => x.id === r)?.label ?? r;
+  }
+  /** El servidor ya resuelve los permisos efectivos; el cálculo local es solo respaldo. */
+  effectiveCount(u: User): number {
+    if (u.permisosEfectivos) return u.permisosEfectivos.length;
+    const base = this.usersSvc.roles().find(x => x.id === u.rol)?.permissions ?? [];
+    return new Set([...base, ...u.permisosExtra]).size;
+  }
 }

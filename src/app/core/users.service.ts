@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Permission, User } from './models';
+import { Permission, Role, RoleId, User } from './models';
 import { FILAS_POR_PAGINA } from '../ui/paginador/paginador';
 
 /** Pedido de restablecimiento hecho desde la pantalla de recuperacion. */
@@ -52,6 +52,7 @@ export class UsersService {
   private readonly _cargando = signal(false);
   private readonly _error = signal<string | null>(null);
   private readonly _permisos = signal<Permission[]>([]);
+  private readonly _roles = signal<Role[]>([]);
   private readonly _solicitudes = signal<SolicitudReset[]>([]);
   /** Total que cumple los filtros en el servidor. */
   private readonly _total = signal(0);
@@ -62,6 +63,7 @@ export class UsersService {
   readonly cargando = this._cargando.asReadonly();
   readonly error = this._error.asReadonly();
   readonly permisos = this._permisos.asReadonly();
+  readonly roles = this._roles.asReadonly();
   readonly solicitudes = this._solicitudes.asReadonly();
   readonly total = this._total.asReadonly();
 
@@ -106,7 +108,27 @@ export class UsersService {
       );
       this._permisos.set(p.map(x => ({ id: x.id, label: x.label, desc: x.desc, group: x.grupo })));
     } catch {
-      /* la vista cae al catálogo local si esto falla */
+      this._error.set('No se pudo cargar el catálogo de permisos.');
+    }
+  }
+
+  /**
+   * Catálogo de roles con sus permisos base. La API los devuelve como filas de
+   * la tabla puente, por eso se aplanan a una lista de ids.
+   */
+  async loadRoles(): Promise<void> {
+    if (this._roles().length) return;
+    try {
+      const r = await firstValueFrom(
+        this.http.get<{ id: RoleId; label: string; permissions: { permissionId: string }[] }[]>(
+          `${this.base}/roles`,
+        ),
+      );
+      this._roles.set(
+        r.map(x => ({ id: x.id, label: x.label, permissions: x.permissions.map(rp => rp.permissionId) })),
+      );
+    } catch {
+      this._error.set('No se pudo cargar el catálogo de roles.');
     }
   }
 
