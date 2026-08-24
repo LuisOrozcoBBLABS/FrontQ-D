@@ -5,8 +5,15 @@ import { ProjectsService } from '../../core/projects.service';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
-import { ESTADOS_PROYECTO, Project, ProjectStatus, SECTORES } from '../../core/models';
+import { ESTADOS_PROYECTO, Project, ProjectStatus, SECTORES, etapaDe } from '../../core/models';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { Select } from 'primeng/select';
+import { InputText } from 'primeng/inputtext';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { Tag } from 'primeng/tag';
 
 /** Filtro activo, para poder mostrarlo y quitarlo con un clic. */
 interface FiltroActivo {
@@ -16,7 +23,18 @@ interface FiltroActivo {
 
 @Component({
   selector: 'app-projects-table',
-  imports: [RouterLink, FormsModule, Paginador],
+  imports: [
+    RouterLink,
+    FormsModule,
+    Paginador,
+    TableModule,
+    ButtonModule,
+    Select,
+    InputText,
+    IconField,
+    InputIcon,
+    Tag,
+  ],
   templateUrl: './projects-table.html',
   styleUrl: './projects-table.scss',
 })
@@ -40,6 +58,29 @@ export class ProjectsTable {
 
   protected sectores = SECTORES;
   protected estados = ESTADOS_PROYECTO;
+
+  /** PrimeNG trabaja con listas de opciones, no con <option>. */
+  protected opcionesSector = computed(() => [
+    { label: 'Todos los sectores', value: 'all' },
+    ...SECTORES.map(x => ({ label: x, value: x })),
+  ]);
+
+  protected opcionesEstado = computed(() => [
+    { label: 'Todas las etapas', value: 'all' },
+    ...ESTADOS_PROYECTO.map(e => ({ label: e.label, value: e.value })),
+  ]);
+
+  /**
+   * La etapa se lee por color, no solo por texto. Va por fase, no por etapa
+   * suelta: con diez etapas, diez colores serían ruido.
+   */
+  severidadEstado(e: ProjectStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+    if (e === 'descartado') return 'danger';
+    if (e === 'produccion') return 'success';
+    const fase = etapaDe(e).fase;
+    if (fase === 'desarrollo') return 'info';
+    return 'warn'; // embudo: idea, evaluacion, aprobado
+  }
 
   protected query = signal('');
   protected sectorF = signal<string>('all');

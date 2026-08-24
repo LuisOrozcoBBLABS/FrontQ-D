@@ -1,0 +1,9 @@
+{
+  "//": "Apunta al BackQ-D local: es el unico que tiene el pipeline de 10 etapas, el historial y PATCH /projects/:id/estado. Para trabajar contra el desplegado, cambiar target a https://backq-d.onrender.com y secure a true.",
+  "/api": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "info"
+  }
+}

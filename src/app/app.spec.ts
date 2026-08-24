@@ -1,10 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      // Las capas globales de UI son de PrimeNG y piden sus servicios. En la
+      // aplicación los aporta app.config; acá hay que declararlos a mano.
+      providers: [MessageService, ConfirmationService],
     }).compileComponents();
   });
 

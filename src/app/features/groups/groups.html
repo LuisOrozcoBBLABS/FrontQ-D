@@ -6,62 +6,61 @@
   </div>
 
   <div class="toolbar enter">
-    <button class="btn btn--primary" type="button" (click)="openCreate()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-      Nuevo grupo
-    </button>
+    <p-button label="Nuevo grupo" icon="pi pi-plus" (onClick)="openCreate()" />
     <span class="chip">{{ groups().length }} grupos</span>
   </div>
 
   <div class="table-wrap enter">
-    <div class="table-scroll">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Grupo</th>
-            <th>Lema</th>
-            <th>Integrantes</th>
-            <th class="table__min">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (g of pagados(); track g.id) {
-            <tr>
-              <td>{{ g.nombre }}</td>
-              <td>{{ g.lema || '—' }}</td>
-              <td>
-                <div class="integrantes">
-                  @for (m of members(g); track m.id) {
-                    <span class="celda-ini" [title]="m.nombre">
-                      @if (m.avatarUrl) { <img [src]="m.avatarUrl" alt="" /> } @else { {{ initials(m.nombre) }} }
-                    </span>
-                  } @empty {
-                    <span class="text-dim">Sin integrantes</span>
-                  }
-                  @if (memberCount(g)) {
-                    <span class="integrantes__n mono">{{ memberCount(g) }}</span>
-                  }
-                </div>
-              </td>
-              <td class="table__min">
-                <div class="table__actions">
-                  <button class="btn btn--ghost btn--sm" type="button" (click)="openMembers(g)">Integrantes</button>
-                  <button class="btn btn--ghost btn--sm" type="button" (click)="openEdit(g)">Editar</button>
-                  <button class="btn btn--danger btn--sm" type="button" (click)="removeGroup(g)">Archivar</button>
-                </div>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="4" class="table__vacia">
-                <b>Todavía no hay grupos</b>
-                Creá el primero y asignale integrantes.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+    <p-table [value]="pagados()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '760px' }">
+      <ng-template #header>
+        <tr>
+          <th>Grupo</th>
+          <th>Lema</th>
+          <th>Integrantes</th>
+          <th class="table__min">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-g>
+        <tr>
+          <td>{{ g.nombre }}</td>
+          <td>{{ g.lema || '—' }}</td>
+          <td>
+            <div class="integrantes">
+              @for (m of members(g); track m.id) {
+                <span class="celda-ini" [pTooltip]="m.nombre" tooltipPosition="top">
+                  @if (m.avatarUrl) { <img [src]="m.avatarUrl" alt="" /> } @else { {{ initials(m.nombre) }} }
+                </span>
+              } @empty {
+                <span class="text-dim">Sin integrantes</span>
+              }
+              @if (memberCount(g)) {
+                <span class="integrantes__n mono">{{ memberCount(g) }}</span>
+              }
+            </div>
+          </td>
+          <td class="table__min">
+            <div class="table__actions">
+              <p-button label="Integrantes" icon="pi pi-users" size="small" [text]="true" severity="secondary"
+                        (onClick)="openMembers(g)" />
+              <p-button icon="pi pi-pencil" size="small" [text]="true" severity="secondary"
+                        pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar" (onClick)="openEdit(g)" />
+              <p-button icon="pi pi-inbox" size="small" [text]="true" severity="danger"
+                        pTooltip="Archivar" tooltipPosition="top" ariaLabel="Archivar" (onClick)="removeGroup(g)" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="4" class="table__vacia">
+            <b>Todavía no hay grupos</b>
+            Creá el primero y asignale integrantes.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
 
     <app-paginador
       [pagina]="pagina()"
@@ -73,61 +72,74 @@
   </div>
 </div>
 
-<!-- Modal crear/editar -->
-@if (formOpen()) {
-  <div class="modal" role="dialog" aria-modal="true">
-    <div class="modal__backdrop" (click)="formOpen.set(false)"></div>
-    <div class="modal__panel" appTrapFocus (dismiss)="formOpen.set(false)">
-      <div class="modal__head">
-        <div><p class="eyebrow">{{ editId() ? 'Editar' : 'Nuevo' }} grupo</p><h2 class="modal__title">{{ editId() ? nombre() : 'Crear grupo' }}</h2></div>
-        <button class="theme-fab" type="button" (click)="formOpen.set(false)" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-      </div>
-      <div class="field">
-        <label for="gn">Nombre del grupo</label>
-        <input id="gn" class="input" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" placeholder="Ej. Manglar" />
-      </div>
-      <div class="field">
-        <label for="gl">Lema</label>
-        <input id="gl" class="input" [ngModel]="lema()" (ngModelChange)="lema.set($event)" placeholder="Frase corta del equipo" />
-      </div>
-      <div class="modal__foot">
-        <button class="btn btn--ghost" type="button" (click)="formOpen.set(false)">Cancelar</button>
-        <button class="btn btn--primary" type="button" (click)="saveGroup()" [disabled]="!nombre().trim()">{{ editId() ? 'Guardar' : 'Crear grupo' }}</button>
-      </div>
+<!-- Alta y edición -->
+<p-dialog
+  [visible]="formOpen()"
+  (visibleChange)="formOpen.set($event)"
+  [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="true"
+  [style]="{ width: 'min(94vw, 520px)' }"
+>
+  <ng-template #header>
+    <div>
+      <p class="eyebrow">{{ editId() ? 'Editar' : 'Nuevo' }} grupo</p>
+      <h2 class="modal__title">{{ editId() ? nombre() : 'Crear grupo' }}</h2>
     </div>
-  </div>
-}
+  </ng-template>
 
-<!-- Modal integrantes -->
-@if (membersFor(); as g) {
-  <div class="modal" role="dialog" aria-modal="true">
-    <div class="modal__backdrop" (click)="closeMembers()"></div>
-    <div class="modal__panel" appTrapFocus (dismiss)="closeMembers()">
-      <div class="modal__head">
-        <div><p class="eyebrow">Integrantes</p><h2 class="modal__title">Grupo {{ g.nombre }}</h2></div>
-        <button class="theme-fab" type="button" (click)="closeMembers()" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-      </div>
-      <p class="text-dim" style="font-size:12.5px;margin:-8px 0 14px">Cada persona pertenece a un solo grupo. Al activarla aquí, se mueve a este grupo.</p>
-      <div class="member-list">
-        @for (u of allUsers(); track u.id) {
-          <label class="member-row">
-            <span class="user-cell">
-              <span class="avatar">@if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }</span>
-              <span>
-                <span class="user-cell__name">{{ u.nombre }}</span>
-                <span class="user-cell__mail">{{ u.grupo ? 'Grupo ' + u.grupo : 'Sin grupo' }}</span>
-              </span>
-            </span>
-            <span class="switch">
-              <input type="checkbox" [checked]="esMiembro(u, g)" (change)="toggleMember(u, g)" />
-              <span class="switch__track"></span>
-            </span>
-          </label>
-        }
-      </div>
-      <div class="modal__foot">
-        <button class="btn btn--primary" type="button" (click)="closeMembers()">Listo</button>
-      </div>
-    </div>
+  <div class="field">
+    <label for="gn">Nombre del grupo</label>
+    <input pInputText id="gn" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" placeholder="Ej. Manglar" />
   </div>
-}
+  <div class="field">
+    <label for="gl">Lema</label>
+    <input pInputText id="gl" [ngModel]="lema()" (ngModelChange)="lema.set($event)" placeholder="Frase corta del equipo" />
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="formOpen.set(false)" />
+    <p-button [label]="editId() ? 'Guardar' : 'Crear grupo'" [disabled]="!nombre().trim()" (onClick)="saveGroup()" />
+  </ng-template>
+</p-dialog>
+
+<!-- Integrantes -->
+<p-dialog
+  [visible]="!!membersFor()"
+  (visibleChange)="alCerrarIntegrantes($event)"
+  [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="true"
+  [style]="{ width: 'min(94vw, 560px)' }"
+>
+  <ng-template #header>
+    <div>
+      <p class="eyebrow">Integrantes</p>
+      <h2 class="modal__title">Grupo {{ membersFor()?.nombre }}</h2>
+    </div>
+  </ng-template>
+
+  @if (membersFor(); as g) {
+    <p class="text-dim" style="font-size:12.5px;margin:-8px 0 14px">
+      Cada persona pertenece a un solo grupo. Al activarla aquí, se mueve a este grupo.
+    </p>
+    <div class="member-list">
+      @for (u of allUsers(); track u.id) {
+        <label class="member-row" [for]="'miembro-' + u.id">
+          <span class="user-cell">
+            <span class="avatar">@if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }</span>
+            <span>
+              <span class="user-cell__name">{{ u.nombre }}</span>
+              <span class="user-cell__mail">{{ u.grupo ? 'Grupo ' + u.grupo : 'Sin grupo' }}</span>
+            </span>
+          </span>
+          <p-toggleswitch
+            [inputId]="'miembro-' + u.id"
+            [ngModel]="esMiembro(u, g)"
+            (ngModelChange)="toggleMember(u, g)"
+          />
+        </label>
+      }
+    </div>
+  }
+
+  <ng-template #footer>
+    <p-button label="Listo" (onClick)="closeMembers()" />
+  </ng-template>
+</p-dialog>

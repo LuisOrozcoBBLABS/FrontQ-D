@@ -233,49 +233,15 @@
   .fases { display: none; }
 }
 
-/* ---------- Buscador y selector ---------- */
-.buscar {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: 0 var(--sp-3);
-  height: 36px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-full);
-  background: var(--surface);
-  color: var(--text-dim);
-  transition: border-color var(--dur-fast) var(--ease);
-}
-.buscar:focus-within { border-color: var(--accent); }
-.buscar svg { width: 15px; height: 15px; flex: none; }
-
-.buscar input {
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: var(--fs-sm);
-  width: 260px;
-  outline: none;
-}
-.buscar input::placeholder { color: var(--text-dim); }
+/* ---------- Buscador ----------
+   El campo es `p-iconfield` + `pInputText`: el estilo lo pone la capa de
+   PrimeNG. Aca solo queda cuanto ocupa dentro de la barra de filtros. */
+.filtro-buscar { flex: 0 1 320px; }
+.filtro-buscar input { width: 100%; }
 
 @media (max-width: 720px) {
-  .buscar input { width: 100%; }
-  .buscar { flex: 1 1 100%; }
+  .filtro-buscar { flex: 1 1 100%; }
 }
-
-.sel {
-  height: 36px;
-  padding: 0 var(--sp-3);
-  border: 1px solid var(--line);
-  border-radius: var(--r-full);
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  font-size: var(--fs-sm);
-}
-.sel:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 /* ---------- Estados de página ---------- */
 .tab__vacio {

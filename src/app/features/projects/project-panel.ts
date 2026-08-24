@@ -5,6 +5,7 @@ import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
 import { Project, etapaDe } from '../../core/models';
+import { ButtonModule } from 'primeng/button';
 import { diasEnEtapa, diasEnEtapas, diasTotales, humano, tramos } from '../../core/tiempos';
 
 /**
@@ -18,7 +19,7 @@ import { diasEnEtapa, diasEnEtapas, diasTotales, humano, tramos } from '../../co
  */
 @Component({
   selector: 'app-project-panel',
-  imports: [RouterLink],
+  imports: [RouterLink, ButtonModule],
   templateUrl: './project-panel.html',
   styleUrl: './project-panel.scss',
 })

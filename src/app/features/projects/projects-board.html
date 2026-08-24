@@ -25,16 +25,20 @@
   <!-- ======================= Filtros ======================= -->
   <div class="filtros enter">
     <div class="filtros__linea">
-      <label class="buscar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <p-iconfield class="filtro-buscar">
+        <p-inputicon styleClass="pi pi-search" />
         <input
-          type="search"
+          pInputText
+          type="text"
+          [ngModel]="query()"
+          (ngModelChange)="escribir($event)"
           placeholder="Buscar por nombre, problema o solución"
-          [value]="query()"
-          (input)="escribir($any($event.target).value)"
           aria-label="Buscar en mis proyectos"
         />
-      </label>
+        @if (query()) {
+          <p-inputicon styleClass="pi pi-times filtro-buscar__x" (click)="quitar('q')" />
+        }
+      </p-iconfield>
 
       <button
         class="chip-btn"
@@ -71,44 +75,80 @@
       <div class="filtros__panel">
         <label class="campo">
           <span class="campo__t">Sector</span>
-          <select class="sel" [value]="sectorF()" (change)="sectorF.set($any($event.target).value)">
-            <option value="all">Todos</option>
-            @for (s of sectores; track s) { <option [value]="s">{{ s }}</option> }
-          </select>
+          <p-select
+            [options]="opcionesSector"
+            [ngModel]="sectorF()"
+            (ngModelChange)="sectorF.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [fluid]="true"
+            size="small"
+          />
         </label>
 
         <label class="campo">
           <span class="campo__t">Prioridad</span>
-          <select class="sel" [value]="prioridadF()" (change)="prioridadF.set($any($event.target).value)">
-            <option value="all">Cualquiera</option>
-            @for (p of prioridades; track p.value) { <option [value]="p.value">{{ p.label }}</option> }
-          </select>
+          <p-select
+            [options]="opcionesPrioridad"
+            [ngModel]="prioridadF()"
+            (ngModelChange)="prioridadF.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [fluid]="true"
+            size="small"
+          />
         </label>
 
         <label class="campo">
           <span class="campo__t">Estado de mi asignación</span>
-          <select class="sel" [value]="estadoAsigF()" (change)="estadoAsigF.set($any($event.target).value)">
-            <option value="all">Cualquiera</option>
-            @for (e of estadosAsignacion; track e.value) { <option [value]="e.value">{{ e.label }}</option> }
-          </select>
+          <p-select
+            [options]="opcionesEstadoAsig"
+            [ngModel]="estadoAsigF()"
+            (ngModelChange)="estadoAsigF.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [fluid]="true"
+            size="small"
+          />
         </label>
 
         <label class="campo">
           <span class="campo__t">Me lo asignó</span>
-          <select class="sel" [value]="asignadoPorF()" (change)="asignadoPorF.set($any($event.target).value)">
-            <option value="all">Cualquiera</option>
-            @for (j of jefes(); track j.id) { <option [value]="j.id">{{ j.nombre }}</option> }
-          </select>
+          <p-select
+            [options]="opcionesJefe()"
+            [ngModel]="asignadoPorF()"
+            (ngModelChange)="asignadoPorF.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [fluid]="true"
+            size="small"
+          />
         </label>
 
         <label class="campo">
           <span class="campo__t">Registrado desde</span>
-          <input class="sel" type="date" [value]="desdeF()" (change)="desdeF.set($any($event.target).value)" />
+          <p-datepicker
+            [ngModel]="desdeComoDato()"
+            (ngModelChange)="fijarDesde($event)"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [showButtonBar]="true"
+            [fluid]="true"
+            size="small"
+          />
         </label>
 
         <label class="campo">
           <span class="campo__t">Registrado hasta</span>
-          <input class="sel" type="date" [value]="hastaF()" (change)="hastaF.set($any($event.target).value)" />
+          <p-datepicker
+            [ngModel]="hastaComoDato()"
+            (ngModelChange)="fijarHasta($event)"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [showButtonBar]="true"
+            [fluid]="true"
+            size="small"
+          />
         </label>
       </div>
     }
@@ -139,11 +179,11 @@
       @if (hayFiltro()) {
         <b>Nada coincide con el filtro</b>
         <span>Con estos filtros no queda ningún proyecto a tu cargo.</span>
-        <button class="btn btn--ghost btn--sm" type="button" (click)="limpiarTodo()">Limpiar el filtro</button>
+        <p-button label="Limpiar el filtro" icon="pi pi-filter-slash" [text]="true" size="small" (onClick)="limpiarTodo()" />
       } @else {
         <b>Todavía no tenés proyectos a cargo</b>
         <span>Cuando te asignen uno, aparece en la columna de la etapa en la que esté.</span>
-        <a class="btn btn--ghost btn--sm" routerLink="/asignaciones">Ver mis asignaciones</a>
+        <p-button label="Ver mis asignaciones" icon="pi pi-inbox" [outlined]="true" size="small" routerLink="/asignaciones" />
       }
     </div>
   } @else {

@@ -8,24 +8,35 @@
 
     <div class="field">
       <label for="fn">Fecha de nacimiento</label>
-      <input id="fn" class="input" type="date" [ngModel]="fechaNacimiento()" (ngModelChange)="fechaNacimiento.set($event)" />
+      <p-datepicker
+        inputId="fn"
+        [ngModel]="fechaComoDato()"
+        (ngModelChange)="fijarFecha($event)"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [maxDate]="hoy"
+        [fluid]="true"
+        placeholder="dd/mm/aaaa"
+      />
     </div>
 
     <div class="field">
       <label>Género</label>
-      <div class="gender">
-        @for (g of generos; track g.value) {
-          <button type="button" class="gender__opt" [class.gender__opt--on]="genero() === g.value" (click)="genero.set(g.value)">
-            <span class="gender__radio"></span>
-            <span>{{ g.label }}</span>
-          </button>
-        }
-      </div>
+      <p-selectbutton
+        [options]="generos"
+        [ngModel]="genero()"
+        (ngModelChange)="genero.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        [multiple]="false"
+        styleClass="genero-opciones"
+      />
     </div>
 
     @if (error()) { <p class="login__error">{{ error() }}</p> }
 
-    <button class="btn btn--primary login__submit" type="button" (click)="finish()">Continuar</button>
+    <p-button label="Continuar" icon="pi pi-arrow-right" iconPos="right" styleClass="login__submit"
+              [fluid]="true" (onClick)="finish()" />
 
     <div class="sim-note login__sim">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>

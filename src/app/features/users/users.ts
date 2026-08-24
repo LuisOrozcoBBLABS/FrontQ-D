@@ -10,6 +10,19 @@ import { RoleId, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { Select } from 'primeng/select';
+import { SelectButton } from 'primeng/selectbutton';
+import { InputText } from 'primeng/inputtext';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { Password } from 'primeng/password';
+import { Checkbox } from 'primeng/checkbox';
+import { ToggleSwitch } from 'primeng/toggleswitch';
+import { Dialog } from 'primeng/dialog';
+import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 
 interface Draft {
   id?: string;
@@ -26,7 +39,9 @@ interface Draft {
 
 @Component({
   selector: 'app-users',
-  imports: [FormsModule, TrapFocus, Paginador],
+  imports: [
+    FormsModule, Paginador, TableModule, ButtonModule, Select, SelectButton, InputText, IconField, InputIcon, Password, Checkbox, ToggleSwitch, Dialog, Tag, Tooltip,
+  ],
   templateUrl: './users.html',
   styleUrl: './users.scss',
 })
@@ -131,6 +146,31 @@ export class Users {
     this.queryDebounce.set('');
     this.rolF.set('all');
     this.estadoF.set('all');
+  }
+
+  /** Opciones de los filtros; PrimeNG trabaja con listas, no con <option>. */
+  protected readonly opcionesRol = [
+    { label: 'Todos los roles', value: 'all' },
+    { label: 'Administrador', value: 'admin' },
+    { label: 'Colaborador', value: 'colaborador' },
+  ];
+  protected readonly opcionesEstado = [
+    { label: 'Todos', value: 'all' },
+    { label: 'Activos', value: 'activo' },
+    { label: 'Inactivos', value: 'inactivo' },
+  ];
+  /** Los grupos llegan de la API; se antepone la opción de dejar a la persona sin grupo. */
+  protected opcionesGrupo = computed(() => [
+    { label: 'Sin grupo', value: null as string | null },
+    ...this.grupos().map(g => ({ label: `Grupo ${g.nombre}`, value: g.id as string | null })),
+  ]);
+
+  /** p-dialog avisa el cierre por Escape o por clic en el fondo. */
+  protected alCerrarDialogo(abierto: boolean): void {
+    if (!abierto) this.close();
+  }
+  protected alCerrarReset(abierto: boolean): void {
+    if (!abierto) this.cerrarReset();
   }
 
   protected modalOpen = signal(false);

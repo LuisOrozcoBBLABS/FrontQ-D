@@ -24,3 +24,29 @@
 .quick__card h3 { font-size: 16px; margin-bottom: 6px; }
 .quick__card p { font-size: 13.5px; }
 @media (hover: none) { .quick__card:hover { transform: none; } }
+
+/* Avance propio: aro a la izquierda, lectura a la derecha */
+.avance {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-5) var(--sp-6);
+  margin-bottom: var(--sp-6);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+  position: relative;
+  top: 0.8rem;
+}
+.avance__aro { flex: 0 0 auto; display: grid; place-items: center; }
+.avance__texto { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+.avance__texto h3 { font-size: 15px; font-weight: 600; }
+.avance__texto p { font-size: 14px; }
+
+@media (max-width: 640px) {
+  .avance { flex-direction: column; text-align: center; align-items: center; }
+  .avance__texto { align-items: center; }
+}

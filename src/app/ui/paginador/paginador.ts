@@ -1,16 +1,44 @@
 import { Component, computed, input, output } from '@angular/core';
+import { Paginator, PaginatorState } from 'primeng/paginator';
 
 /** Cuántas filas por página en toda la plataforma. */
 export const FILAS_POR_PAGINA = 8;
 
 /**
- * Paginador de tabla. Muestra los números de página con elipsis cuando son
- * muchas, para que la barra no crezca sin control: 1 … 4 5 6 … 20.
+ * Paginador de tabla.
+ *
+ * Por dentro es el <p-paginator> de PrimeNG; por fuera mantiene la misma API
+ * que ya usaban las cuatro pantallas con tabla (`[pagina]` empieza en 1, y
+ * `cambia` emite el número de página, no el índice del primer registro). Esa
+ * traducción se hace acá una vez y no en cada pantalla.
  */
 @Component({
   selector: 'app-paginador',
-  templateUrl: './paginador.html',
-  styleUrl: './paginador.scss',
+  imports: [Paginator],
+  template: `
+    @if (total() > porPagina()) {
+      <p-paginator
+        [first]="primero()"
+        [rows]="porPagina()"
+        [totalRecords]="total()"
+        [showFirstLastIcon]="paginas() > 5"
+        [currentPageReportTemplate]="'{first}–{last} de {totalRecords} ' + etiqueta()"
+        [showCurrentPageReport]="true"
+        (onPageChange)="alCambiar($event)"
+      />
+    }
+  `,
+  styles: [`
+    :host { display: block; }
+    /* El informe de página se lee como dato, no como control. */
+    ::ng-deep .p-paginator-current {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      letter-spacing: .06em;
+      color: var(--text-dim);
+      margin-right: auto;
+    }
+  `],
 })
 export class Paginador {
   /** Página actual, empezando en 1. */
@@ -24,30 +52,11 @@ export class Paginador {
 
   protected paginas = computed(() => Math.max(1, Math.ceil(this.total() / this.porPagina())));
 
-  protected desde = computed(() => (this.total() === 0 ? 0 : (this.pagina() - 1) * this.porPagina() + 1));
-  protected hasta = computed(() => Math.min(this.pagina() * this.porPagina(), this.total()));
+  /** PrimeNG cuenta por índice del primer registro; la plataforma, por página. */
+  protected primero = computed(() => (this.pagina() - 1) * this.porPagina());
 
-  /** null representa la elipsis. */
-  protected numeros = computed<(number | null)[]>(() => {
-    const total = this.paginas();
-    const actual = this.pagina();
-
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-
-    const lista: (number | null)[] = [1];
-    const desde = Math.max(2, actual - 1);
-    const hasta = Math.min(total - 1, actual + 1);
-
-    if (desde > 2) lista.push(null);
-    for (let i = desde; i <= hasta; i++) lista.push(i);
-    if (hasta < total - 1) lista.push(null);
-
-    lista.push(total);
-    return lista;
-  });
-
-  protected ir(p: number): void {
-    if (p < 1 || p > this.paginas() || p === this.pagina()) return;
-    this.cambia.emit(p);
+  protected alCambiar(e: PaginatorState): void {
+    const siguiente = Math.floor((e.first ?? 0) / (e.rows || this.porPagina())) + 1;
+    if (siguiente !== this.pagina()) this.cambia.emit(siguiente);
   }
 }

@@ -1,20 +1,39 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { MessageService } from 'primeng/api';
 
 export type ToastKind = 'success' | 'info' | 'error';
-export interface Toast { id: number; text: string; kind: ToastKind; }
 
+/**
+ * Avisos de la aplicación.
+ *
+ * Por dentro es el MessageService de PrimeNG y en pantalla lo pinta <p-toast>.
+ * La API pública no cambió al migrar: los diez componentes que llaman
+ * `toast.success(...)` siguen igual, y si mañana cambia la librería vuelve a
+ * cambiar solo este archivo.
+ */
 @Injectable({ providedIn: 'root' })
 export class ToastService {
-  readonly toasts = signal<Toast[]>([]);
-  private n = 0;
+  private readonly messages = inject(MessageService);
+
+  private static readonly SEVERIDAD: Record<ToastKind, string> = {
+    success: 'success',
+    info: 'info',
+    error: 'error',
+  };
 
   show(text: string, kind: ToastKind = 'success'): void {
-    const id = ++this.n;
-    this.toasts.update(list => [...list, { id, text, kind }]);
-    setTimeout(() => this.dismiss(id), 3200);
+    this.messages.add({
+      severity: ToastService.SEVERIDAD[kind],
+      detail: text,
+      // Un error se lee más lento que una confirmación.
+      life: kind === 'error' ? 5000 : 3200,
+    });
   }
+
   success(text: string): void { this.show(text, 'success'); }
   info(text: string): void { this.show(text, 'info'); }
   error(text: string): void { this.show(text, 'error'); }
-  dismiss(id: number): void { this.toasts.update(list => list.filter(t => t.id !== id)); }
+
+  /** Cierra todos los avisos en pantalla. */
+  clear(): void { this.messages.clear(); }
 }

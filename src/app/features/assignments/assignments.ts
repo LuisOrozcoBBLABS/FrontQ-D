@@ -8,13 +8,18 @@ import { UsersService } from '../../core/users.service';
 import { ToastService } from '../../core/toast.service';
 import { ASIG_ESTADOS, Assignment, AssignmentStatus, PRIORIDADES, Prioridad } from '../../core/models';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { SelectButton } from 'primeng/selectbutton';
+import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
 import { SECUENCIA, SIGUIENTE, esFinal, puedeIr, retrocesoDe } from '../../core/transiciones';
 
 
 
 @Component({
   selector: 'app-assignments',
-  imports: [RouterLink, FormsModule, Paginador],
+  imports: [RouterLink, FormsModule, Paginador, TableModule, ButtonModule, SelectButton, Tag, Tooltip],
   templateUrl: './assignments.html',
   styleUrl: './assignments.scss',
 })
@@ -185,6 +190,32 @@ export class Assignments {
   // ----------------------------------------------------------------- tablero
   /** La vista elegida se recuerda: quien trabaja con el tablero lo quiere de entrada. */
   protected vista = signal<'tabla' | 'tablero'>(leerVista());
+
+  /** Las dos formas de ver el trabajo propio. */
+  protected readonly opcionesVista = [
+    { label: 'Tabla', value: 'tabla' as const, icono: 'pi pi-list' },
+    { label: 'Tablero', value: 'tablero' as const, icono: 'pi pi-th-large' },
+  ];
+
+  /** La prioridad se pinta con el color que le corresponde en la escala. */
+  severidadPrioridad(p: Prioridad): 'danger' | 'warn' | 'info' | 'secondary' {
+    switch (p) {
+      case 'urgente': return 'danger';
+      case 'alta': return 'warn';
+      case 'media': return 'info';
+      default: return 'secondary';
+    }
+  }
+
+  /** Lo cerrado se lee distinto de lo que sigue abierto. */
+  severidadEstado(e: AssignmentStatus): 'success' | 'info' | 'warn' | 'secondary' {
+    switch (e) {
+      case 'completada': return 'success';
+      case 'en-curso': return 'info';
+      case 'aceptada': return 'warn';
+      default: return 'secondary';
+    }
+  }
 
   protected cambiarVista(v: 'tabla' | 'tablero'): void {
     this.vista.set(v);

@@ -22,6 +22,12 @@ import {
   SECTORES,
 } from '../../core/models';
 import { alertaEtapa } from '../../core/tiempos';
+import { ButtonModule } from 'primeng/button';
+import { Select } from 'primeng/select';
+import { DatePicker } from 'primeng/datepicker';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { InputText } from 'primeng/inputtext';
 import { ProjectCard } from './project-card';
 import { ProjectPanel } from './project-panel';
 
@@ -51,6 +57,12 @@ const FASES = [
     CdkDropList,
     CdkDrag,
     CdkDragPlaceholder,
+    ButtonModule,
+    Select,
+    DatePicker,
+    IconField,
+    InputIcon,
+    InputText,
     ProjectCard,
     ProjectPanel,
   ],
@@ -91,6 +103,36 @@ export class ProjectsBoard {
 
   /** Panel de filtros avanzados desplegado. */
   protected filtrosAbiertos = signal(false);
+
+  // ---- PrimeNG trabaja con listas de opciones, no con <option> ----
+  protected readonly opcionesSector = [
+    { label: 'Todos', value: 'all' },
+    ...SECTORES.map(x => ({ label: x, value: x })),
+  ];
+  protected readonly opcionesPrioridad = [
+    { label: 'Cualquiera', value: 'all' },
+    ...PRIORIDADES.map(x => ({ label: x.label, value: x.value as string })),
+  ];
+  protected readonly opcionesEstadoAsig = [
+    { label: 'Cualquiera', value: 'all' },
+    ...ASIG_ESTADOS.map(x => ({ label: x.label, value: x.value as string })),
+  ];
+  protected opcionesJefe = computed(() => [
+    { label: 'Cualquiera', value: 'all' },
+    ...this.jefes().map(j => ({ label: j.nombre, value: j.id })),
+  ]);
+
+  /** El filtro guarda ISO (aaaa-mm-dd); el calendario trabaja con Date. */
+  private aDato(iso: string): Date | null {
+    return iso ? new Date(iso + 'T00:00:00') : null;
+  }
+  private aIso(d: Date | null): string {
+    return d ? d.toISOString().slice(0, 10) : '';
+  }
+  protected desdeComoDato = computed(() => this.aDato(this.desdeF()));
+  protected hastaComoDato = computed(() => this.aDato(this.hastaF()));
+  protected fijarDesde(d: Date | null): void { this.desdeF.set(this.aIso(d)); }
+  protected fijarHasta(d: Date | null): void { this.hastaF.set(this.aIso(d)); }
 
   protected abierta = signal<Project | null>(null);
   protected moviendo = signal<string | null>(null);

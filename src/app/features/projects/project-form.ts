@@ -6,6 +6,11 @@ import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { GroupsService } from '../../core/groups.service';
 import { AppSimilar, SECTORES } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
+import { ButtonModule } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { Textarea } from 'primeng/textarea';
+import { Select } from 'primeng/select';
+import { Tooltip } from 'primeng/tooltip';
 
 /**
  * Registra un proyecto nuevo o edita uno existente. Es el mismo formulario en
@@ -19,7 +24,7 @@ import { ToastService } from '../../core/toast.service';
  */
 @Component({
   selector: 'app-project-form',
-  imports: [FormsModule],
+  imports: [FormsModule, ButtonModule, InputText, Textarea, Select, Tooltip],
   templateUrl: './project-form.html',
   styleUrl: './project-form.scss',
 })
@@ -33,6 +38,13 @@ export class ProjectForm {
 
   protected sectores = SECTORES;
   protected grupos = this.groupsSvc.groups;
+
+  /** PrimeNG trabaja con listas de opciones, no con <option>. */
+  protected readonly opcionesSector = SECTORES.map(x => ({ label: x, value: x }));
+  protected opcionesGrupo = computed(() => [
+    { label: 'Sin grupo', value: null as string | null },
+    ...this.grupos().map(g => ({ label: `Grupo ${g.nombre}`, value: g.id as string | null })),
+  ]);
 
   /** Id cuando se está editando; cadena vacía cuando es uno nuevo. */
   protected readonly id = this.route.snapshot.paramMap.get('id') ?? '';

@@ -5,13 +5,19 @@ import { UsersService } from '../../core/users.service';
 import { Group, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { ToggleSwitch } from 'primeng/toggleswitch';
+import { Dialog } from 'primeng/dialog';
+import { Tooltip } from 'primeng/tooltip';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { mensajeDeError } from '../../core/auth.service';
 
 @Component({
   selector: 'app-groups',
-  imports: [FormsModule, TrapFocus, Paginador],
+  imports: [FormsModule, Paginador, TableModule, ButtonModule, InputText, ToggleSwitch, Dialog, Tooltip],
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })
@@ -88,6 +94,10 @@ export class Groups {
   }
 
   openMembers(g: Group): void { this.membersFor.set(g); }
+  /** p-dialog avisa el cierre por Escape o clic en el fondo. */
+  protected alCerrarIntegrantes(abierto: boolean): void {
+    if (!abierto) this.closeMembers();
+  }
   closeMembers(): void { this.membersFor.set(null); }
   async toggleMember(u: User, g: Group): Promise<void> {
     const actuales = this.groupsSvc.members(g.id).map(m => m.id);

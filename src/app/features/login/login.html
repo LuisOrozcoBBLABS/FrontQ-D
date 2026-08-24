@@ -26,6 +26,7 @@
       <div class="campo">
         <label class="campo__l" for="email">Correo corporativo</label>
         <input
+          pInputText
           class="campo__i"
           id="email"
           type="email"
@@ -42,40 +43,31 @@
 
       <div class="campo">
         <label class="campo__l" for="password">Contraseña</label>
-        <div class="campo__conBoton">
-          <input
-            class="campo__i"
-            id="password"
-            [type]="verClave() ? 'text' : 'password'"
-            name="password"
-            autocomplete="current-password"
-            [ngModel]="password()"
-            (ngModelChange)="password.set($event)"
-            placeholder="••••••••"
-            required
-          />
-          <button
-            class="campo__ojo"
-            type="button"
-            (click)="verClave.set(!verClave())"
-            [attr.aria-label]="verClave() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-          >
-            @if (verClave()) {
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 10 8 10 8a18 18 0 0 1-2.16 3.19"/><path d="M6.61 6.61A18 18 0 0 0 2 12s3 8 10 8a9 9 0 0 0 5.39-1.61"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="m2 2 20 20"/></svg>
-            } @else {
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-8 10-8 10 8 10 8-3 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            }
-          </button>
-        </div>
+        <p-password
+          inputId="password"
+          name="password"
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)"
+          [toggleMask]="true"
+          [feedback]="false"
+          placeholder="••••••••"
+          [fluid]="true"
+          styleClass="campo__clave"
+          autocomplete="current-password"
+        />
       </div>
 
       @if (error()) {
         <p class="acceso__error" role="alert">{{ error() }}</p>
       }
 
-      <button class="btn btn--primary acceso__enviar" type="submit" [disabled]="loading()">
-        {{ loading() ? 'Entrando…' : 'Ingresar' }}
-      </button>
+      <p-button
+        label="Ingresar"
+        type="submit"
+        styleClass="acceso__enviar"
+        [loading]="loading()"
+        [fluid]="true"
+      />
 
       <a class="acceso__link" routerLink="/recuperar">¿Olvidaste tu contraseña?</a>
     </form>

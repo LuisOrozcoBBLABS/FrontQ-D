@@ -1,6 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { InputText } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../core/auth.service';
 import { ThemeService } from '../../core/theme.service';
 
@@ -16,7 +18,7 @@ import { ThemeService } from '../../core/theme.service';
  */
 @Component({
   selector: 'app-recover',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, InputText, ButtonModule],
   templateUrl: './recover.html',
   styleUrl: '../login/login.scss',
 })

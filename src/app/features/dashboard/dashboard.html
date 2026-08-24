@@ -16,6 +16,35 @@
     <div class="stat"><div class="stat__label">Tu rol</div><div class="stat__value" style="font-size:20px">{{ auth.isAdmin() ? 'Admin' : 'Colaborador' }}</div></div>
   </div>
 
+  <!-- Avance propio: el único número de esta pantalla que exige una lectura -->
+  <section class="avance enter">
+    <div class="avance__aro">
+      <p-knob
+        [ngModel]="avance()"
+        [readonly]="true"
+        [size]="132"
+        [strokeWidth]="8"
+        [valueColor]="colorAvance()"
+        rangeColor="var(--line)"
+        valueTemplate="{value}%"
+        [ariaLabel]="'Avance de tu trabajo asignado'"
+      />
+    </div>
+    <div class="avance__texto">
+      <h3>Tu avance</h3>
+      @if (totalAsignado() > 0) {
+        <p class="text-2">
+          Cerraste <b>{{ completadas() }}</b> de <b>{{ totalAsignado() }}</b>
+          {{ totalAsignado() === 1 ? 'asignación' : 'asignaciones' }}.
+        </p>
+      } @else {
+        <p class="text-2">Todavía no tenés trabajo asignado.</p>
+      }
+      <p-button label="Ver mis asignaciones" icon="pi pi-arrow-right" iconPos="right"
+                [text]="true" routerLink="/asignaciones" />
+    </div>
+  </section>
+
   <div class="home-cols">
     <!-- Mis asignaciones -->
     <section class="home-col">
@@ -26,7 +55,7 @@
             <b>{{ projectName(a.projectId) }}</b>
             <span class="row__sub">{{ estadoLabel(a.estado) }}</span>
           </div>
-          <span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span>
+          <p-tag [value]="prioridadLabel(a.prioridad)" [severity]="severidadPrioridad(a.prioridad)" [rounded]="true" />
         </a>
       } @empty {
         <div class="row row--empty">Sin asignaciones por ahora.</div>

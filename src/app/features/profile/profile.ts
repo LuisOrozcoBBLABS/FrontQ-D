@@ -1,12 +1,18 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { GENEROS, Genero, generoLabel } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
+import { ButtonModule } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { DatePicker } from 'primeng/datepicker';
+import { Select } from 'primeng/select';
 
 @Component({
   selector: 'app-profile',
-  imports: [FormsModule],
+  imports: [FormsModule, ButtonModule, InputText, IconField, InputIcon, DatePicker, Select],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -22,6 +28,24 @@ export class Profile {
   genero = signal<Genero>(this.u?.genero ?? null);
   fechaNacimiento = signal(this.u?.fechaNacimiento ?? '');
   avatarUrl = signal<string | null>(this.u?.avatarUrl ?? null);
+
+  /** Tope del calendario: no se puede nacer mañana. */
+  protected readonly hoy = new Date();
+
+  /** El modelo guarda ISO (aaaa-mm-dd); el calendario trabaja con Date. */
+  protected fechaComoDato = computed(() => {
+    const v = this.fechaNacimiento();
+    return v ? new Date(v + 'T00:00:00') : null;
+  });
+  protected fijarFecha(d: Date | null): void {
+    this.fechaNacimiento.set(d ? d.toISOString().slice(0, 10) : '');
+  }
+
+  /** Se antepone la opción de no declararlo. */
+  protected opcionesGenero = computed(() => [
+    { label: 'Sin especificar', value: null },
+    ...this.generos.map(g => ({ label: g.label, value: g.value })),
+  ]);
 
   initials(n: string): string { return n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase(); }
 

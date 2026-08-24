@@ -19,79 +19,88 @@
         </p>
       </header>
 
-      <div class="table-wrap">
-        <div class="table-scroll">
-          <table class="table table--compacta">
-            <thead>
-              <tr>
-                <th>Persona</th>
-                <th>Lo que escribió</th>
-                <th>Pedido</th>
-                <th class="table__min">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (s of solicitudes(); track s.id) {
-                <tr>
-                  <td>
-                    <span class="celda-persona">
-                      <span class="celda-ini" aria-hidden="true">{{ initials(s.user.nombre) }}</span>
-                      <span>
-                        {{ s.user.nombre }}
-                        <span class="celda-sub">{{ s.user.email }}</span>
-                      </span>
-                    </span>
-                    @if (!s.user.activo) {
-                      <span class="pedido__inactivo">La cuenta está desactivada</span>
-                    }
-                  </td>
-                  <td>{{ s.nota || '—' }}</td>
-                  <td>{{ hace(s.createdAt) }}</td>
-                  <td class="table__min">
-                    <div class="table__actions">
-                      <button class="btn btn--primary btn--sm" type="button" (click)="atender(s)">Asignar clave</button>
-                      <button class="btn btn--ghost btn--sm" type="button" (click)="descartar(s)">Descartar</button>
-                    </div>
-                  </td>
-                </tr>
+      <p-table [value]="solicitudes()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '640px' }">
+        <ng-template #header>
+          <tr>
+            <th>Persona</th>
+            <th>Lo que escribió</th>
+            <th>Pedido</th>
+            <th class="table__min">Acción</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-s>
+          <tr>
+            <td>
+              <span class="celda-persona">
+                <span class="celda-ini" aria-hidden="true">{{ initials(s.user.nombre) }}</span>
+                <span>
+                  {{ s.user.nombre }}
+                  <span class="celda-sub">{{ s.user.email }}</span>
+                </span>
+              </span>
+              @if (!s.user.activo) {
+                <span class="pedido__inactivo">La cuenta está desactivada</span>
               }
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </td>
+            <td>{{ s.nota || '—' }}</td>
+            <td>{{ hace(s.createdAt) }}</td>
+            <td class="table__min">
+              <div class="table__actions">
+                <p-button label="Asignar clave" size="small" (onClick)="atender(s)" />
+                <p-button label="Descartar" size="small" [text]="true" severity="secondary" (onClick)="descartar(s)" />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </section>
   }
 
   <div class="toolbar enter">
-    <button class="btn btn--primary" type="button" (click)="openCreate()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-      Nuevo usuario
-    </button>
+    <p-button label="Nuevo usuario" icon="pi pi-plus" (onClick)="openCreate()" />
     <span class="chip">{{ total() }} {{ total() === 1 ? 'usuario' : 'usuarios' }}</span>
     <div class="toolbar__spacer"></div>
   </div>
 
   <div class="filters enter">
-    <div class="search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input [ngModel]="query()" (ngModelChange)="escribir($event)" placeholder="Buscar por nombre, correo, cargo o grupo…" />
-    </div>
-    <select class="select" style="max-width:180px" [ngModel]="rolF()" (ngModelChange)="filtrarRol($event)">
-      <option value="all">Todos los roles</option>
-      <option value="admin">Administrador</option>
-      <option value="colaborador">Colaborador</option>
-    </select>
-    <select class="select" style="max-width:160px" [ngModel]="estadoF()" (ngModelChange)="filtrarEstado($event)">
-      <option value="all">Todos</option>
-      <option value="activo">Activos</option>
-      <option value="inactivo">Inactivos</option>
-    </select>
+    <p-iconfield class="filtro-buscar">
+      <p-inputicon styleClass="pi pi-search" />
+      <input
+        pInputText
+        type="text"
+        [ngModel]="query()"
+        (ngModelChange)="escribir($event)"
+        placeholder="Buscar por nombre, correo, cargo o grupo…"
+      />
+    </p-iconfield>
+
+    <p-select
+      [options]="opcionesRol"
+      [ngModel]="rolF()"
+      (ngModelChange)="filtrarRol($event)"
+      optionLabel="label"
+      optionValue="value"
+      [style]="{ minWidth: '190px' }"
+    />
+
+    <p-selectbutton
+      [options]="opcionesEstado"
+      [ngModel]="estadoF()"
+      (ngModelChange)="filtrarEstado($event)"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="false"
+    />
   </div>
 
   <div class="table-wrap enter">
-    <div class="table-scroll">
-    <table class="table">
-      <thead>
+    <p-table
+      [value]="sorted()"
+      [loading]="cargando()"
+      styleClass="p-datatable-sm"
+      [tableStyle]="{ 'min-width': '980px' }"
+    >
+      <ng-template #header>
         <tr>
           <th>Usuario</th>
           <th>Rol</th>
@@ -101,55 +110,79 @@
           <th>Estado</th>
           <th class="table__min">Acciones</th>
         </tr>
-      </thead>
-      <tbody>
-        @for (u of sorted(); track u.id) {
-          <tr>
-            <td>
-              <div class="user-cell">
-                <span class="avatar">
-                  @if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }
-                </span>
-                <div>
-                  <div class="user-cell__name">{{ u.nombre }}</div>
-                  <div class="user-cell__mail">{{ u.email }}</div>
-                </div>
+      </ng-template>
+
+      <ng-template #body let-u>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <span class="avatar">
+                @if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }
+              </span>
+              <div>
+                <div class="user-cell__name">{{ u.nombre }}</div>
+                <div class="user-cell__mail">{{ u.email }}</div>
               </div>
-            </td>
-            <td><span class="badge" [class.badge--on]="u.rol === 'admin'">{{ u.rol === 'admin' ? 'Admin' : 'Colaborador' }}</span></td>
-            <td>{{ u.grupo ?? '—' }}</td>
-            <td>{{ u.cargo || '—' }}</td>
-            <td><span class="tag-mono">{{ effectiveCount(u) }} permisos</span></td>
-            <td>
-              <span class="badge badge--dot" [class.badge--muted]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</span>
-            </td>
-            <td>
-              <div class="table__actions">
-                <button class="btn btn--ghost btn--sm" type="button" (click)="openEdit(u)">Editar</button>
-                <button class="btn btn--ghost btn--sm" type="button" (click)="abrirReset(u)">Clave</button>
-                <button class="btn btn--ghost btn--sm" type="button" (click)="toggleActivo(u)">{{ u.activo ? 'Desactivar' : 'Activar' }}</button>
-                <button class="btn btn--danger btn--sm" type="button" (click)="remove(u)" aria-label="Eliminar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="7" class="table__vacia">
-              @if (hayFiltros()) {
-                <b>Nadie coincide con esos filtros</b>
-                Probá con otro rol o estado, o limpialos para ver todo.
-              } @else {
-                <b>Todavía no hay usuarios</b>
-                Creá la primera cuenta del equipo con “Nuevo usuario”.
-              }
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-    </div>
+            </div>
+          </td>
+          <td>
+            <p-tag
+              [value]="u.rol === 'admin' ? 'Admin' : 'Colaborador'"
+              [severity]="u.rol === 'admin' ? 'success' : 'secondary'"
+            />
+          </td>
+          <td>{{ u.grupo ?? '—' }}</td>
+          <td>{{ u.cargo || '—' }}</td>
+          <td><span class="tag-mono">{{ effectiveCount(u) }} permisos</span></td>
+          <td>
+            <p-tag
+              [value]="u.activo ? 'Activo' : 'Inactivo'"
+              [severity]="u.activo ? 'success' : 'secondary'"
+              [rounded]="true"
+            />
+          </td>
+          <td>
+            <div class="table__actions">
+              <p-button
+                icon="pi pi-pencil" size="small" [text]="true" severity="secondary"
+                pTooltip="Editar" tooltipPosition="top" ariaLabel="Editar"
+                (onClick)="openEdit(u)"
+              />
+              <p-button
+                icon="pi pi-key" size="small" [text]="true" severity="secondary"
+                pTooltip="Asignar clave temporal" tooltipPosition="top" ariaLabel="Clave"
+                (onClick)="abrirReset(u)"
+              />
+              <p-button
+                [icon]="u.activo ? 'pi pi-ban' : 'pi pi-check-circle'" size="small" [text]="true" severity="secondary"
+                [pTooltip]="u.activo ? 'Desactivar' : 'Activar'" tooltipPosition="top"
+                [ariaLabel]="u.activo ? 'Desactivar' : 'Activar'"
+                (onClick)="toggleActivo(u)"
+              />
+              <p-button
+                icon="pi pi-trash" size="small" [text]="true" severity="danger"
+                pTooltip="Eliminar" tooltipPosition="top" ariaLabel="Eliminar"
+                (onClick)="remove(u)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="table__vacia">
+            @if (hayFiltros()) {
+              <b>Nadie coincide con esos filtros</b>
+              Probá con otro rol o estado, o limpialos para ver todo.
+            } @else {
+              <b>Todavía no hay usuarios</b>
+              Creá la primera cuenta del equipo con “Nuevo usuario”.
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
 
     <app-paginador
       [pagina]="pagina()"
@@ -161,148 +194,173 @@
   </div>
 </div>
 
-@if (modalOpen() && draft(); as d) {
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Formulario de usuario">
-    <div class="modal__backdrop" (click)="close()"></div>
-    <div class="modal__panel" appTrapFocus (dismiss)="close()">
-      <div class="modal__head">
-        <div>
-          <p class="eyebrow">{{ isEdit() ? 'Editar' : 'Nuevo' }} usuario</p>
-          <h2 class="modal__title">{{ isEdit() ? d.nombre || 'Usuario' : 'Crear usuario' }}</h2>
-        </div>
-        <button class="theme-fab" type="button" (click)="close()" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
-      </div>
+<!-- ===================== Alta y edición ===================== -->
+<p-dialog
+  [visible]="modalOpen()"
+  (visibleChange)="alCerrarDialogo($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(94vw, 720px)' }"
+>
+  <ng-template #header>
+    <div>
+      <p class="eyebrow">{{ isEdit() ? 'Editar' : 'Nuevo' }} usuario</p>
+      <h2 class="modal__title">{{ isEdit() ? (draft()?.nombre || 'Usuario') : 'Crear usuario' }}</h2>
+    </div>
+  </ng-template>
 
-      <div class="field-inline">
-        <div class="field">
-          <label for="n">Nombre</label>
-          <input id="n" class="input" [ngModel]="d.nombre" (ngModelChange)="patch('nombre', $event)" placeholder="Nombre y apellido" />
-        </div>
-        <div class="field">
-          <label for="e">Correo</label>
-          <input id="e" class="input" type="email" [ngModel]="d.email" (ngModelChange)="patch('email', $event)" placeholder="correo@bblabs.io" />
-        </div>
-      </div>
-
-      <div class="field-inline">
-        <div class="field">
-          <label for="r">Rol</label>
-          <select id="r" class="select" [ngModel]="d.rol" (ngModelChange)="patch('rol', $event)">
-            @for (r of roles(); track r.id) { <option [value]="r.id">{{ r.label }}</option> }
-          </select>
-        </div>
-        <div class="field">
-          <label for="g">Grupo</label>
-          <select id="g" class="select" [ngModel]="d.groupId" (ngModelChange)="patch('groupId', $event)">
-            <option [ngValue]="null">Sin grupo</option>
-            @for (grp of grupos(); track grp.id) { <option [ngValue]="grp.id">Grupo {{ grp.nombre }}</option> }
-          </select>
-        </div>
-      </div>
-
-      @if (!isEdit()) {
-        <div class="field">
-          <label for="pw">Contraseña inicial</label>
-          <input id="pw" class="input" type="password" autocomplete="new-password"
-                 [ngModel]="d.password" (ngModelChange)="patch('password', $event)" placeholder="••••••••" />
-          <span class="field__hint">Mínimo {{ minPassword }} caracteres. La persona deberá cambiarla en su primer ingreso.</span>
-        </div>
-      }
-
+  @if (draft(); as d) {
+    <div class="field-inline">
       <div class="field">
-        <label for="c">Cargo</label>
-        <input id="c" class="input" [ngModel]="d.cargo" (ngModelChange)="patch('cargo', $event)" placeholder="Ej. AI Engineer" />
+        <label for="n">Nombre</label>
+        <input pInputText id="n" [ngModel]="d.nombre" (ngModelChange)="patch('nombre', $event)" placeholder="Nombre y apellido" />
       </div>
-
       <div class="field">
-        <label>Estado de la cuenta</label>
-        <label class="switch">
-          <input type="checkbox" [ngModel]="d.activo" (ngModelChange)="patch('activo', $event)" />
-          <span class="switch__track"></span>
-          <span>{{ d.activo ? 'Activa' : 'Inactiva' }}</span>
-        </label>
-      </div>
-
-      <div class="field">
-        <label>Permisos</label>
-        <p class="text-dim" style="font-size:12.5px;margin:-2px 0 10px">Los marcados en gris vienen del rol. Marca extras para dar permisos adicionales a esta persona.</p>
-        <div class="perm-grid">
-          @for (p of permisos(); track p.id) {
-            <label class="check" [class.check--base]="isBase(p.id)">
-              <input type="checkbox" [checked]="isChecked(p.id)" [disabled]="isBase(p.id)" (change)="toggleExtra(p.id)" />
-              <span class="check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-              <span class="check__meta">
-                <b>{{ p.label }}</b>
-                <span>{{ isBase(p.id) ? 'Incluido por el rol' : p.desc }}</span>
-              </span>
-            </label>
-          }
-        </div>
-      </div>
-
-      <div class="modal__foot">
-        <button class="btn btn--ghost" type="button" (click)="close()">Cancelar</button>
-        <button class="btn btn--primary" type="button" (click)="save()" [disabled]="!d.nombre.trim() || !d.email.trim()">
-          {{ isEdit() ? 'Guardar cambios' : 'Crear usuario' }}
-        </button>
+        <label for="e">Correo</label>
+        <input pInputText id="e" type="email" [ngModel]="d.email" (ngModelChange)="patch('email', $event)" placeholder="correo@bblabs.io" />
       </div>
     </div>
-  </div>
-}
 
-<!-- Restablecer contraseña -->
-@if (resetPara(); as u) {
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Restablecer contraseña">
-    <div class="modal__backdrop" (click)="cerrarReset()"></div>
-    <div class="modal__panel" appTrapFocus (dismiss)="cerrarReset()">
-      <div class="modal__head">
-        <div>
-          <p class="eyebrow">Restablecer contraseña</p>
-          <h2 class="modal__title">{{ u.nombre }}</h2>
-        </div>
-        <button class="theme-fab" type="button" (click)="cerrarReset()" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
-      </div>
-
-      <p class="reset__aviso">
-        Se le cierran las sesiones abiertas y al entrar la plataforma le exige cambiarla.
-        <b>Comunicasela vos</b>: la plataforma todavía no manda correos.
-      </p>
-
+    <div class="field-inline">
       <div class="field">
-        <label for="nuevaClave">Contraseña temporal</label>
-        <div class="reset__campo">
-          <input
-            id="nuevaClave"
-            class="input"
-            type="text"
-            autocomplete="off"
-            spellcheck="false"
-            [ngModel]="claveNueva()"
-            (ngModelChange)="claveNueva.set($event)"
-            [placeholder]="'Mínimo ' + minReset + ' caracteres'"
-          />
-          <button class="btn btn--ghost btn--sm" type="button" (click)="sugerirClave()">Generar</button>
-        </div>
-        <span class="field__hint">
-          Se muestra en claro a propósito: tenés que poder leerla para pasársela.
-        </span>
+        <label for="r">Rol</label>
+        <p-select
+          inputId="r"
+          [options]="roles()"
+          [ngModel]="d.rol"
+          (ngModelChange)="patch('rol', $event)"
+          optionLabel="label"
+          optionValue="id"
+          [fluid]="true"
+        />
       </div>
-
-      <div class="modal__foot">
-        <button class="btn btn--ghost" type="button" (click)="cerrarReset()">Cancelar</button>
-        <button
-          class="btn btn--primary"
-          type="button"
-          [disabled]="!resetValido() || reseteando()"
-          (click)="confirmarReset()"
-        >
-          {{ reseteando() ? 'Guardando…' : 'Asignar clave temporal' }}
-        </button>
+      <div class="field">
+        <label for="g">Grupo</label>
+        <p-select
+          inputId="g"
+          [options]="opcionesGrupo()"
+          [ngModel]="d.groupId"
+          (ngModelChange)="patch('groupId', $event)"
+          optionLabel="label"
+          optionValue="value"
+          [fluid]="true"
+        />
       </div>
     </div>
+
+    @if (!isEdit()) {
+      <div class="field">
+        <label for="pw">Contraseña inicial</label>
+        <p-password
+          inputId="pw"
+          [ngModel]="d.password"
+          (ngModelChange)="patch('password', $event)"
+          [toggleMask]="true"
+          [feedback]="false"
+          placeholder="••••••••"
+          [fluid]="true"
+        />
+        <span class="field__hint">Mínimo {{ minPassword }} caracteres. La persona deberá cambiarla en su primer ingreso.</span>
+      </div>
+    }
+
+    <div class="field">
+      <label for="c">Cargo</label>
+      <input pInputText id="c" [ngModel]="d.cargo" (ngModelChange)="patch('cargo', $event)" placeholder="Ej. AI Engineer" />
+    </div>
+
+    <div class="field">
+      <label for="activo">Estado de la cuenta</label>
+      <div class="interruptor">
+        <p-toggleswitch inputId="activo" [ngModel]="d.activo" (ngModelChange)="patch('activo', $event)" />
+        <span>{{ d.activo ? 'Activa' : 'Inactiva' }}</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Permisos</label>
+      <p class="text-dim" style="font-size:12.5px;margin:-2px 0 10px">Los marcados en gris vienen del rol. Marca extras para dar permisos adicionales a esta persona.</p>
+      <div class="perm-grid">
+        @for (p of permisos(); track p.id) {
+          <label class="check" [class.check--base]="isBase(p.id)" [for]="'perm-' + p.id">
+            <p-checkbox
+              [inputId]="'perm-' + p.id"
+              [binary]="true"
+              [ngModel]="isChecked(p.id)"
+              [disabled]="isBase(p.id)"
+              (onChange)="toggleExtra(p.id)"
+            />
+            <span class="check__meta">
+              <b>{{ p.label }}</b>
+              <span>{{ isBase(p.id) ? 'Incluido por el rol' : p.desc }}</span>
+            </span>
+          </label>
+        }
+      </div>
+    </div>
+  }
+
+  <ng-template #footer>
+    <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="close()" />
+    <p-button
+      [label]="isEdit() ? 'Guardar cambios' : 'Crear usuario'"
+      [disabled]="!draft()?.nombre?.trim() || !draft()?.email?.trim()"
+      (onClick)="save()"
+    />
+  </ng-template>
+</p-dialog>
+
+<!-- ===================== Restablecer contraseña ===================== -->
+<p-dialog
+  [visible]="!!resetPara()"
+  (visibleChange)="alCerrarReset($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(94vw, 520px)' }"
+>
+  <ng-template #header>
+    <div>
+      <p class="eyebrow">Restablecer contraseña</p>
+      <h2 class="modal__title">{{ resetPara()?.nombre }}</h2>
+    </div>
+  </ng-template>
+
+  <p class="reset__aviso">
+    Se le cierran las sesiones abiertas y al entrar la plataforma le exige cambiarla.
+    <b>Comunicasela vos</b>: la plataforma todavía no manda correos.
+  </p>
+
+  <div class="field">
+    <label for="nuevaClave">Contraseña temporal</label>
+    <div class="reset__campo">
+      <input
+        pInputText
+        id="nuevaClave"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        [ngModel]="claveNueva()"
+        (ngModelChange)="claveNueva.set($event)"
+        [placeholder]="'Mínimo ' + minReset + ' caracteres'"
+      />
+      <p-button label="Generar" icon="pi pi-sparkles" size="small" [outlined]="true" (onClick)="sugerirClave()" />
+    </div>
+    <span class="field__hint">
+      Se muestra en claro a propósito: tenés que poder leerla para pasársela.
+    </span>
   </div>
-}
+
+  <ng-template #footer>
+    <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="cerrarReset()" />
+    <p-button
+      [label]="reseteando() ? 'Guardando…' : 'Asignar clave temporal'"
+      [disabled]="!resetValido() || reseteando()"
+      [loading]="reseteando()"
+      (onClick)="confirmarReset()"
+    />
+  </ng-template>
+</p-dialog>

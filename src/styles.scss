@@ -100,11 +100,19 @@ body{
   min-height:100vh; min-height:100dvh; position:relative; overflow-x:hidden;
   transition:background-color 400ms var(--ease), color 400ms var(--ease);
 }
-a{ color:inherit; text-decoration:none; }
-button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-svg{ display:block; }
-ul{ list-style:none; }
-:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:4px; }
+/* El reset de elementos vive en la capa `base`, por debajo de `primeng`.
+   Sin esto, `button{background:none;border:none}` —un selector de elemento sin
+   capa— le gana a `.p-button` (que sí está en capa) y deja todos los botones de
+   la librería sin fondo ni borde. El orden lo declara app.config:
+   theme, base, primeng; y lo que este archivo define fuera de capa gana sobre
+   los tres, que es como se imponen los ajustes de marca. */
+@layer base {
+  a{ color:inherit; text-decoration:none; }
+  button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  svg{ display:block; }
+  ul{ list-style:none; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:4px; }
+}
 
 /* ---------- Fondo animado (orbes) ---------- */
 .bg{ position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none; }
@@ -125,25 +133,7 @@ ul{ list-style:none; }
 h1,h2,h3{ font-family:var(--font-display); font-weight:700; letter-spacing:-.015em; line-height:var(--lh-tight); text-wrap:balance; }
 h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(--fs-md); }
 
-/* ---------- Botones ---------- */
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:9px;
-  padding:11px var(--sp-5); min-height:44px; border:1px solid var(--line-strong); border-radius:var(--r-full);
-  color:var(--text); font-size:var(--fs-sm); font-weight:600; white-space:nowrap;
-  /* Explícito y no `all`: `all` incluye propiedades de layout y obliga al
-     navegador a medir en cada cuadro. */
-  transition:transform var(--dur-fast) var(--ease), background-color var(--dur) var(--ease),
-             border-color var(--dur) var(--ease), color var(--dur) var(--ease), filter var(--dur) var(--ease);
-}
-.btn svg{ width:16px; height:16px; }
-.btn:hover{ background:var(--surface-2); transform:translateY(-1px); }
-.btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
-.btn--primary{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); font-weight:600; }
-.btn--primary:hover{ background:var(--accent); filter:brightness(.94); }
-.btn--ghost{ border-color:var(--line); color:var(--text-2); }
-.btn--ghost:hover{ color:var(--text); border-color:var(--line-strong); }
-.btn--sm{ padding:7px 13px; min-height:36px; font-size:13px; }
-.btn--danger{ border-color:var(--line-strong); color:var(--text); background:var(--danger-bg); }
+/* Los botones son <p-button>; el bloque .btn se eliminó al migrarlos. */
 
 /* ---------- Superficies / tarjetas ---------- */
 .card{ border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:var(--sp-6); }
@@ -161,14 +151,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* ---------- Formularios ---------- */
 .field{ display:flex; flex-direction:column; gap:7px; margin-bottom:16px; }
 .field > label{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); }
-.input,.select,.textarea{
-  width:100%; background:var(--surface-2); color:var(--text);
-  border:1px solid var(--line); border-radius:var(--r-md); padding:12px 14px; font-size:16px; font-family:var(--font-body);
-  transition:border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-.input:focus,.select:focus,.textarea:focus{ outline:none; border-color:var(--accent); }
-.input::placeholder{ color:var(--text-dim); }
-.select{ appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--text-2) 50%),linear-gradient(135deg,var(--text-2) 50%,transparent 50%); background-position:calc(100% - 18px) 20px,calc(100% - 12px) 20px; background-size:6px 6px,6px 6px; background-repeat:no-repeat; padding-right:38px; }
+/* Los campos nativos se fueron a PrimeNG; su CSS vivía acá y ahora estorbaba. */
 .field__error{ color:var(--danger); font-size:var(--fs-sm); }
 /* Texto de apoyo persistente bajo un campo (no reemplaza a la etiqueta). */
 .field__hint{ color:var(--text-dim); font-size:var(--fs-xs); line-height:var(--lh-snug); }
@@ -176,22 +159,12 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .field-inline > *{ flex:1 1 200px; }
 
 /* Switch */
-.switch{ position:relative; display:inline-flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
-.switch input{ position:absolute; opacity:0; width:0; height:0; }
-.switch__track{ width:40px; height:24px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line-strong); transition:background-color var(--dur) var(--ease), border-color var(--dur) var(--ease); position:relative; flex:0 0 auto; }
-.switch__track::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--text-2); transition:transform var(--dur) var(--ease-spring), background-color var(--dur) var(--ease); }
-.switch input:checked + .switch__track{ background:var(--accent); border-color:var(--accent); }
-.switch input:checked + .switch__track::after{ transform:translateX(16px); background:var(--bg); }
+/* El interruptor es <p-toggleswitch>. */
 
 /* Checkbox (permisos) */
 .check{ display:flex; align-items:flex-start; gap:11px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer; transition:border-color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
 .check:hover{ border-color:var(--line-strong); background:var(--surface-2); }
-.check input{ position:absolute; opacity:0; }
-.check__box{ width:20px; height:20px; border-radius:6px; border:1px solid var(--line-strong); flex:0 0 auto; display:grid; place-items:center; margin-top:1px; transition:transform var(--dur-fast) var(--ease-spring), background-color var(--dur) var(--ease), border-color var(--dur) var(--ease); }
-.check__box svg{ width:13px; height:13px; opacity:0; color:var(--bg); }
-.check input:checked + .check__box{ background:var(--accent); border-color:var(--accent); }
-.check input:checked + .check__box svg{ opacity:1; }
-.check__meta{ min-width:0; }
+.check input:checked + .check input:checked + .check__meta{ min-width:0; }
 .check__meta b{ font-weight:500; font-size:14.5px; }
 .check__meta span{ display:block; color:var(--text-dim); font-size:12.5px; }
 
@@ -202,6 +175,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .table-wrap{
   border:1px solid var(--line); border-radius:var(--r-lg);
   background:var(--surface); overflow:hidden;
+  padding: 0.5rem 1rem;
 }
 /* El scroll es del contenedor, nunca de la pagina. Con 8 filas por pagina el
    vertical casi no aparece, pero el tope evita que una tabla empuje el resto. */
@@ -426,9 +400,6 @@ html[data-theme="light"] .marca-fondo__txt{
 /* Búsqueda / filtros reutilizable */
 .filters{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
 .search{ display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:999px; padding:9px 15px; background:var(--surface); flex:1 1 240px; min-width:0; }
-.search svg{ width:16px; height:16px; color:var(--text-dim); flex:0 0 auto; }
-.search input{ flex:1 1 auto; min-width:0; background:none; border:none; outline:none; color:var(--text); font-size:14.5px; font-family:var(--font-body); }
-.search input::placeholder{ color:var(--text-dim); }
 .fchip{ padding:8px 14px; border:1px solid var(--line); border-radius:999px; color:var(--text-2); font-size:13px; white-space:nowrap; transition:transform var(--dur-fast) var(--ease), background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease); }
 .fchip:hover{ color:var(--text); border-color:var(--line-strong); }
 .fchip--on{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:500; }
@@ -572,3 +543,266 @@ html[data-theme="light"] .marca-fondo__txt{
 @media (hover: none) {
   .quick__card:hover, .card:hover { transform: none; }
 }
+
+/* =============================================================
+   17. PRIMENG — el sistema de diseño aplicado a la librería
+   =============================================================
+
+   El preset (theme/blackbird-preset.ts) resuelve el color. Acá se resuelve lo
+   que un preset no puede expresar: el ritmo, la tipografía y el cristal.
+
+   Estas reglas van fuera de capa a propósito. El orden declarado en app.config
+   es `theme, base, primeng`, y lo que no está en ninguna capa gana sobre las
+   tres. Así los ajustes de marca se imponen sin un solo !important.
+   ============================================================= */
+
+/* ---------- Botones ---------- */
+.p-button {
+  min-height: 44px;
+  padding: 11px var(--sp-5);
+  border-radius: var(--r-full);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0;
+  gap: 9px;
+  white-space: nowrap;
+  transition: transform var(--dur-fast) var(--ease), background-color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease), color var(--dur) var(--ease), filter var(--dur) var(--ease);
+}
+.p-button .p-button-icon { font-size: 15px; }
+.p-button:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.04); }
+.p-button:not(:disabled):active { transform: scale(.97); transition-duration: var(--dur-fast); }
+.p-button-sm { min-height: 36px; padding: 7px 13px; font-size: 13px; }
+.p-button-sm .p-button-icon { font-size: 13px; }
+.p-button-icon-only { min-width: 44px; padding: 0; }
+.p-button-icon-only.p-button-sm { min-width: 36px; }
+
+/* ---------- Campos: manda el ritmo de .field ---------- */
+.field .p-inputtext,
+.field .p-select,
+.field .p-multiselect,
+.field .p-textarea,
+.field .p-password,
+.field .p-datepicker,
+.field .p-iconfield,
+.field .p-inputnumber { width: 100%; }
+.field .p-password-input { width: 100%; }
+
+.p-inputtext,
+.p-select,
+.p-multiselect,
+.p-textarea,
+.p-datepicker-input {
+  font-family: var(--font-body);
+  font-size: 15px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+.p-inputtext, .p-textarea, .p-datepicker-input { padding: 12px 14px; }
+.p-inputtext:enabled:hover,
+.p-select:not(.p-disabled):hover { border-color: var(--line-strong); }
+.p-inputtext:enabled:focus,
+.p-select:not(.p-disabled).p-focus { border-color: var(--accent); box-shadow: none; }
+.p-select-label { padding: 12px 14px; font-size: 15px; }
+.p-select-dropdown { width: 38px; color: var(--text-dim); }
+.p-textarea { line-height: var(--lh-base); }
+
+/* Buscador: ocupa el lugar que dejó .search */
+.filters .p-iconfield,
+.barra .p-iconfield { flex: 1 1 240px; min-width: 0; }
+.filters .p-iconfield .p-inputtext,
+.barra .p-iconfield .p-inputtext {
+  width: 100%;
+  border-radius: var(--r-full);
+  padding-left: 40px;
+  background: var(--surface);
+}
+.p-iconfield .p-inputicon { color: var(--text-dim); }
+
+/* ---------- Casillas dentro de .check ---------- */
+.check { align-items: center; }
+.check .p-checkbox { flex: 0 0 auto; }
+.perm-grid .check__meta { min-width: 0; }
+
+/* ---------- Interruptor con su leyenda ---------- */
+.interruptor { display: inline-flex; align-items: center; gap: 11px; font-size: 14px; color: var(--text-2); }
+
+/* ---------- Grupo segmentado ---------- */
+.p-selectbutton { border: 1px solid var(--line); border-radius: var(--r-full); background: var(--surface); padding: 3px; gap: 2px; }
+.p-selectbutton .p-togglebutton {
+  border: none; border-radius: var(--r-full); background: transparent; color: var(--text-2);
+  min-height: 34px; padding: 6px 14px; font-size: 13px; font-weight: 500; gap: 7px;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.p-selectbutton .p-togglebutton:active { transform: scale(.97); }
+.p-selectbutton .p-togglebutton.p-togglebutton-checked { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.p-selectbutton .p-togglebutton-content { background: none; box-shadow: none; padding: 0; }
+.p-selectbutton .p-togglebutton i { font-size: 14px; }
+
+/* ---------- Tabla: la misma que ya tenía la plataforma ---------- */
+.p-datatable { font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.p-datatable-table { width: 100%; }
+.p-datatable-thead > tr > th {
+  text-align: left;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-2xs);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: var(--sp-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+.p-datatable-tbody > tr > td {
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2);
+  vertical-align: middle;
+}
+.p-datatable-tbody > tr > td:first-child { color: var(--text); font-weight: 600; }
+.p-datatable-tbody > tr:last-child > td { border-bottom: none; }
+.p-datatable-tbody > tr:hover > td { background: var(--surface-2); }
+.p-datatable-tbody > tr.destacada > td { background: var(--accent-soft); }
+.p-datatable-tbody > tr.destacada > td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.p-datatable-sm .p-datatable-thead > tr > th,
+.p-datatable-sm .p-datatable-tbody > tr > td { padding: var(--sp-3) var(--sp-4); }
+
+/* Celda de acciones: los botones no estiran la fila */
+.table__actions { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.table__min { width: 1%; white-space: nowrap; }
+
+/* ---------- Paginador ---------- */
+.p-paginator { background: transparent; border: none; padding: var(--sp-4) 0 0; gap: 4px; }
+.p-paginator .p-paginator-page,
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next,
+.p-paginator .p-paginator-last { min-width: 34px; height: 34px; border-radius: var(--r-full); }
+.p-paginator .p-paginator-page.p-paginator-page-selected { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+
+/* ---------- Etiquetas de estado ---------- */
+.p-tag {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 500;
+  border-radius: var(--r-full);
+  padding: 4px 11px;
+  gap: 6px;
+}
+.p-tag .p-tag-icon { font-size: 10px; }
+
+/* ---------- Diálogos: el respiro que tenía .modal__panel ---------- */
+.p-dialog { border-radius: var(--r-lg); }
+.p-dialog-header { padding: 26px 26px 0; border: none; }
+.p-dialog-content { padding: 20px 26px; }
+.p-dialog-footer {
+  position: relative;
+  padding: 20px 26px 26px;
+  gap: 12px;
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 0 26px 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+.p-dialog-title,
+.p-dialog .modal__title { font-family: var(--font-display); font-weight: 600; font-size: 22px; }
+.p-confirmdialog .p-confirmdialog-message { font-size: 15px; line-height: var(--lh-base); color: var(--text-2); }
+
+/* ---------- Avisos ---------- */
+.p-toast { width: min(92vw, 380px); }
+.p-toast-message { border-left: 3px solid var(--accent); }
+.p-toast-message-error { border-left-color: var(--danger); }
+.p-toast-message-content { padding: 14px 16px; gap: 11px; align-items: center; }
+.p-toast-detail { color: var(--text); font-size: 14px; margin: 0; }
+.p-toast-summary { display: none; }
+
+/* ---------- Knob ---------- */
+.p-knob-text { font-family: var(--font-display); font-weight: 600; fill: var(--text); }
+
+/* ---------- Cristal: todo lo que flota sobre la página ---------- */
+.p-dialog,
+.p-confirmdialog,
+.p-select-overlay,
+.p-multiselect-overlay,
+.p-autocomplete-overlay,
+.p-datepicker-panel,
+.p-popover,
+.p-menu,
+.p-toast-message {
+  background: var(--glass-rail);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--shadow-rail), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0, 0, 0, .18);
+}
+.p-dialog-mask, .p-overlay-mask { backdrop-filter: blur(4px); }
+.p-tooltip-text { background: var(--surface); border: 1px solid var(--line-strong); color: var(--text); font-size: 12.5px; }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .p-dialog, .p-confirmdialog, .p-select-overlay, .p-popover, .p-toast-message, .p-menu {
+    background: var(--surface);
+  }
+}
+
+/* ---------- Correcciones sobre lo que se vio en pantalla ---------- */
+
+/* Los botones de texto tomaban un fondo claro al pasar el cursor: en un tema
+   oscuro eso es un disco blanco. Van a la superficie de la marca. */
+.p-button-text:not(:disabled):hover,
+.p-button-text:not(:disabled):active,
+.p-button-outlined:not(:disabled):hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.p-button-text.p-button-danger:not(:disabled):hover { background: var(--danger-bg); color: var(--danger); }
+.p-button-outlined { border-color: var(--line-strong); color: var(--text-2); }
+.p-button-outlined:not(:disabled):hover { border-color: var(--line-strong); }
+
+/* Las etiquetas seguían la paleta de PrimeNG (verde, naranja, azul). La
+   plataforma nunca usó eso: sus estados son una pí­ldora con borde y un punto
+   de color, con lima reservada para lo positivo. */
+.p-tag {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--text-2);
+}
+.p-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex: 0 0 auto;
+}
+.p-tag-success { color: var(--text); }
+.p-tag-success::before { background: var(--accent); }
+.p-tag-warn::before { background: var(--bb-mint); }
+.p-tag-info::before { background: var(--bb-blue); }
+.p-tag-secondary { color: var(--text-dim); }
+.p-tag-danger {
+  color: var(--text);
+  background: var(--danger-bg);
+  border-color: rgba(242, 84, 91, .4);
+}
+.p-tag-danger::before { background: var(--danger); }
+/* Cuando la etiqueta ya trae icono, el punto sobra. */
+.p-tag:has(.p-tag-icon)::before { display: none; }
+
+/* El nombre de una persona no se parte en dos líneas. */
+.celda-persona { white-space: nowrap; }
+.p-datatable-tbody > tr > td .celda-persona { max-width: 100%; }
+
+/* El botón del calendario venía con fondo claro. */
+.p-datepicker-dropdown {
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--text-2);
+}
+.p-datepicker-dropdown:not(:disabled):hover { background: var(--surface); color: var(--text); }

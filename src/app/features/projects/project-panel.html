@@ -136,18 +136,25 @@
   }
 
   <footer class="panel__pie">
-    <a class="btn btn--ghost btn--sm" [routerLink]="['/proyectos', p().id]">Abrir la ficha completa</a>
+    <p-button
+      label="Abrir la ficha completa"
+      icon="pi pi-external-link"
+      [text]="true"
+      size="small"
+      [routerLink]="['/proyectos', p().id]"
+    />
 
     @if (esMio()) {
-      <button class="btn btn--ghost btn--sm" type="button" (click)="editar()">Editar</button>
-      <button
-        class="btn btn--danger btn--sm"
-        type="button"
-        [disabled]="borrando()"
-        (click)="eliminar()"
-      >
-        {{ borrando() ? 'Eliminando…' : 'Eliminar' }}
-      </button>
+      <p-button label="Editar" icon="pi pi-pencil" severity="secondary" [outlined]="true" size="small" (onClick)="editar()" />
+      <p-button
+        label="Eliminar"
+        icon="pi pi-trash"
+        severity="danger"
+        [outlined]="true"
+        size="small"
+        [loading]="borrando()"
+        (onClick)="eliminar()"
+      />
     }
   </footer>
 
