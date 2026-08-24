@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, input, output, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ProjectsService } from '../../core/projects.service';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
@@ -31,6 +31,13 @@ export class ProjectPanel {
   private router = inject(Router);
 
   readonly resumen = input.required<Project>();
+  /**
+   * Embebido en una columna en lugar de flotando al costado. Es el mismo
+   * contenido en los dos casos —tiempos, historial, responsables— y duplicarlo
+   * garantizaria que las dos versiones se separen con el tiempo. En modo
+   * embebido no hay capa oscura ni boton de cerrar: no hay nada que cerrar.
+   */
+  readonly embebido = input<boolean>(false);
   readonly cerrar = output<void>();
   /** Avisa que el proyecto ya no está: el tablero cierra el panel. */
   readonly eliminado = output<string>();
@@ -38,18 +45,58 @@ export class ProjectPanel {
   /** Versión completa traída del servidor; null mientras no llega. */
   private completo = signal<Project | null>(null);
   protected cargando = signal(false);
+  /**
+   * El detalle no llego. Se distingue de "cargando" a proposito: un panel que
+   * dice "cargando" para siempre miente, y quien lo mira no sabe si esperar o
+   * reintentar.
+   */
+  protected fallo = signal(false);
+
+  /** Temporizador de la carga del detalle. Ver el comentario del constructor. */
+  private espera?: ReturnType<typeof setTimeout>;
+  /**
+   * Ultimo proyecto pedido. Sin esto el panel entra en bucle:
+   *
+   * `fetchOne` guarda el detalle en la lista del servicio, la lista emite un
+   * objeto nuevo para ese proyecto, la entrada `resumen` cambia de referencia y
+   * el efecto se vuelve a disparar — pidiendo otra vez el mismo detalle, para
+   * siempre. Lo que importa es que cambie el PROYECTO, no la referencia.
+   */
+  private ultimoPedido: string | null = null;
 
   constructor() {
     effect(() => {
       const id = this.resumen().id;
+      if (id === this.ultimoPedido) return;
+      this.ultimoPedido = id;
+
       this.completo.set(null);
+      this.fallo.set(false);
       this.cargando.set(true);
-      void this.projectsSvc.fetchOne(id).then(p => {
-        // Si mientras cargaba se abrió otra tarjeta, esta respuesta ya no sirve.
-        if (this.resumen().id === id) this.completo.set(p);
-        this.cargando.set(false);
-      });
+
+      /*
+       * 220 ms de espera antes de pedir el detalle.
+       *
+       * En la vista maestro-detalle la selección cambia con las flechas del
+       * teclado, así que recorrer diez proyectos disparaba diez consultas y el
+       * servidor devolvía 429. Con la espera, mientras la persona sigue
+       * moviéndose no sale ninguna: solo se pide el detalle de donde se detuvo.
+       */
+      clearTimeout(this.espera);
+      this.espera = setTimeout(() => {
+        void this.projectsSvc.fetchOne(id).then(p => {
+          // Si mientras cargaba se eligió otro, esta respuesta ya no sirve.
+          if (this.resumen().id === id) {
+            if (p) this.completo.set(p);
+            else this.fallo.set(true);
+            this.cargando.set(false);
+          }
+        });
+      }, 220);
     });
+
+    // Al destruirse el panel no queda una consulta en camino sin dueño.
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.espera));
   }
 
   protected p = computed<Project>(() => this.completo() ?? this.resumen());
@@ -96,6 +143,19 @@ export class ProjectPanel {
   protected esMio = computed(() => this.auth.esAutorOAdmin(this.p().autorId));
 
   protected borrando = signal(false);
+
+  /** Reintento a mano: vale más que una disculpa. */
+  protected async reintentar(): Promise<void> {
+    const id = this.resumen().id;
+    this.ultimoPedido = id; // ya pedido: el efecto no debe volver a dispararlo
+    this.fallo.set(false);
+    this.cargando.set(true);
+    const p = await this.projectsSvc.fetchOne(id);
+    if (this.resumen().id !== id) return;
+    if (p) this.completo.set(p);
+    else this.fallo.set(true);
+    this.cargando.set(false);
+  }
 
   protected async editar(): Promise<void> {
     await this.router.navigate(['/proyectos', this.p().id, 'editar']);

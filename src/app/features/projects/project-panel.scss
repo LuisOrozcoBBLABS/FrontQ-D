@@ -43,6 +43,25 @@
   .panel { width: 100vw; border-left: 0; padding: var(--sp-4); }
 }
 
+/* ---------- Embebido en una columna (vista maestro-detalle) ----------
+   Deja de flotar: ocupa la celda que le da la rejilla, con su propio scroll.
+   Sin animación de entrada, porque no entra: ya estaba ahí. */
+.panel--embebido {
+  position: static;
+  width: auto;
+  height: 100%;
+  border-left: 0;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  box-shadow: none;
+  animation: none;
+  padding: var(--sp-5);
+}
+
+@media (max-width: 560px) {
+  .panel--embebido { width: auto; padding: var(--sp-4); border: 1px solid var(--line); }
+}
+
 .panel__head {
   display: flex;
   align-items: flex-start;
@@ -259,4 +278,19 @@
   font-size: var(--fs-2xs);
   line-height: var(--lh-snug);
   color: var(--text-dim);
+}
+
+/* Falla del detalle: qué pasó y cómo salir de ahí. Un reintento a mano vale
+   más que una disculpa. */
+.panel__fallo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  padding: var(--sp-3);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--line));
+  border-radius: var(--r-md);
+  background: var(--danger-bg);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
 }

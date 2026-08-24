@@ -1,7 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { AuthService } from '../../core/auth.service';
 import { ProjectsBoard } from './projects-board';
-import { ProjectsTable } from './projects-table';
+import { ProjectsMaestro } from './projects-maestro';
 
 /**
  * `/proyectos` no muestra lo mismo a todos, porque no es el mismo trabajo:
@@ -21,12 +21,12 @@ import { ProjectsTable } from './projects-table';
  */
 @Component({
   selector: 'app-projects',
-  imports: [ProjectsBoard, ProjectsTable],
+  imports: [ProjectsBoard, ProjectsMaestro],
   template: `
     @if (verTablero()) {
       <app-projects-board />
     } @else {
-      <app-projects-table />
+      <app-projects-maestro />
     }
   `,
 })

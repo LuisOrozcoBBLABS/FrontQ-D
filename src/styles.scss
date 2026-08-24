@@ -806,3 +806,78 @@ html[data-theme="light"] .marca-fondo__txt{
   color: var(--text-2);
 }
 .p-datepicker-dropdown:not(:disabled):hover { background: var(--surface); color: var(--text); }
+
+/* =============================================================
+   18. TABLAS — reglas transversales
+
+   Van acá y no en cada componente porque son decisiones del sistema: si cada
+   tabla resuelve la alineación por su cuenta, terminan alineadas distinto y
+   comparar entre módulos deja de ser posible.
+   ============================================================= */
+
+/* Columnas numéricas CUANTITATIVAS (importes, conteos, medidas, porcentajes):
+   a la derecha y con cifras de ancho fijo, para que los dígitos significativos
+   caigan en la misma vertical y comparar entre filas no cueste esfuerzo.
+
+   Los números CUALITATIVOS —fechas, códigos, teléfonos— NO llevan esta clase:
+   no son magnitudes, son etiquetas que resultaron ser dígitos. */
+.col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Se aplica al th y al td: solo en el td deja el encabezado desalineado
+   respecto de su columna, y ese hueco blanco se lee como error de maquetado. */
+.p-datatable-thead > tr > th.col-num,
+.p-datatable-tbody > tr > td.col-num { text-align: right; }
+
+/* La columna de acciones no crece: ocupa lo que ocupan sus iconos. */
+.col-acciones {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Las acciones se revelan al pasar el cursor. Una tabla es densa por
+   naturaleza, así que la meta no es llenarla de botones sino mostrar la acción
+   justa donde y cuando hace falta. Quedan visibles al enfocar con teclado y en
+   pantallas táctiles, donde no existe el hover. */
+.acciones {
+  display: inline-flex;
+  gap: var(--sp-1);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.p-datatable-tbody > tr:hover .acciones,
+.p-datatable-tbody > tr:focus-within .acciones { opacity: 1; }
+
+@media (hover: none) {
+  .acciones { opacity: 1; }
+}
+
+/* Dato principal y dato de apoyo dentro de la misma celda. Así una tabla de
+   seis columnas dice lo que otra necesitaría diez para decir, sin ensanchar. */
+.celda-principal { display: block; font-weight: 600; }
+.celda-apoyo {
+  display: block;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* El encabezado se queda al hacer scroll: al bajar cien filas, el contexto de
+   qué columna se está mirando tiene que seguir ahí.
+
+   `position: sticky` va acá y no se hereda del tema: el preset de marca no trae
+   esa parte, y sin ella `[scrollable]` da scroll pero la cabecera se va con las
+   filas. El fondo opaco es imprescindible — sin él, las filas se transparentan
+   por debajo del encabezado al desplazarse. */
+.p-datatable-scrollable .p-datatable-thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-2);
+}
+
+/* El icono de orden no debe empujar el texto del encabezado ni desalinearlo
+   respecto del contenido de su columna. */
+.p-datatable-thead > tr > th.col-num .p-datatable-sort-icon { margin-left: var(--sp-1); }

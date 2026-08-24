@@ -1,9 +1,3 @@
-.member-list { display: grid; gap: 8px; max-height: 46vh; overflow-y: auto; }
-.member-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer;
-}
-.member-row:hover { border-color: var(--line-strong); background: var(--surface-2); }
 
 /* Integrantes dentro de la celda: iniciales apiladas mas el total */
 .integrantes { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
@@ -14,4 +8,174 @@
   font-weight: 700;
   color: var(--text-dim);
   font-variant-numeric: tabular-nums;
+}
+
+/* =============================================================
+   SELECTOR DE INTEGRANTES — dos paneles
+
+   Los dos lados a la vista: quién está disponible y quién es del equipo. El
+   panel de la izquierda dice de qué grupo saldría cada persona, porque en este
+   modelo una persona pertenece a un solo grupo y sumarla a este la saca del
+   otro. Esa consecuencia tiene que verse antes de guardar, no después.
+   ============================================================= */
+.paneles {
+  display: grid;
+  grid-template-columns: 1fr 56px 1fr;
+  gap: var(--sp-3);
+  align-items: stretch;
+}
+
+/* En angosto los paneles se apilan y la flecha gira: al lado no caben. */
+@media (max-width: 720px) {
+  .paneles { grid-template-columns: 1fr; }
+  .transferir { flex-direction: row; justify-content: center; }
+  .transferir .p-button { transform: rotate(90deg); }
+}
+
+.panel-sel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* El lado del equipo se distingue por el filo de acento, no por el color de
+   fondo: teñir todo el panel competiría con el resaltado de las filas. */
+.panel-sel--equipo { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+
+.panel-sel__head {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.panel-sel__t {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.panel-sel--equipo .panel-sel__t { color: var(--accent-text); }
+
+.panel-sel__n {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.panel-sel__head .p-iconfield { width: 100%; }
+.panel-sel__head input { width: 100%; }
+
+.panel-sel__lista {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Alto fijo para que los dos paneles midan igual y el diálogo no salte al
+     filtrar: sin esto, escribir en el buscador cambia la altura del modal. */
+  height: 300px;
+}
+
+.panel-sel__vacio {
+  margin: 0;
+  padding: var(--sp-4);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-snug);
+  color: var(--text-dim);
+}
+
+/* ---------- Fila de persona ---------- */
+.persona-fila {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.persona-fila:last-child { border-bottom: 0; }
+.persona-fila:hover { background: var(--surface-2); }
+.persona-fila--marcada { background: var(--accent-soft); }
+.persona-fila--equipo { cursor: default; }
+
+.persona-fila__txt { min-width: 0; display: grid; }
+
+.persona-fila__n {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.persona-fila__g {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Quien viene de otro equipo se marca en azul: no es un error, es un aviso de
+   que se lo va a mover. */
+.persona-fila__g--mueve { color: var(--bb-blue); }
+
+.persona-fila--equipo .avatar--equipo {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  color: var(--accent-text);
+}
+
+/* El botón de sacar se corre a la derecha. */
+.persona-fila--equipo .p-button { margin-left: auto; }
+
+/* ---------- Columna de transferencia ---------- */
+.transferir {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+}
+
+.transferir__n {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+.transferir__n--hay { color: var(--accent-text); font-weight: 700; }
+
+/* ---------- Aviso de consecuencia ---------- */
+.aviso-mueve {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--bb-blue) 40%, var(--line));
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--bb-blue) 8%, transparent);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-base);
+  color: var(--text-2);
+}
+.aviso-mueve svg { flex: none; width: 16px; height: 16px; margin-top: 1px; color: var(--bb-blue); }
+.aviso-mueve b { color: var(--text); }
+
+.pie-cambios {
+  margin-right: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
 }

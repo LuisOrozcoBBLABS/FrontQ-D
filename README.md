@@ -236,6 +236,7 @@ OpenAI en el backend.
 
 | Rama | Qué cambió |
 |---|---|
+| `feat/tablero-proyectos` | Vistas maestro-detalle en Proyectos y Usuarios (lista + ficha siempre visible, con navegación por flechas), selector de integrantes en dos paneles con cambios en lote y la consecuencia a la vista, y el dashboard con deltas reales y sparkline. |
 | `feat/tablero-proyectos` | PrimeNG 21.1.9 como libreria de componentes, tematizado con los tokens de marca; integrado con los 11 commits de `origin/main` y con el tablero de proyectos, cuyos selects, calendarios, buscador y botones pasan a componentes de PrimeNG. El proxy del dev server apunta al BackQ-D local. |
 | `main` | Editar y eliminar proyectos, solo para quien los registró: formulario de edición reusado en `/proyectos/:id/editar`, acciones en el panel del tablero, en la ficha y por fila en la tabla, y el permiso unificado en `esAutorOAdmin()` (la ficha usaba un permiso de lectura). |
 | `main` | Tablero kanban de proyectos a cargo: 10 columnas por etapa, arrastre con `@angular/cdk` y guardado optimista, panel lateral con historial y tiempos por etapa, y filtrado avanzado contra el servidor. La tabla queda para quien asigna y para administración. |

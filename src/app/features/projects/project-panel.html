@@ -1,9 +1,12 @@
-<div class="panel-capa" (click)="alCerrar()" aria-hidden="true"></div>
+@if (!embebido()) {
+  <div class="panel-capa" (click)="alCerrar()" aria-hidden="true"></div>
+}
 
 <aside
   class="panel"
-  role="dialog"
-  aria-modal="false"
+  [class.panel--embebido]="embebido()"
+  [attr.role]="embebido() ? 'region' : 'dialog'"
+  [attr.aria-modal]="embebido() ? null : 'false'"
   [attr.aria-label]="'Detalle de ' + p().nombre"
   tabindex="-1"
   (keydown)="teclado($event)"
@@ -19,9 +22,11 @@
       </p>
     </div>
 
-    <button class="panel__x" type="button" (click)="alCerrar()" aria-label="Cerrar el detalle">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
+    @if (!embebido()) {
+      <button class="panel__x" type="button" (click)="alCerrar()" aria-label="Cerrar el detalle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    }
   </header>
 
   <!-- ============ Tiempos ============ -->
@@ -86,7 +91,12 @@
   <section class="panel__bloque">
     <h3 class="panel__h3">Historial de etapas</h3>
 
-    @if (!historialListo()) {
+    @if (fallo()) {
+      <div class="panel__fallo">
+        <span>No se pudo traer el historial de este proyecto.</span>
+        <p-button label="Reintentar" icon="pi pi-refresh" [text]="true" size="small" (onClick)="reintentar()" />
+      </div>
+    } @else if (!historialListo()) {
       <p class="panel__vacio">Cargando el historial…</p>
     } @else if (historial().length) {
       <ol class="linea">

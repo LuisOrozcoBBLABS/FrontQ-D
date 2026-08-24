@@ -70,3 +70,248 @@
 .reset__aviso b { color: var(--text); font-weight: 600; }
 .reset__campo { display: flex; gap: var(--sp-2); align-items: center; }
 .reset__campo .input { flex: 1 1 auto; min-width: 0; font-family: var(--font-mono); }
+
+/* =============================================================
+   USUARIOS - maestro-detalle
+
+   Mismo patron que proyectos: a la izquierda lo minimo para elegir, a la
+   derecha la ficha completa. La estructura repite a proposito, porque las dos
+   pantallas resuelven el mismo problema y que se muevan igual es lo que hace
+   que se sienta una sola aplicacion.
+   ============================================================= */
+
+.mu {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: start;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .mu { grid-template-columns: 1fr; }
+  .mu__filas { max-height: 320px; }
+}
+
+/* ---------- Maestro ---------- */
+.mu__lista {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.mu__lista-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.mu__conteo {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mu__conteo-q { font-size: var(--fs-2xs); letter-spacing: .06em; text-transform: uppercase; color: var(--text-dim); }
+
+.mu__orden { margin-left: auto; display: flex; gap: var(--sp-1); }
+
+.mu__orden-btn {
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.mu__orden-btn:hover { border-color: var(--line-strong); color: var(--text); }
+.mu__orden-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.mu__filas { overflow-y: auto; overscroll-behavior: contain; min-height: 0; max-height: min(58dvh, 560px); }
+.mu__filas:focus { outline: none; }
+.mu__filas:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.mu__fila {
+  display: grid;
+  grid-template-columns: 3px auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: 0 var(--sp-3) 0 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.mu__fila:hover { background: var(--surface-2); }
+.mu__fila:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* La seleccion se marca con el filo de acento: se distingue del hover incluso
+   en escala de grises, que el color de fondo por si solo no logra. */
+.mu__filo { width: 3px; height: 100%; min-height: 52px; background: transparent; }
+.mu__fila--sel { background: var(--surface-2); }
+.mu__fila--sel .mu__filo { background: var(--accent); }
+.mu__fila--sel .mu__fila-n { font-weight: 700; }
+
+/* Una cuenta desactivada se atenua, pero sigue legible: hay que poder leerla
+   para reactivarla. */
+.mu__fila--inactiva .mu__fila-n,
+.mu__fila--inactiva .mu__fila-sub { opacity: .55; }
+
+.mu__fila-txt { min-width: 0; display: grid; gap: 1px; padding: var(--sp-2) 0; }
+
+.mu__fila-n {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mu__fila-sub {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mu__inactiva { display: grid; place-items: center; color: var(--text-dim); }
+.mu__inactiva svg { width: 14px; height: 14px; }
+
+.mu__esq { display: grid; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
+
+.mu__vacio {
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: start;
+  padding: var(--sp-5) var(--sp-4);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.mu__vacio b { font-family: var(--font-display); font-size: var(--fs-sm); color: var(--text); }
+
+/* ---------- Detalle ---------- */
+.mu__detalle { min-width: 0; }
+
+.mu__detalle-vacio {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: center;
+  align-content: center;
+  min-height: 320px;
+  padding: var(--sp-8);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  text-align: center;
+  color: var(--text-dim);
+}
+.mu__detalle-vacio svg { width: 34px; height: 34px; opacity: .6; }
+.mu__detalle-vacio b { font-family: var(--font-display); font-size: var(--fs-md); color: var(--text-2); }
+.mu__detalle-vacio span { max-width: 320px; font-size: var(--fs-xs); line-height: var(--lh-base); }
+
+/* ---------- La ficha ---------- */
+.ficha {
+  display: grid;
+  gap: var(--sp-5);
+  align-content: start;
+  padding: var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.ficha__head { display: flex; align-items: center; gap: var(--sp-4); }
+
+.avatar--grande {
+  width: 56px;
+  height: 56px;
+  font-size: var(--fs-md);
+  flex: none;
+}
+
+.ficha__id { min-width: 0; display: grid; gap: var(--sp-1); }
+
+.ficha__n {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  letter-spacing: -.02em;
+}
+
+.ficha__mail { margin: 0; font-size: var(--fs-xs); color: var(--text-dim); }
+.ficha__tags { display: flex; gap: var(--sp-2); margin-top: 2px; }
+
+.ficha__datos { margin: 0; display: grid; gap: var(--sp-2); }
+
+.ficha__par {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-sm);
+}
+.ficha__par:last-child { border-bottom: 0; }
+.ficha__datos dt { color: var(--text-dim); }
+.ficha__datos dd { margin: 0; text-align: right; color: var(--text); }
+
+/* Nunca entro y clave temporal sin cambiar son avisos, no errores: azul, no
+   rojo. Rojo aca entrenaria a ignorar el rojo. */
+.ficha__nunca,
+.ficha__temporal { color: var(--bb-blue); }
+
+.ficha__bloque { display: grid; gap: var(--sp-2); }
+
+.ficha__h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.ficha__h3 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-2); }
+
+.ficha__nota { margin: 0; font-size: var(--fs-2xs); color: var(--text-dim); }
+
+.ficha__perms { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+/* Los del rol y los extras se distinguen por forma, no solo por color: el
+   contorno lleno es del rol, el de acento es un extra dado a esa persona. */
+.perm {
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+}
+.perm--rol { border: 1px solid var(--line); background: var(--surface-2); color: var(--text-2); }
+.perm--extra { border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent-text); }
+
+.ficha__pie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}

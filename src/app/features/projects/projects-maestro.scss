@@ -1,0 +1,234 @@
+/* =============================================================
+   PROYECTOS — maestro-detalle
+
+   Deja de haber tabla ancha. A la izquierda, lo mínimo para elegir: nombre,
+   etapa y cuánto lleva ahí. A la derecha, la ficha completa, siempre visible.
+
+   El motivo es el trabajo real de quien asigna: revisa treinta proyectos
+   seguidos. Con una tabla eso son treinta idas y vueltas al detalle; acá la
+   flecha abajo cambia de proyecto y la ficha se actualiza sola.
+   ============================================================= */
+
+.page--maestro {
+  max-width: none;
+  display: grid;
+  /* Alto fijo: el scroll vive dentro de la lista y dentro de la ficha, no en la
+     página. Si scrollea la página, el encabezado y los filtros se van. */
+  height: 100dvh;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: var(--sp-4);
+  padding: var(--sp-6) var(--pad) var(--sp-4);
+  overflow: hidden;
+}
+
+/* ---------- Encabezado ---------- */
+.mp__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+}
+
+.mp__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  letter-spacing: -.03em;
+}
+
+.mp__acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.mp__buscar { flex: 0 1 300px; }
+.mp__buscar input { width: 100%; }
+
+@media (max-width: 860px) {
+  .mp__buscar { flex: 1 1 100%; }
+}
+
+/* ---------- Pastillas de filtro ---------- */
+.mp__pastillas { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+.pastilla {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 4px 10px;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-full);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.pastilla svg { width: 11px; height: 11px; }
+.pastilla:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pastilla--limpiar { border-color: var(--line); background: transparent; color: var(--text-2); }
+
+/* ---------- La rejilla ---------- */
+.mp {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: var(--sp-4);
+  min-height: 0;
+}
+
+/* En angosto no caben las dos columnas: la lista arriba, acotada, y la ficha
+   debajo. Sigue funcionando, solo hay que desplazarse. */
+@media (max-width: 900px) {
+  .page--maestro { height: auto; overflow: visible; }
+  .mp { grid-template-columns: 1fr; }
+  .mp__filas { max-height: 320px; }
+}
+
+/* ---------- Maestro ---------- */
+.mp__lista {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.mp__lista-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.mp__conteo {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mp__conteo-q { font-size: var(--fs-2xs); letter-spacing: .06em; text-transform: uppercase; color: var(--text-dim); }
+
+.mp__orden { margin-left: auto; display: flex; gap: var(--sp-1); }
+
+.mp__orden-btn {
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.mp__orden-btn:hover { border-color: var(--line-strong); color: var(--text); }
+.mp__orden-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.mp__filas {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+}
+/* El contenedor recibe el foco para que las flechas funcionen, pero su anillo
+   propio sería ruido: la fila seleccionada ya dice dónde estás. */
+.mp__filas:focus { outline: none; }
+.mp__filas:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.mp__fila {
+  display: grid;
+  grid-template-columns: 3px 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: 0 var(--sp-4) 0 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.mp__fila:hover { background: var(--surface-2); }
+.mp__fila:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* El filo de acento marca la selección por FORMA, no solo por color de fondo:
+   se distingue del hover incluso en escala de grises. */
+.mp__filo {
+  width: 3px;
+  height: 100%;
+  min-height: 52px;
+  background: transparent;
+}
+.mp__fila--sel { background: var(--surface-2); }
+.mp__fila--sel .mp__filo { background: var(--accent); }
+.mp__fila--sel .mp__fila-n { font-weight: 700; }
+
+.mp__fila-txt { min-width: 0; display: grid; gap: 1px; padding: var(--sp-3) 0; }
+
+.mp__fila-n {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp__fila-sub {
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp__fila-dias {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+.mp__fila-dias--mal { color: var(--danger); }
+
+.mp__esq { display: grid; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
+
+.mp__vacio {
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: start;
+  padding: var(--sp-5) var(--sp-4);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.mp__vacio b { font-family: var(--font-display); font-size: var(--fs-sm); color: var(--text); }
+
+/* ---------- Detalle ---------- */
+.mp__detalle { min-height: 0; overflow: hidden; }
+
+.mp__detalle-vacio {
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: center;
+  align-content: center;
+  height: 100%;
+  padding: var(--sp-8);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  text-align: center;
+  color: var(--text-dim);
+}
+.mp__detalle-vacio svg { width: 34px; height: 34px; opacity: .6; }
+.mp__detalle-vacio b { font-family: var(--font-display); font-size: var(--fs-md); color: var(--text-2); }
+.mp__detalle-vacio span { max-width: 320px; font-size: var(--fs-xs); line-height: var(--lh-base); }

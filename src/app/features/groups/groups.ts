@@ -8,7 +8,9 @@ import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
-import { ToggleSwitch } from 'primeng/toggleswitch';
+import { Checkbox } from 'primeng/checkbox';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 import { Dialog } from 'primeng/dialog';
 import { Tooltip } from 'primeng/tooltip';
 import { ToastService } from '../../core/toast.service';
@@ -17,7 +19,18 @@ import { mensajeDeError } from '../../core/auth.service';
 
 @Component({
   selector: 'app-groups',
-  imports: [FormsModule, Paginador, TableModule, ButtonModule, InputText, ToggleSwitch, Dialog, Tooltip],
+  imports: [
+    FormsModule,
+    Paginador,
+    TableModule,
+    ButtonModule,
+    InputText,
+    Checkbox,
+    IconField,
+    InputIcon,
+    Dialog,
+    Tooltip,
+  ],
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })
@@ -50,8 +63,133 @@ export class Groups {
   protected nombre = signal('');
   protected lema = signal('');
 
-  // Modal integrantes
+  // ---------------- Integrantes: selector de dos paneles ----------------
   protected membersFor = signal<Group | null>(null);
+
+  /**
+   * Composicion en preparacion. Los cambios NO se aplican al marcar: se juntan
+   * acá y se guardan de una vez.
+   *
+   * Antes cada interruptor disparaba un PATCH al instante, asi que mover a tres
+   * personas eran tres requests y no habia forma de arrepentirse. Y como cada
+   * persona pertenece a un solo grupo, ese guardado silencioso la sacaba de su
+   * equipo anterior sin decirlo.
+   */
+  protected enGrupo = signal<string[]>([]);
+  /** Marcadas en el panel de disponibles, esperando pasar al grupo. */
+  protected marcadas = signal<string[]>([]);
+  protected filtroDisponibles = signal('');
+  protected filtroEquipo = signal('');
+  protected guardando = signal(false);
+
+  /** Todas las personas activas del area, no la pagina de la tabla. */
+  private todas = this.usersSvc.todos;
+
+  private coincide(u: User, texto: string): boolean {
+    const t = texto.trim().toLowerCase();
+    if (!t) return true;
+    return (u.nombre + ' ' + u.email + ' ' + (u.cargo ?? '')).toLowerCase().includes(t);
+  }
+
+  /** Quienes no estan en la composicion en preparacion. */
+  protected disponibles = computed<User[]>(() => {
+    const dentro = new Set(this.enGrupo());
+    return this.todas()
+      .filter(u => !dentro.has(u.id))
+      .filter(u => this.coincide(u, this.filtroDisponibles()));
+  });
+
+  /** Quienes si estan, en el orden en que se ven a la derecha. */
+  protected equipo = computed<User[]>(() => {
+    const dentro = new Set(this.enGrupo());
+    return this.todas()
+      .filter(u => dentro.has(u.id))
+      .filter(u => this.coincide(u, this.filtroEquipo()));
+  });
+
+  /** Composicion original, para saber que cambio. */
+  private original = signal<string[]>([]);
+
+  protected cambios = computed(() => {
+    const antes = new Set(this.original());
+    const ahora = new Set(this.enGrupo());
+    const entran = [...ahora].filter(id => !antes.has(id));
+    const salen = [...antes].filter(id => !ahora.has(id));
+    return { entran, salen, total: entran.length + salen.length };
+  });
+
+  /**
+   * De que grupo sale cada persona que entra. Es la consecuencia que el diseño
+   * anterior escondia: activar a alguien lo saca de su equipo actual.
+   */
+  protected consecuencias = computed(() => {
+    const g = this.membersFor();
+    return this.cambios().entran
+      .map(id => this.todas().find(u => u.id === id))
+      .filter((u): u is User => !!u && !!u.grupo && u.groupId !== g?.id)
+      .map(u => ({ nombre: u.nombre, desde: u.grupo as string }));
+  });
+
+  /** Etiqueta del grupo de origen, para pintarla en la fila de disponibles. */
+  grupoDe(u: User): string {
+    return u.grupo ? 'Grupo ' + u.grupo : 'Sin grupo';
+  }
+  saleDeOtro(u: User): boolean {
+    return !!u.grupo && u.groupId !== this.membersFor()?.id;
+  }
+
+  estaMarcada(u: User): boolean { return this.marcadas().includes(u.id); }
+
+  marcar(u: User): void {
+    this.marcadas.update(l => (l.includes(u.id) ? l.filter(x => x !== u.id) : [...l, u.id]));
+  }
+
+  /** Pasa lo marcado al grupo. Sin nada marcado no hace nada. */
+  pasarAlGrupo(): void {
+    const ids = this.marcadas();
+    if (!ids.length) return;
+    this.enGrupo.update(l => [...new Set([...l, ...ids])]);
+    this.marcadas.set([]);
+  }
+
+  /** Saca a una persona de la composicion en preparacion. */
+  sacarDelGrupo(u: User): void {
+    this.enGrupo.update(l => l.filter(id => id !== u.id));
+  }
+
+  /** Vuelve todo a como estaba al abrir, sin tocar el servidor. */
+  descartarCambios(): void {
+    this.enGrupo.set([...this.original()]);
+    this.marcadas.set([]);
+  }
+
+  async guardarIntegrantes(): Promise<void> {
+    const g = this.membersFor();
+    if (!g || !this.cambios().total || this.guardando()) return;
+    this.guardando.set(true);
+    try {
+      await this.groupsSvc.setMembership(g.id, this.enGrupo());
+      // Refrescar las TRES vistas que dependen de esto: la lista completa del
+      // selector, la pagina de la tabla de personas y los grupos — los avatares
+      // y el conteo de la tabla de grupos salen de ahi, y sin esta recarga
+      // seguian mostrando a la persona en su equipo anterior.
+      await Promise.all([
+        this.usersSvc.cargarTodos(true),
+        this.usersSvc.load(),
+        this.groupsSvc.load(),
+      ]);
+      const { entran, salen } = this.cambios();
+      const partes: string[] = [];
+      if (entran.length) partes.push(`${entran.length} ${entran.length === 1 ? 'entra' : 'entran'}`);
+      if (salen.length) partes.push(`${salen.length} ${salen.length === 1 ? 'sale' : 'salen'}`);
+      this.toast.success(`Grupo ${g.nombre}: ${partes.join(' y ')}`);
+      this.closeMembers();
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo actualizar los integrantes.'));
+    } finally {
+      this.guardando.set(false);
+    }
+  }
 
   members(g: Group): MiembroResumen[] { return this.groupsSvc.members(g.id); }
   memberCount(g: Group): number { return this.groupsSvc.memberCount(g.id); }
@@ -93,20 +231,21 @@ export class Groups {
     }
   }
 
-  openMembers(g: Group): void { this.membersFor.set(g); }
+  openMembers(g: Group): void {
+    // La lista completa hace falta antes de mostrar los dos paneles: con la
+    // pagina de la tabla solo se veian 8 de las 17 personas del area.
+    void this.usersSvc.cargarTodos();
+    const actuales = this.groupsSvc.members(g.id).map(m => m.id);
+    this.original.set(actuales);
+    this.enGrupo.set([...actuales]);
+    this.marcadas.set([]);
+    this.filtroDisponibles.set('');
+    this.filtroEquipo.set('');
+    this.membersFor.set(g);
+  }
   /** p-dialog avisa el cierre por Escape o clic en el fondo. */
   protected alCerrarIntegrantes(abierto: boolean): void {
     if (!abierto) this.closeMembers();
   }
   closeMembers(): void { this.membersFor.set(null); }
-  async toggleMember(u: User, g: Group): Promise<void> {
-    const actuales = this.groupsSvc.members(g.id).map(m => m.id);
-    const nuevos = this.esMiembro(u, g) ? actuales.filter(id => id !== u.id) : [...actuales, u.id];
-    try {
-      await this.groupsSvc.setMembership(g.id, nuevos);
-      await this.usersSvc.load();
-    } catch (e) {
-      this.toast.error(mensajeDeError(e, 'No se pudo actualizar los integrantes.'));
-    }
-  }
 }

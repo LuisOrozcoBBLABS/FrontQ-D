@@ -26,6 +26,14 @@ export interface FiltroProyectos {
   vencidos?: boolean;
   sinAsignar?: boolean;
   groupId?: string;
+
+  /**
+   * Orden. Va al servidor y no al cliente a proposito: con paginacion en el
+   * servidor, ordenar la pagina cargada solo reordena esas 8 filas y el usuario
+   * cree que ordeno todo el conjunto.
+   */
+  sort?: string;
+  dir?: 'asc' | 'desc';
 }
 
 export interface NuevoProyecto {
@@ -58,6 +66,44 @@ interface ProjectApi extends Omit<Project, 'grupo' | 'autorId' | 'historial'> {
   assignments?: { asignadoA: { id: string; nombre: string } | null; fechaLimite?: string | null }[];
 }
 
+/** Cifras reales del servidor para la pantalla de inicio. */
+export interface ResumenProyectos {
+  /** Total que la persona puede ver, no el total absoluto de la base. */
+  total: number;
+  /** Sin nadie asignado: es trabajo pendiente de reparto, no un dato de color. */
+  sinAsignar: number;
+  /** Registrados en los ultimos 7 dias. Es el delta con el que se compara. */
+  nuevos7: number;
+  /** Un valor por dia, 14 dias, el mas viejo primero. Alimenta el sparkline. */
+  serie: number[];
+  /** Cuando se leyo el dato, no cuando se cargo la pagina. */
+  at: Date;
+}
+
+/**
+ * Cuenta cuantos elementos cayeron en cada uno de los ultimos `dias` dias.
+ *
+ * Devuelve siempre `dias` posiciones, incluidos los ceros: un sparkline que
+ * omite los dias sin actividad comprime el tiempo y muestra una tendencia que
+ * no existe.
+ */
+function serieDiaria(fechas: string[], dias: number): number[] {
+  const cubos = new Array<number>(dias).fill(0);
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  for (const f of fechas) {
+    const t = Date.parse(f);
+    if (Number.isNaN(t)) continue;
+    const d = new Date(t);
+    d.setHours(0, 0, 0, 0);
+    const atras = Math.round((hoy.getTime() - d.getTime()) / 86_400_000);
+    const i = dias - 1 - atras;
+    if (i >= 0 && i < dias) cubos[i]++;
+  }
+  return cubos;
+}
+
 /** Cuántas tarjetas trae cada columna por tanda. */
 export const POR_COLUMNA = 10;
 
@@ -83,6 +129,7 @@ function paramsDe(filtro: FiltroProyectos): Record<string, string | number | boo
   if (filtro.hasta) p['hasta'] = filtro.hasta;
   if (filtro.vencidos) p['vencidos'] = true;
   if (filtro.sinAsignar) p['sinAsignar'] = true;
+  if (filtro.sort) { p['sort'] = filtro.sort; p['dir'] = filtro.dir ?? 'asc'; }
   return p;
 }
 
@@ -104,6 +151,8 @@ export class ProjectsService {
   /** Total que cumple los filtros en el servidor, no lo que hay cargado. */
   private readonly _total = signal(0);
   private readonly _porEstado = signal<Record<string, number>>({});
+  /** Cifras del dashboard. Null mientras no llegan o si fallaron. */
+  private readonly _resumen = signal<ResumenProyectos | null>(null);
   /** Tarjetas cargadas por columna. Cada columna pagina por su cuenta. */
   private readonly _tablero = signal<Record<ProjectStatus, Project[]>>(tableroVacio());
   private readonly _cargandoTablero = signal(false);
@@ -115,6 +164,7 @@ export class ProjectsService {
   readonly error = this._error.asReadonly();
   readonly total = this._total.asReadonly();
   readonly porEstado = this._porEstado.asReadonly();
+  readonly resumen = this._resumen.asReadonly();
   readonly count = computed(() => this._total());
   readonly tablero = this._tablero.asReadonly();
   readonly cargandoTablero = this._cargandoTablero.asReadonly();
@@ -257,6 +307,54 @@ export class ProjectsService {
         [destino]: Math.max(0, (c[destino] ?? 1) - 1),
       }));
       throw e;
+    }
+  }
+
+  /**
+   * Datos del dashboard. Va aparte de `load()` a proposito: `load()` es el
+   * estado de la tabla y pisarlo desde el inicio haria que volver a /proyectos
+   * muestre lo que pidio el dashboard.
+   *
+   * Son tres consultas livianas y todas devuelven cifras REALES del servidor:
+   * ningun numero de esta pantalla se estima en el cliente.
+   */
+  async cargarResumen(): Promise<void> {
+    const hace = (dias: number) => {
+      const d = new Date();
+      d.setDate(d.getDate() - dias);
+      return d.toISOString().slice(0, 10);
+    };
+
+    const contar = async (params: Record<string, string | number | boolean>) => {
+      // take=1 porque solo interesa la cabecera con el total.
+      const r = await firstValueFrom(
+        this.http.get<ProjectApi[]>(`${this.base}/projects`, {
+          params: { ...params, take: 1 },
+          observe: 'response',
+        }),
+      );
+      return Number(r.headers.get('X-Total-Count') ?? 0);
+    };
+
+    try {
+      const [total, sinAsignar, recientes] = await Promise.all([
+        contar({}),
+        contar({ sinAsignar: true }),
+        // La ventana de 14 dias entera: de aca sale la serie y el delta de 7.
+        firstValueFrom(
+          this.http.get<ProjectApi[]>(`${this.base}/projects`, {
+            params: { desde: hace(13), take: 200 },
+          }),
+        ),
+      ]);
+
+      const porDia = serieDiaria((recientes ?? []).map(p => p.createdAt), 14);
+      const nuevos7 = porDia.slice(-7).reduce((a, b) => a + b, 0);
+
+      this._resumen.set({ total, sinAsignar, nuevos7, serie: porDia, at: new Date() });
+    } catch {
+      this._resumen.set(null);
+      this._error.set('No se pudo cargar el resumen.');
     }
   }
 

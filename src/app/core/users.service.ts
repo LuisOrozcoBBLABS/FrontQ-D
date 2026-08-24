@@ -20,6 +20,9 @@ export interface FiltroUsuarios {
   rol?: string;
   estado?: string;
   pagina?: number;
+  /** Orden en el servidor: la tabla pagina alla, asi que ordenar acá mentiria. */
+  sort?: string;
+  dir?: 'asc' | 'desc';
 }
 
 export interface NuevoUsuario {
@@ -58,6 +61,13 @@ export class UsersService {
   private readonly _total = signal(0);
   /** Ultimo filtro usado, para poder recargar la misma pagina tras un cambio. */
   private ultimoFiltro: FiltroUsuarios = {};
+  /**
+   * Todas las personas activas, sin paginar. Va aparte de `_users` porque esa
+   * senal es la pagina de la tabla: el selector de integrantes necesita ver a
+   * las 17, no a las 8 de la primera pagina, y pisar `_users` desde un dialogo
+   * dejaria la tabla mostrando otra cosa al cerrarlo.
+   */
+  private readonly _todos = signal<User[]>([]);
 
   readonly users = this._users.asReadonly();
   readonly cargando = this._cargando.asReadonly();
@@ -67,6 +77,7 @@ export class UsersService {
   readonly solicitudes = this._solicitudes.asReadonly();
   readonly total = this._total.asReadonly();
 
+  readonly todos = this._todos.asReadonly();
   readonly count = computed(() => this._total());
   readonly activos = computed(() => this._users().filter(u => u.activo).length);
 
@@ -83,6 +94,7 @@ export class UsersService {
     };
     if (filtro.q) params['q'] = filtro.q;
     if (filtro.rol && filtro.rol !== 'all') params['rol'] = filtro.rol;
+    if (filtro.sort) { params['sort'] = filtro.sort; params['dir'] = filtro.dir ?? 'asc'; }
 
     try {
       const res = await firstValueFrom(
@@ -94,6 +106,27 @@ export class UsersService {
       this._error.set('No se pudieron cargar los usuarios.');
     } finally {
       this._cargando.set(false);
+    }
+  }
+
+  /**
+   * Trae a todas las personas activas de una sola vez, para pantallas que
+   * necesitan el conjunto completo (elegir integrantes, asignar trabajo).
+   * Se guarda una vez por sesion salvo que se pida refrescar: la lista de
+   * gente del area cambia poco y no vale una consulta por apertura.
+   */
+  async cargarTodos(refrescar = false): Promise<void> {
+    if (!refrescar && this._todos().length) return;
+    try {
+      const res = await firstValueFrom(
+        this.http.get<User[]>(`${this.base}/users`, {
+          params: { estado: 'activos', take: 200, sort: 'nombre', dir: 'asc' },
+        }),
+      );
+      this._todos.set(res ?? []);
+    } catch {
+      this._todos.set([]);
+      this._error.set('No se pudo cargar la lista de personas.');
     }
   }
 

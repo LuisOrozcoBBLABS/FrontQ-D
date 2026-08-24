@@ -1,6 +1,3 @@
-.stat { text-decoration: none; transition: border-color var(--dur) var(--ease); }
-.stat:hover { border-color: var(--line-strong); }
-
 .home-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 24px; }
 @media (max-width: 720px) { .home-cols { grid-template-columns: 1fr; } }
 
@@ -25,8 +22,12 @@
 .quick__card p { font-size: 13.5px; }
 @media (hover: none) { .quick__card:hover { transform: none; } }
 
-/* Avance propio: aro a la izquierda, lectura a la derecha */
-.avance {
+/* =============================================================
+   LO TUYO — el bloque que contesta "qué hago", con el aro a la izquierda y la
+   consigna a la derecha. El borde toma el tono del estado: rojo solo cuando hay
+   algo vencido, nunca para decir "cero vencidas".
+   ============================================================= */
+.tuyo {
   display: flex;
   align-items: center;
   gap: var(--sp-6);
@@ -41,12 +42,119 @@
   position: relative;
   top: 0.8rem;
 }
-.avance__aro { flex: 0 0 auto; display: grid; place-items: center; }
-.avance__texto { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
-.avance__texto h3 { font-size: 15px; font-weight: 600; }
-.avance__texto p { font-size: 14px; }
+
+/* El color no es la unica señal: la consigna ya dice en palabras que pasa. */
+.tuyo--mal { border-color: color-mix(in srgb, var(--danger) 45%, var(--glass-line)); }
+.tuyo--atencion { border-color: color-mix(in srgb, var(--bb-blue) 45%, var(--glass-line)); }
+
+.tuyo__aro { flex: 0 0 auto; display: grid; place-items: center; }
+
+.tuyo__texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.tuyo__consigna {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  letter-spacing: -.01em;
+}
+
+.tuyo__cifras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tuyo__cifras li { display: flex; align-items: baseline; gap: var(--sp-1); }
+
+.mini__n {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mini__q { font-size: var(--fs-xs); color: var(--text-dim); }
+.mini--mal .mini__n { color: var(--danger); }
+.mini--atencion .mini__n { color: var(--bb-blue); }
 
 @media (max-width: 640px) {
-  .avance { flex-direction: column; text-align: center; align-items: center; }
-  .avance__texto { align-items: center; }
+  .tuyo { flex-direction: column; text-align: center; align-items: center; }
+  .tuyo__texto { align-items: center; }
+  .tuyo__cifras { justify-content: center; }
 }
+
+/* =============================================================
+   KPIs DEL ÁREA — cifra, etiqueta, comparación y forma histórica.
+
+   La grilla se define por ancho minimo y no por cantidad de columnas: asi la
+   fila se reacomoda sola y agregar una quinta tarjeta no rompe el diseño.
+   ============================================================= */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+}
+
+.kpi {
+  display: grid;
+  gap: var(--sp-1);
+  align-content: start;
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.kpi:hover { border-color: var(--line-strong); }
+.kpi:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.kpi__etiqueta {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* La cifra no lleva color: si todas las cifras son de color, ninguna destaca.
+   El color vive en el delta, y solo cuando hay algo que mirar. */
+.kpi__valor {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.03em;
+  line-height: 1.05;
+}
+
+.kpi__delta {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.kpi__ref { color: var(--text-dim); }
+.kpi__delta--bien { color: var(--accent-text); }
+.kpi__delta--atencion { color: var(--bb-blue); }
+
+.kpi__spark { margin-top: var(--sp-2); color: var(--accent); }
+
+.kpi--esq { gap: var(--sp-2); }
+

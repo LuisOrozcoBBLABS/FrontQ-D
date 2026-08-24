@@ -7,6 +7,9 @@ import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
 import { ESTADOS_PROYECTO, Project, ProjectStatus, SECTORES, etapaDe } from '../../core/models';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
+import { ProjectPanel } from './project-panel';
+import { alertaEtapa, diasEnEtapa } from '../../core/tiempos';
+import { seleccionMaestro } from '../../ui/seleccion-maestro';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { Select } from 'primeng/select';
@@ -14,6 +17,7 @@ import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { Tag } from 'primeng/tag';
+import { Skeleton } from 'primeng/skeleton';
 
 /** Filtro activo, para poder mostrarlo y quitarlo con un clic. */
 interface FiltroActivo {
@@ -22,7 +26,7 @@ interface FiltroActivo {
 }
 
 @Component({
-  selector: 'app-projects-table',
+  selector: 'app-projects-maestro',
   imports: [
     RouterLink,
     FormsModule,
@@ -34,11 +38,13 @@ interface FiltroActivo {
     IconField,
     InputIcon,
     Tag,
+    Skeleton,
+    ProjectPanel,
   ],
-  templateUrl: './projects-table.html',
-  styleUrl: './projects-table.scss',
+  templateUrl: './projects-maestro.html',
+  styleUrl: './projects-maestro.scss',
 })
-export class ProjectsTable {
+export class ProjectsMaestro {
   private projectsSvc = inject(ProjectsService);
   protected auth = inject(AuthService);
   private router = inject(Router);
@@ -82,10 +88,38 @@ export class ProjectsTable {
     return 'warn'; // embudo: idea, evaluacion, aprobado
   }
 
+  /**
+   * Seleccion de la vista maestro-detalle. El comportamiento vive en
+   * `ui/seleccion-maestro`: es el mismo en todos los modulos y repetirlo
+   * garantizaria que cada uno acabe portandose distinto.
+   */
+  protected sel = seleccionMaestro<Project>(this.lista, 'mp');
+
+  /** Dias en la etapa, para el indicador de la fila. */
+  diasEtapa(p: Project): number | null { return diasEnEtapa(p); }
+  demorado(p: Project): boolean { return alertaEtapa(p) === 'demorado'; }
+
   protected query = signal('');
   protected sectorF = signal<string>('all');
   protected estadoF = signal<string>('all');
   protected pagina = signal(1);
+
+  /**
+   * Orden. Viaja al servidor: la tabla trae 8 filas por página, así que
+   * ordenar en el cliente reordenaría solo esas 8 y el usuario creería que
+   * ordenó las 28. El defecto —lo más reciente primero— lo pone el backend.
+   */
+  protected orden = signal<{ campo: string; dir: 'asc' | 'desc' } | null>(null);
+
+  /** PrimeNG entrega el orden como campo + 1/-1. */
+  ordenar(e: { field?: string; order?: number }): void {
+    if (!e.field) return;
+    const dir: 'asc' | 'desc' = e.order === -1 ? 'desc' : 'asc';
+    const actual = this.orden();
+    if (actual?.campo === e.field && actual.dir === dir) return; // evita recargar de más
+    this.pagina.set(1); // ordenar cambia qué cae en la primera página
+    this.orden.set({ campo: e.field, dir });
+  }
 
   /** Texto ya reposado: evita una consulta por cada tecla. */
   private queryDebounce = signal('');
@@ -95,11 +129,14 @@ export class ProjectsTable {
     // Cualquier cambio de filtro o de pagina vuelve a pedir esa pagina al
     // servidor: con volumen alto, filtrar en el cliente mostraria datos falsos.
     effect(() => {
+      const o = this.orden();
       const filtro = {
         q: this.queryDebounce(),
         sector: this.sectorF(),
         estado: this.estadoF(),
         pagina: this.pagina(),
+        sort: o?.campo,
+        dir: o?.dir,
       };
       void this.projectsSvc.load(filtro);
       void this.projectsSvc.loadPorEstado(filtro);

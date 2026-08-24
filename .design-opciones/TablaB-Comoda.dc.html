@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; font-family: Montserrat, "Segoe UI", system-ui, sans-serif; }
+    a { color: #B2EA36; } a:hover { color: #C7FFDF; }
+  </style>
+</helmet>
+
+<div style="width: 1060px; box-sizing: border-box; padding: 28px; background: #0B0A07; color: #F7F7F5;">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
+    <div>
+      <p style="margin: 0 0 2px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #B2EA36;">OPCIÓN B</p>
+      <h2 style="margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em;">Cómoda, con jerarquía</h2>
+    </div>
+    <p style="margin: 0; max-width: 400px; font-size: 12px; line-height: 1.5; color: #6F6C65; text-align: right;">Filas de 64&nbsp;px. El nombre manda y el dato de apoyo va debajo: seis columnas dicen lo que otra tabla necesitaría diez para decir. Dos filas seleccionadas muestran la barra de acciones en lote.</p>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 10px 14px; border: 1px solid rgba(178,234,54,.45); border-radius: 14px; background: rgba(178,234,54,.14);">
+    <span style="width: 18px; height: 18px; border-radius: 5px; background: #B2EA36; display: grid; place-items: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B0A07" stroke-width="3.4" stroke-linecap="round"><path d="m5 13 4 4L19 7"/></svg></span>
+    <span style="font-size: 13.5px; font-weight: 600; color: #B2EA36;">2 seleccionados</span>
+    <span style="flex: 1;"></span>
+    <span style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid #38352F; font-size: 12px; font-weight: 600; color: #F7F7F5;">Cambiar etapa</span>
+    <span style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid #38352F; font-size: 12px; font-weight: 600; color: #F7F7F5;">Asignar</span>
+    <span style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(242,84,91,.5); font-size: 12px; font-weight: 600; color: #F2545B;">Eliminar</span>
+  </div>
+
+  <div style="border: 1px solid #262421; border-radius: 20px; overflow: hidden; background: #131210;">
+
+    <div style="display: grid; grid-template-columns: 34px 2.6fr 1.2fr 1.3fr 100px 76px; align-items: center; gap: 14px; padding: 0 18px; height: 42px; background: #1B1A17; border-bottom: 1px solid #262421;">
+      <span></span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #A8A6A0; display: flex; align-items: center; gap: 5px;">Proyecto
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#B2EA36" stroke-width="3" stroke-linecap="round"><path d="m6 15 6-6 6 6"/></svg>
+      </span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6F6C65;">Etapa</span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6F6C65;">A cargo</span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6F6C65; text-align: right;">En etapa</span>
+      <span></span>
+    </div>
+
+    <sc-for list="{{filas}}" as="f" hint-placeholder-count="4">
+      <div style="display: grid; grid-template-columns: 34px 2.6fr 1.2fr 1.3fr 100px 76px; align-items: center; gap: 14px; padding: 0 18px; height: 64px; border-bottom: 1px solid #262421; background: {{f.fondo}}; border-left: 3px solid {{f.filo}};">
+        <span style="width: 18px; height: 18px; border-radius: 5px; border: 1px solid {{f.chkBorde}}; background: {{f.chkFondo}}; display: grid; place-items: center;">
+          <sc-if value="{{f.sel}}" hint-placeholder-val="{{ true }}">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0B0A07" stroke-width="3.4" stroke-linecap="round"><path d="m5 13 4 4L19 7"/></svg>
+          </sc-if>
+        </span>
+
+        <span style="min-width: 0;">
+          <span style="display: block; font-size: 15px; font-weight: 600; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.nombre}}</span>
+          <span style="display: block; margin-top: 2px; font-size: 12px; color: #6F6C65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.apoyo}}</span>
+        </span>
+
+        <span><span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border: 1px solid {{f.etapaBorde}}; border-radius: 999px; font-size: 11px; font-weight: 600; color: {{f.etapaColor}};"><span style="width: 5px; height: 5px; border-radius: 999px; background: {{f.etapaColor}};"></span>{{f.etapa}}</span></span>
+
+        <span style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+          <span style="flex: none; width: 26px; height: 26px; border-radius: 999px; border: 1px solid #262421; background: #1B1A17; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: #A8A6A0;">{{f.ini}}</span>
+          <span style="min-width: 0;">
+            <span style="display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.persona}}</span>
+            <span style="display: block; font-size: 11px; color: #6F6C65;">{{f.grupo}}</span>
+          </span>
+        </span>
+
+        <span style="text-align: right;">
+          <span style="display: block; font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: {{f.diasColor}};">{{f.dias}}</span>
+          <span style="display: block; font-size: 11px; color: #6F6C65;">días</span>
+        </span>
+
+        <span style="display: flex; gap: 4px; justify-content: flex-end;">
+          <span style="width: 28px; height: 28px; display: grid; place-items: center; border-radius: 10px; background: #262421;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A6A0" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></span>
+        </span>
+      </div>
+    </sc-for>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; font-size: 12px; color: #6F6C65;">
+      <span>1–4 de 28 proyectos</span>
+      <span style="display: flex; align-items: center; gap: 6px;">
+        <span style="padding: 5px 11px; border-radius: 999px; border: 1px solid #262421;">Ver 8 más</span>
+      </span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    const embudo = { etapaColor: '#B9C9E9', etapaBorde: 'rgba(185,201,233,.45)' };
+    const dev = { etapaColor: '#B2EA36', etapaBorde: 'rgba(178,234,54,.45)' };
+    const filas = [
+      { nombre: 'StockSync', apoyo: 'Retail · sincronizar inventario entre tiendas', etapa: 'Desarrollo', ...dev, persona: 'Ana Gómez', ini: 'AG', grupo: 'Manglar', dias: '12', sel: true },
+      { nombre: 'ShiftPlan', apoyo: 'Salud · turnos de enfermería sin planillas', etapa: 'Code review', ...dev, persona: 'Ana Gómez', ini: 'AG', grupo: 'Alpha', dias: '19', sel: true, demorado: true },
+      { nombre: 'OrderMesh', apoyo: 'Retail · pedidos que llegan por cinco canales', etapa: 'Aprobado', ...embudo, persona: 'Sin asignar', ini: '—', grupo: 'Manglar', dias: '5' },
+      { nombre: 'InvoiceIQ', apoyo: 'Finanzas · leer facturas de proveedores', etapa: 'Evaluación', ...embudo, persona: 'Sin asignar', ini: '—', grupo: 'Bravo', dias: '5' },
+    ].map(f => ({
+      ...f,
+      fondo: f.sel ? 'rgba(178,234,54,.06)' : 'transparent',
+      filo: f.demorado ? '#F2545B' : 'transparent',
+      chkBorde: f.sel ? '#B2EA36' : '#38352F',
+      chkFondo: f.sel ? '#B2EA36' : 'transparent',
+      diasColor: f.demorado ? '#F2545B' : '#F7F7F5',
+    }));
+    return { filas };
+  }
+}
+</script>
+</body>
+</html>

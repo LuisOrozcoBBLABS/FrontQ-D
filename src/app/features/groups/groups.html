@@ -11,13 +11,23 @@
   </div>
 
   <div class="table-wrap enter">
-    <p-table [value]="pagados()" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '760px' }">
+    <!-- Grupos son pocos y ya vienen todos cargados, asi que aca el orden del
+         cliente SI es honesto: ordena el conjunto completo, no una pagina. -->
+    <p-table
+      [value]="pagados()"
+      styleClass="p-datatable-sm"
+      [tableStyle]="{ 'min-width': '760px' }"
+      [rowHover]="true"
+      dataKey="id"
+      stateStorage="local"
+      stateKey="grupos-tabla-v1"
+    >
       <ng-template #header>
         <tr>
-          <th>Grupo</th>
+          <th pSortableColumn="nombre">Grupo <p-sortIcon field="nombre" /></th>
           <th>Lema</th>
           <th>Integrantes</th>
-          <th class="table__min">Acciones</th>
+          <th class="col-acciones">Acciones</th>
         </tr>
       </ng-template>
 
@@ -101,12 +111,15 @@
   </ng-template>
 </p-dialog>
 
-<!-- Integrantes -->
+<!-- ================= Integrantes: dos paneles =================
+     Los cambios se juntan y se guardan de una vez. El panel de la izquierda
+     dice de qué grupo saldría cada persona, así la consecuencia está a la
+     vista ANTES de aplicarla y no después. -->
 <p-dialog
   [visible]="!!membersFor()"
   (visibleChange)="alCerrarIntegrantes($event)"
-  [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="true"
-  [style]="{ width: 'min(94vw, 560px)' }"
+  [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="!cambios().total"
+  [style]="{ width: 'min(96vw, 860px)' }"
 >
   <ng-template #header>
     <div>
@@ -116,30 +129,138 @@
   </ng-template>
 
   @if (membersFor(); as g) {
-    <p class="text-dim" style="font-size:12.5px;margin:-8px 0 14px">
-      Cada persona pertenece a un solo grupo. Al activarla aquí, se mueve a este grupo.
-    </p>
-    <div class="member-list">
-      @for (u of allUsers(); track u.id) {
-        <label class="member-row" [for]="'miembro-' + u.id">
-          <span class="user-cell">
-            <span class="avatar">@if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }</span>
-            <span>
-              <span class="user-cell__name">{{ u.nombre }}</span>
-              <span class="user-cell__mail">{{ u.grupo ? 'Grupo ' + u.grupo : 'Sin grupo' }}</span>
-            </span>
-          </span>
-          <p-toggleswitch
-            [inputId]="'miembro-' + u.id"
-            [ngModel]="esMiembro(u, g)"
-            (ngModelChange)="toggleMember(u, g)"
-          />
-        </label>
-      }
+    <div class="paneles">
+
+      <!-- Disponibles -->
+      <section class="panel-sel">
+        <header class="panel-sel__head">
+          <h3 class="panel-sel__t">
+            Disponibles <span class="panel-sel__n mono">{{ disponibles().length }}</span>
+          </h3>
+          <p-iconfield>
+            <p-inputicon styleClass="pi pi-search" />
+            <input
+              pInputText
+              type="text"
+              [ngModel]="filtroDisponibles()"
+              (ngModelChange)="filtroDisponibles.set($event)"
+              placeholder="Buscar persona"
+              aria-label="Buscar entre las personas disponibles"
+            />
+          </p-iconfield>
+        </header>
+
+        <div class="panel-sel__lista">
+          @for (u of disponibles(); track u.id) {
+            <label class="persona-fila" [class.persona-fila--marcada]="estaMarcada(u)" [for]="'disp-' + u.id">
+              <p-checkbox
+                [inputId]="'disp-' + u.id"
+                [binary]="true"
+                [ngModel]="estaMarcada(u)"
+                (ngModelChange)="marcar(u)"
+              />
+              <span class="avatar">@if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }</span>
+              <span class="persona-fila__txt">
+                <span class="persona-fila__n">{{ u.nombre }}</span>
+                <span class="persona-fila__g" [class.persona-fila__g--mueve]="saleDeOtro(u)">{{ grupoDe(u) }}</span>
+              </span>
+            </label>
+          } @empty {
+            <p class="panel-sel__vacio">
+              @if (filtroDisponibles()) { Nadie coincide con “{{ filtroDisponibles() }}”. }
+              @else { Todas las personas del área ya están en este grupo. }
+            </p>
+          }
+        </div>
+      </section>
+
+      <!-- Transferir -->
+      <div class="transferir">
+        <p-button
+          icon="pi pi-arrow-right"
+          [rounded]="true"
+          [disabled]="!marcadas().length"
+          (onClick)="pasarAlGrupo()"
+          [ariaLabel]="'Pasar ' + marcadas().length + ' al grupo'"
+        />
+        <span class="transferir__n mono" [class.transferir__n--hay]="marcadas().length > 0">
+          {{ marcadas().length }}
+        </span>
+      </div>
+
+      <!-- En el grupo -->
+      <section class="panel-sel panel-sel--equipo">
+        <header class="panel-sel__head">
+          <h3 class="panel-sel__t">
+            En {{ g.nombre }} <span class="panel-sel__n mono">{{ enGrupo().length }}</span>
+          </h3>
+          <p-iconfield>
+            <p-inputicon styleClass="pi pi-search" />
+            <input
+              pInputText
+              type="text"
+              [ngModel]="filtroEquipo()"
+              (ngModelChange)="filtroEquipo.set($event)"
+              placeholder="Filtrar el equipo"
+              aria-label="Filtrar los integrantes del grupo"
+            />
+          </p-iconfield>
+        </header>
+
+        <div class="panel-sel__lista">
+          @for (u of equipo(); track u.id) {
+            <div class="persona-fila persona-fila--equipo">
+              <span class="avatar avatar--equipo">@if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }</span>
+              <span class="persona-fila__txt">
+                <span class="persona-fila__n">{{ u.nombre }}</span>
+                <span class="persona-fila__g">{{ u.cargo || '—' }}</span>
+              </span>
+              <p-button
+                icon="pi pi-times"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                [ariaLabel]="'Sacar a ' + u.nombre + ' del grupo'"
+                (onClick)="sacarDelGrupo(u)"
+              />
+            </div>
+          } @empty {
+            <p class="panel-sel__vacio">
+              @if (filtroEquipo()) { Nadie del equipo coincide con “{{ filtroEquipo() }}”. }
+              @else { El grupo todavía no tiene integrantes. Marcá personas a la izquierda y pasalas. }
+            </p>
+          }
+        </div>
+      </section>
     </div>
+
+    <!-- La consecuencia, antes de guardar -->
+    @if (consecuencias().length) {
+      <div class="aviso-mueve">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
+        <span>
+          @for (c of consecuencias(); track c.nombre) {
+            <b>{{ c.nombre }}</b> sale de {{ c.desde }}@if (!$last) {, } @else {.}
+          }
+          Cada persona pertenece a un solo grupo, y los cambios se aplican al guardar.
+        </span>
+      </div>
+    }
   }
 
   <ng-template #footer>
-    <p-button label="Listo" (onClick)="closeMembers()" />
+    @if (cambios().total) {
+      <span class="pie-cambios mono">{{ cambios().total }} {{ cambios().total === 1 ? 'cambio' : 'cambios' }}</span>
+      <p-button label="Descartar" [text]="true" severity="secondary" (onClick)="descartarCambios()" />
+      <p-button
+        [label]="'Guardar ' + cambios().total + (cambios().total === 1 ? ' cambio' : ' cambios')"
+        icon="pi pi-check"
+        [loading]="guardando()"
+        (onClick)="guardarIntegrantes()"
+      />
+    } @else {
+      <p-button label="Cerrar" [text]="true" severity="secondary" (onClick)="closeMembers()" />
+    }
   </ng-template>
 </p-dialog>

@@ -1,0 +1,157 @@
+<div class="page page--maestro">
+
+  <!-- ======================= Encabezado ======================= -->
+  <header class="mp__head enter">
+    <div>
+      <p class="eyebrow">Innovación</p>
+      <h1 class="mp__title">Proyectos</h1>
+    </div>
+
+    <div class="mp__acciones">
+      <p-iconfield class="mp__buscar">
+        <p-inputicon styleClass="pi pi-search" />
+        <input
+          pInputText
+          type="text"
+          [ngModel]="query()"
+          (ngModelChange)="escribir($event)"
+          placeholder="Buscar por nombre, problema o solución"
+          aria-label="Buscar proyectos"
+        />
+        @if (query()) {
+          <p-inputicon styleClass="pi pi-times" (click)="quitarFiltro('query')" />
+        }
+      </p-iconfield>
+
+      <p-select
+        [options]="opcionesSector()"
+        [ngModel]="sectorF()"
+        (ngModelChange)="filtrarSector($event)"
+        optionLabel="label"
+        optionValue="value"
+        size="small"
+        styleClass="mp__sel"
+      />
+
+      <p-select
+        [options]="opcionesEstado()"
+        [ngModel]="estadoF()"
+        (ngModelChange)="filtrarEstado($event)"
+        optionLabel="label"
+        optionValue="value"
+        size="small"
+        styleClass="mp__sel"
+      />
+
+      @if (auth.can('projects.create')) {
+        <p-button label="Nuevo proyecto" icon="pi pi-plus" size="small" routerLink="/proyectos/nuevo" />
+      }
+    </div>
+  </header>
+
+  @if (filtrosActivos().length) {
+    <div class="mp__pastillas enter">
+      @for (f of filtrosActivos(); track f.clave) {
+        <button class="pastilla" type="button" (click)="quitarFiltro(f.clave)">
+          {{ f.etiqueta }}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      }
+      <button class="pastilla pastilla--limpiar" type="button" (click)="limpiarTodo()">Limpiar todo</button>
+    </div>
+  }
+
+  <!-- ======================= Maestro y detalle ======================= -->
+  <div class="mp enter">
+
+    <!-- Maestro: lo mínimo para elegir -->
+    <section class="mp__lista" aria-label="Lista de proyectos">
+      <header class="mp__lista-head">
+        <span class="mp__conteo mono">{{ total() }}</span>
+        <span class="mp__conteo-q">{{ total() === 1 ? 'proyecto' : 'proyectos' }}</span>
+        <span class="mp__orden">
+          <button
+            class="mp__orden-btn"
+            type="button"
+            (click)="ordenar({ field: 'nombre', order: 1 })"
+            title="Ordenar por nombre"
+          >A–Z</button>
+          <button
+            class="mp__orden-btn"
+            type="button"
+            (click)="ordenar({ field: 'createdAt', order: -1 })"
+            title="Lo más reciente primero"
+          >Recientes</button>
+        </span>
+      </header>
+
+      <div
+        class="mp__filas"
+        tabindex="0"
+        (keydown.arrowDown)="sel.mover(1, $event)"
+        (keydown.arrowUp)="sel.mover(-1, $event)"
+      >
+        @if (cargando() && !lista().length) {
+          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+            <div class="mp__esq"><p-skeleton width="70%" height=".8rem" /><p-skeleton width="45%" height=".6rem" /></div>
+          }
+        }
+
+        @for (p of lista(); track p.id) {
+          <button
+            class="mp__fila"
+            type="button"
+            [id]="'mp-' + p.id"
+            [class.mp__fila--sel]="sel.es(p)"
+            [attr.aria-current]="sel.es(p) ? 'true' : null"
+            (click)="sel.seleccionar(p)"
+          >
+            <span class="mp__filo" aria-hidden="true"></span>
+            <span class="mp__fila-txt">
+              <span class="mp__fila-n">{{ p.nombre }}</span>
+              <span class="mp__fila-sub">{{ estadoLabel(p.estado) }} · {{ p.sector }}</span>
+            </span>
+            <span class="mp__fila-dias mono" [class.mp__fila-dias--mal]="demorado(p)">
+              @if (diasEtapa(p) !== null) { {{ diasEtapa(p) }}d } @else { — }
+            </span>
+          </button>
+        } @empty {
+          @if (!cargando()) {
+            <div class="mp__vacio">
+              @if (sinFiltros()) {
+                <b>Todavía no hay proyectos</b>
+                <span>Registrá la primera idea del área y queda visible para tu grupo.</span>
+              } @else {
+                <b>Nada coincide con esos filtros</b>
+                <span>Probá con otro sector o etapa, o limpialos para ver todo.</span>
+                <p-button label="Limpiar filtros" [text]="true" size="small" (onClick)="limpiarTodo()" />
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <app-paginador
+        [pagina]="pagina()"
+        [total]="total()"
+        [porPagina]="porPagina"
+        etiqueta="proyectos"
+        (cambia)="irAPagina($event)"
+      />
+    </section>
+
+    <!-- Detalle: la ficha completa, siempre visible -->
+    <section class="mp__detalle" aria-live="polite">
+      @if (sel.actual(); as elegido) {
+        <app-project-panel [resumen]="elegido" [embebido]="true" (eliminado)="sel.id.set(null)" />
+      } @else if (!cargando()) {
+        <div class="mp__detalle-vacio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6l1 4H8l1-4Z"/><rect x="4" y="7" width="16" height="14" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+          <b>Elegí un proyecto de la lista</b>
+          <span>Su ficha completa —tiempos, historial de etapas y responsables— aparece acá sin salir de la pantalla.</span>
+        </div>
+      }
+    </section>
+
+  </div>
+</div>

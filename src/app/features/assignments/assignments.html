@@ -121,20 +121,29 @@
       </div>
     } @else {
       <div class="table-wrap">
+        <!-- [lazy] no es por paginacion: es para que p-table no ordene la porcion
+             visible. El orden se aplica al conjunto completo en el componente y
+             despues se corta la pagina. -->
         <p-table
           [value]="miasPagina()"
           [loading]="cargando() && !mias().length"
           styleClass="p-datatable-sm"
           [tableStyle]="{ 'min-width': '900px' }"
+          [rowHover]="true"
+          dataKey="id"
+          [scrollable]="true"
+          scrollHeight="min(56dvh, 560px)"
+          [lazy]="true"
+          (onSort)="ordenarMias($event)"
         >
           <ng-template #header>
             <tr>
-              <th>Proyecto</th>
-              <th>Prioridad</th>
-              <th>Estado</th>
-              <th>Plazo</th>
-              <th>Asignó</th>
-              <th class="table__min">Acción</th>
+              <th pSortableColumn="proyecto">Proyecto <p-sortIcon field="proyecto" /></th>
+              <th pSortableColumn="prioridad">Prioridad <p-sortIcon field="prioridad" /></th>
+              <th pSortableColumn="estado">Estado <p-sortIcon field="estado" /></th>
+              <th pSortableColumn="plazo">Plazo <p-sortIcon field="plazo" /></th>
+              <th pSortableColumn="asignadoPor">Asignó <p-sortIcon field="asignadoPor" /></th>
+              <th class="col-acciones">Acción</th>
             </tr>
           </ng-template>
 
@@ -156,7 +165,7 @@
                   {{ asignadoPor(a) }}
                 </span>
               </td>
-              <td class="table__min">
+              <td class="col-acciones">
                 @if (siguientePaso(a); as paso) {
                   <p-button [label]="paso.verbo" size="small" [loading]="moviendo() === a.id" (onClick)="avanzar(a)" />
                 } @else if (retroceso(a); as atras) {
@@ -210,14 +219,20 @@
           [value]="todasPagina()"
           styleClass="p-datatable-sm"
           [tableStyle]="{ 'min-width': '940px' }"
+          [rowHover]="true"
+          dataKey="id"
+          [scrollable]="true"
+          scrollHeight="min(56dvh, 560px)"
+          [lazy]="true"
+          (onSort)="ordenarTodas($event)"
         >
           <ng-template #header>
             <tr>
-              <th>Proyecto</th>
-              <th>Responsable</th>
-              <th>Prioridad</th>
-              <th>Estado</th>
-              <th>Plazo</th>
+              <th pSortableColumn="proyecto">Proyecto <p-sortIcon field="proyecto" /></th>
+              <th pSortableColumn="responsable">Responsable <p-sortIcon field="responsable" /></th>
+              <th pSortableColumn="prioridad">Prioridad <p-sortIcon field="prioridad" /></th>
+              <th pSortableColumn="estado">Estado <p-sortIcon field="estado" /></th>
+              <th pSortableColumn="plazo">Plazo <p-sortIcon field="plazo" /></th>
               <th>Aviso</th>
             </tr>
           </ng-template>
