@@ -96,13 +96,69 @@ export const PRIORIDADES: { value: Prioridad; label: string }[] = [
   { value: 'baja', label: 'Baja' },
 ];
 
-export type ProjectStatus = 'idea' | 'evaluacion' | 'aprobado' | 'descartado';
-export const ESTADOS_PROYECTO: { value: ProjectStatus; label: string }[] = [
-  { value: 'idea', label: 'Idea' },
-  { value: 'evaluacion', label: 'En evaluación' },
-  { value: 'aprobado', label: 'Aprobado' },
-  { value: 'descartado', label: 'Descartado' },
+/**
+ * Un solo flujo de punta a punta. Los valores son los mismos que el enum de
+ * Prisma (guion bajo, no guion medio como en asignaciones): así el PATCH viaja
+ * sin conversión y `@IsEnum` del backend los acepta tal cual.
+ */
+export type ProjectStatus =
+  | 'idea'
+  | 'evaluacion'
+  | 'aprobado'
+  | 'analisis_diseno'
+  | 'desarrollo'
+  | 'code_review_qa'
+  | 'uat'
+  | 'listo_despliegue'
+  | 'produccion'
+  | 'descartado';
+
+/** Familia de la etapa: agrupa las columnas del tablero y decide su color. */
+export type FaseProyecto = 'embudo' | 'desarrollo' | 'cierre' | 'fuera';
+
+export interface EtapaProyecto {
+  value: ProjectStatus;
+  /** Nombre corto, para pastillas y tarjetas. */
+  label: string;
+  /** Nombre de la columna en el tablero, más explícito. */
+  columna: string;
+  fase: FaseProyecto;
+}
+
+/**
+ * Orden del tablero, de izquierda a derecha. Es la única fuente del orden: el
+ * enum de la base no se recorre para pintar columnas.
+ */
+export const ETAPAS: EtapaProyecto[] = [
+  { value: 'idea',             label: 'Idea',          columna: 'Backlog / Por iniciar',  fase: 'embudo' },
+  { value: 'evaluacion',       label: 'Evaluación',    columna: 'En evaluación',          fase: 'embudo' },
+  { value: 'aprobado',         label: 'Aprobado',      columna: 'Aprobado',               fase: 'embudo' },
+  { value: 'analisis_diseno',  label: 'Análisis',      columna: 'Análisis y diseño',      fase: 'desarrollo' },
+  { value: 'desarrollo',       label: 'Desarrollo',    columna: 'En desarrollo',          fase: 'desarrollo' },
+  { value: 'code_review_qa',   label: 'Code review',   columna: 'Code review / QA',       fase: 'desarrollo' },
+  { value: 'uat',              label: 'UAT',           columna: 'En pruebas (UAT)',       fase: 'desarrollo' },
+  { value: 'listo_despliegue', label: 'Por desplegar', columna: 'Listo para despliegue',  fase: 'desarrollo' },
+  { value: 'produccion',       label: 'Producción',    columna: 'En producción',          fase: 'cierre' },
+  { value: 'descartado',       label: 'Descartado',    columna: 'Descartado',             fase: 'fuera' },
 ];
+
+/** Compatibilidad: el formulario y los filtros ya usaban esta lista. */
+export const ESTADOS_PROYECTO: { value: ProjectStatus; label: string }[] = ETAPAS.map(
+  e => ({ value: e.value, label: e.label }),
+);
+
+export function etapaDe(estado: ProjectStatus): EtapaProyecto {
+  return ETAPAS.find(e => e.value === estado) ?? ETAPAS[0];
+}
+
+/** Una entrada del historial: cuándo el proyecto entró a una etapa. */
+export interface CambioEstado {
+  estado: ProjectStatus;
+  /** De dónde venía. Null en la primera entrada del proyecto. */
+  anterior: ProjectStatus | null;
+  createdAt: string;
+  porNombre?: string | null;
+}
 
 export const SECTORES = [
   'Logística', 'Retail / E-commerce', 'Finanzas', 'Fintech',
@@ -126,6 +182,19 @@ export interface Project {
   autorNombre?: string | null; // la API ya trae el autor resuelto
   estado: ProjectStatus;
   createdAt: string;
+  /**
+   * Entradas a cada etapa, de la más vieja a la más nueva. En las listas la API
+   * manda solo la última (para saber desde cuándo está en su etapa); en el
+   * detalle manda todas. Vacío = proyecto sin historial registrado.
+   */
+  historial: CambioEstado[];
+  /** Responsables resueltos por la API desde las asignaciones. */
+  responsables?: string[];
+  /**
+   * Fin estimado. El proyecto no tiene ese campo: es la fecha límite más
+   * lejana de sus asignaciones. Null si ninguna tiene plazo.
+   */
+  finEstimado?: string | null;
   // Campos de IA (módulo 6, simulados de momento)
   enriquecido?: boolean;
   score?: number;

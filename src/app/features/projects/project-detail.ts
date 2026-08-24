@@ -74,9 +74,13 @@ export class ProjectDetail {
   assignableUsers(): User[] { return this.usersSvc.users().filter(u => u.activo); }
   userName(id: string): string { return this.usersSvc.byId(id)?.nombre ?? '—'; }
 
+  /**
+   * Espeja `soloAutorOAdmin` del servidor. Antes usaba `projects.viewAll`, que
+   * es un permiso de LECTURA: la jefatura veía los botones de editar y eliminar
+   * y la API le devolvía 403.
+   */
   canManage(): boolean {
-    const p = this.project();
-    return this.auth.can('projects.viewAll') || (!!p && p.autorId === this.auth.currentUser()?.id);
+    return this.auth.esAutorOAdmin(this.project()?.autorId);
   }
   canAssign(): boolean { return this.auth.can('assignments.create'); }
 
@@ -85,18 +89,27 @@ export class ProjectDetail {
     await this.projectsSvc.update(this.id, { estado: e });
     this.toast.success('Estado actualizado');
   }
+  async editar(): Promise<void> {
+    await this.router.navigate(['/proyectos', this.id, 'editar']);
+  }
+
   async remove(): Promise<void> {
-    if (!this.project()) return;
+    const p = this.project();
+    if (!p) return;
     const ok = await this.confirm.ask({
-      title: 'Archivar proyecto',
-      message: `¿Archivar “${this.project()!.nombre}”? Sale de las listas pero no se pierde: un administrador puede restaurarlo.`,
+      title: 'Eliminar proyecto',
+      message: `¿Eliminar “${p.nombre}”? Desaparece de las listas y del tablero. Queda archivado, así que un administrador puede recuperarlo.`,
       danger: true,
-      confirmText: 'Archivar',
+      confirmText: 'Eliminar',
     });
     if (!ok) return;
-    await this.projectsSvc.archivar(this.id);
-    this.toast.success('Proyecto archivado');
-    await this.router.navigateByUrl('/proyectos');
+    try {
+      await this.projectsSvc.archivar(this.id);
+      this.toast.success('Proyecto eliminado');
+      await this.router.navigateByUrl('/proyectos');
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo eliminar el proyecto.'));
+    }
   }
 
   openAssign(): void {

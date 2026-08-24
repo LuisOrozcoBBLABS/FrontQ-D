@@ -1,0 +1,222 @@
+<div class="page page--tablero">
+  <!-- ======================= Encabezado ======================= -->
+  <header class="tab__head enter">
+    <div class="tab__enc">
+      <p class="eyebrow">Mi trabajo, de punta a punta</p>
+      <h1 class="tab__title">Proyectos a cargo</h1>
+    </div>
+
+    <div class="resumen">
+      <div class="res">
+        <span class="res__n mono">{{ aCargo() }}</span>
+        <span class="res__q">a cargo</span>
+      </div>
+      <div class="res">
+        <span class="res__n mono">{{ enCurso() }}</span>
+        <span class="res__q">en ejecución</span>
+      </div>
+      <div class="res" [class.res--mal]="demorados() > 0">
+        <span class="res__n mono">{{ demorados() }}</span>
+        <span class="res__q">demorados</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================= Filtros ======================= -->
+  <div class="filtros enter">
+    <div class="filtros__linea">
+      <label class="buscar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input
+          type="search"
+          placeholder="Buscar por nombre, problema o solución"
+          [value]="query()"
+          (input)="escribir($any($event.target).value)"
+          aria-label="Buscar en mis proyectos"
+        />
+      </label>
+
+      <button
+        class="chip-btn"
+        type="button"
+        [class.chip-btn--on]="filtrosAbiertos()"
+        [attr.aria-expanded]="filtrosAbiertos()"
+        (click)="filtrosAbiertos.set(!filtrosAbiertos())"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        Filtros
+        @if (activos().length) { <span class="chip-btn__n mono">{{ activos().length }}</span> }
+      </button>
+
+      <button
+        class="chip-btn"
+        type="button"
+        [class.chip-btn--on]="vencidosF()"
+        (click)="vencidosF.set(!vencidosF())"
+      >
+        Plazo vencido
+      </button>
+
+      <button
+        class="chip-btn"
+        type="button"
+        [class.chip-btn--on]="demoradosF()"
+        (click)="demoradosF.set(!demoradosF())"
+      >
+        Demorados en su etapa
+      </button>
+    </div>
+
+    @if (filtrosAbiertos()) {
+      <div class="filtros__panel">
+        <label class="campo">
+          <span class="campo__t">Sector</span>
+          <select class="sel" [value]="sectorF()" (change)="sectorF.set($any($event.target).value)">
+            <option value="all">Todos</option>
+            @for (s of sectores; track s) { <option [value]="s">{{ s }}</option> }
+          </select>
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Prioridad</span>
+          <select class="sel" [value]="prioridadF()" (change)="prioridadF.set($any($event.target).value)">
+            <option value="all">Cualquiera</option>
+            @for (p of prioridades; track p.value) { <option [value]="p.value">{{ p.label }}</option> }
+          </select>
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Estado de mi asignación</span>
+          <select class="sel" [value]="estadoAsigF()" (change)="estadoAsigF.set($any($event.target).value)">
+            <option value="all">Cualquiera</option>
+            @for (e of estadosAsignacion; track e.value) { <option [value]="e.value">{{ e.label }}</option> }
+          </select>
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Me lo asignó</span>
+          <select class="sel" [value]="asignadoPorF()" (change)="asignadoPorF.set($any($event.target).value)">
+            <option value="all">Cualquiera</option>
+            @for (j of jefes(); track j.id) { <option [value]="j.id">{{ j.nombre }}</option> }
+          </select>
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Registrado desde</span>
+          <input class="sel" type="date" [value]="desdeF()" (change)="desdeF.set($any($event.target).value)" />
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Registrado hasta</span>
+          <input class="sel" type="date" [value]="hastaF()" (change)="hastaF.set($any($event.target).value)" />
+        </label>
+      </div>
+    }
+
+    @if (hayFiltro()) {
+      <div class="pastillas">
+        @for (f of activos(); track f.clave) {
+          <button class="pastilla" type="button" (click)="quitar(f.clave)">
+            {{ f.etiqueta }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        }
+        <button class="pastilla pastilla--limpiar" type="button" (click)="limpiarTodo()">Limpiar todo</button>
+      </div>
+    }
+
+    @if (errorCarga()) {
+      <div class="alerta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
+        <span>{{ errorCarga() }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- ======================= Tablero ======================= -->
+  @if (vacio()) {
+    <div class="tab__vacio enter">
+      @if (hayFiltro()) {
+        <b>Nada coincide con el filtro</b>
+        <span>Con estos filtros no queda ningún proyecto a tu cargo.</span>
+        <button class="btn btn--ghost btn--sm" type="button" (click)="limpiarTodo()">Limpiar el filtro</button>
+      } @else {
+        <b>Todavía no tenés proyectos a cargo</b>
+        <span>Cuando te asignen uno, aparece en la columna de la etapa en la que esté.</span>
+        <a class="btn btn--ghost btn--sm" routerLink="/asignaciones">Ver mis asignaciones</a>
+      }
+    </div>
+  } @else {
+  <div class="pista enter" [style.--n]="etapas.length">
+    <!-- Banda de fases: agrupa las columnas del flujo. -->
+    <div class="fases" aria-hidden="true">
+      @for (f of fases; track f.id) {
+        <div class="fase" [class]="'fase fase--' + f.id" [style.--cols]="columnasDeFase(f.id)">
+          <span>{{ f.titulo }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="tablero" cdkDropListGroup>
+      @for (e of etapas; track e.value) {
+        <section class="col" [class]="'col fase-' + e.fase">
+          <header class="col__head">
+            <h2 class="col__t">{{ e.columna }}</h2>
+            <span class="col__n mono">{{ total(e.value) }}</span>
+          </header>
+
+          <div
+            class="col__lista"
+            cdkDropList
+            [id]="idColumna(e)"
+            [cdkDropListData]="e.value"
+            (cdkDropListDropped)="soltar($event)"
+          >
+            @if (cargando() && !columna(e.value).length) {
+              @for (i of [1, 2]; track i) { <div class="esq-tarjeta"></div> }
+            }
+
+            @for (p of columna(e.value); track p.id) {
+              <div
+                cdkDrag
+                [cdkDragData]="p"
+                [cdkDragDisabled]="!puedeMover(p)"
+                class="arrastrable"
+                [class.arrastrable--guardando]="moviendo() === p.id"
+              >
+                <app-project-card
+                  [proyecto]="p"
+                  [movible]="puedeMover(p)"
+                  [seleccionada]="abierta()?.id === p.id"
+                  [prioridad]="prioridadDe(p)"
+                  (abrir)="abrir($event)"
+                />
+                <div class="hueco" *cdkDragPlaceholder></div>
+              </div>
+            }
+
+            @if (!cargando() && !columna(e.value).length) {
+              <p class="col__vacia">—</p>
+            }
+          </div>
+
+          @if (faltan(e.value) > 0) {
+            <button
+              class="col__mas"
+              type="button"
+              [disabled]="cargandoColumna(e.value)"
+              (click)="cargarMas(e.value)"
+            >
+              {{ cargandoColumna(e.value) ? 'Trayendo…' : 'Ver ' + faltan(e.value) + ' más' }}
+            </button>
+          }
+        </section>
+      }
+    </div>
+  </div>
+  }
+</div>
+
+@if (abierta(); as sel) {
+  <app-project-panel [resumen]="sel" (cerrar)="cerrarPanel()" (eliminado)="cerrarPanel()" />
+}

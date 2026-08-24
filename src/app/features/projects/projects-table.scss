@@ -191,3 +191,31 @@
   100% { background-position: -200% 0; }
 }
 @media (prefers-reduced-motion: reduce) { .esq { animation: none; } }
+
+/* =============================================================
+   Acciones por fila. Iconos sin caja: la fila ya es el contenedor, y una
+   pastilla alrededor de cada botón ensuciaría la lectura de la tabla.
+   ============================================================= */
+.acciones {
+  display: inline-flex;
+  gap: var(--sp-1);
+}
+
+.accion {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+
+.accion svg { width: 15px; height: 15px; }
+.accion:hover { color: var(--text); background: var(--surface-2); }
+.accion:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.accion:disabled { opacity: .5; cursor: default; }
+.accion--mal:hover { color: var(--danger); background: var(--danger-bg); }

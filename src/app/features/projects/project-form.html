@@ -1,9 +1,19 @@
 <div class="page">
   <div class="page__head enter">
-    <p class="eyebrow">Nuevo proyecto</p>
-    <h1 class="page__title">Registrar una idea de innovación</h1>
-    <p class="page__sub">Describe la propuesta. Quedá registrada para el área y podés asignarla a alguien del equipo.</p>
+    <p class="eyebrow">{{ editando ? 'Editar' : 'Nuevo proyecto' }}</p>
+    <h1 class="page__title">{{ editando ? 'Editar el proyecto' : 'Registrar una idea de innovación' }}</h1>
+    <p class="page__sub">
+      @if (editando) {
+        Cambiá lo que haga falta. La etapa no se toca acá: eso se mueve en el tablero.
+      } @else {
+        Describe la propuesta. Quedá registrada para el área y podés asignarla a alguien del equipo.
+      }
+    </p>
   </div>
+
+  @if (cargando()) {
+    <p class="text-dim enter">Cargando el proyecto…</p>
+  }
 
   <div class="card enter" style="max-width:760px">
     <div class="field">
@@ -90,7 +100,9 @@
 
     <div class="modal__foot" style="border-top:none;padding-top:0;margin-top:8px">
       <button class="btn btn--ghost" type="button" (click)="cancel()">Cancelar</button>
-      <button class="btn btn--primary" type="button" (click)="save()">Guardar proyecto</button>
+      <button class="btn btn--primary" type="button" [disabled]="guardando()" (click)="save()">
+        {{ guardando() ? 'Guardando…' : verbo() }}
+      </button>
     </div>
   </div>
 </div>

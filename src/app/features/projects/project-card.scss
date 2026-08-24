@@ -1,0 +1,167 @@
+/* =============================================================
+   Tarjeta del tablero. Es un <button> de verdad: el detalle se abre con
+   Enter igual que con el mouse, sin handlers de teclado a mano.
+   ============================================================= */
+
+.tarjeta-host { display: block; }
+
+.tarjeta {
+  position: relative;
+  display: grid;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  cursor: grab;
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+
+.tarjeta:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+.tarjeta:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tarjeta:active { cursor: grabbing; }
+
+/* Seleccionada = su detalle está abierto en el panel. */
+.tarjeta--sel {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset, var(--shadow);
+}
+
+/* Sin permiso para moverla: el cursor lo dice antes de intentarlo. */
+.tarjeta--fija { cursor: pointer; }
+
+/* La franja del borde izquierdo codifica el retraso por forma, no solo color. */
+.tarjeta--atencion { border-left: 3px solid var(--bb-blue); }
+.tarjeta--demorado { border-left: 3px solid var(--danger); }
+
+.tarjeta__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.tarjeta__sector {
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.tarjeta__asa {
+  flex: none;
+  color: var(--text-dim);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.tarjeta__asa svg { width: 16px; height: 16px; display: block; }
+.tarjeta:hover .tarjeta__asa { opacity: 1; }
+.tarjeta__asa--no { opacity: .45; }
+.tarjeta__asa--no svg { width: 13px; height: 13px; }
+
+.tarjeta__nombre {
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  letter-spacing: -.01em;
+  /* Dos líneas y corta: la altura uniforme es lo que hace legible una columna. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tarjeta__pie { min-width: 0; }
+
+.tarjeta__persona {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.tarjeta__ini {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--text-2);
+}
+
+.tarjeta__nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.tarjeta__mas {
+  flex: none;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.tarjeta__tiempos {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+}
+
+.tiempo { display: inline-flex; align-items: center; gap: 4px; }
+.tiempo svg { width: 12px; height: 12px; }
+.tiempo .mono { font-family: var(--font-mono); font-weight: 700; font-variant-numeric: tabular-nums; }
+.tiempo__que { color: var(--text-dim); }
+.tiempo--alerta { color: var(--danger); }
+.tiempo--total { color: var(--text-dim); }
+
+.tarjeta__inicio { margin-left: auto; color: var(--text-dim); }
+
+.tarjeta__aviso {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  display: grid;
+  place-items: center;
+  color: var(--danger);
+  background: var(--surface);
+}
+.tarjeta__aviso svg { width: 14px; height: 14px; }
+/* Con aviso, el asa cede el lugar para no encimarse. */
+.tarjeta:has(.tarjeta__aviso) .tarjeta__asa { display: none; }
+
+/* Prioridad de la asignación propia. Ocupa el lugar del sector: en el tablero
+   de lo que tengo a cargo, la prioridad manda más que el rubro. */
+.prio-pin {
+  padding: 1px 8px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--line);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.prio-pin--urgente { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+.prio-pin--alta { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
+.prio-pin--media { border-color: var(--line-strong); }
+.prio-pin--baja { opacity: .75; }

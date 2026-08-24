@@ -57,6 +57,11 @@ export const routes: Routes = [
         canActivate: [permissionGuard('projects.create')],
         loadComponent: () => import('./features/projects/project-form').then(m => m.ProjectForm),
       },
+      {
+        path: 'proyectos/:id/editar',
+        canActivate: [permissionGuard('projects.create')],
+        loadComponent: () => import('./features/projects/project-form').then(m => m.ProjectForm),
+      },
       { path: 'proyectos/:id', loadComponent: () => import('./features/projects/project-detail').then(m => m.ProjectDetail) },
     ],
   },

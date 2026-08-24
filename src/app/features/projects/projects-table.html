@@ -103,13 +103,14 @@
             <th>Grupo</th>
             <th>Autor</th>
             <th class="table__num">Creado</th>
+            <th class="table__min">Acciones</th>
           </tr>
         </thead>
         <tbody>
           @if (cargando() && !lista().length) {
             @for (i of [1, 2, 3, 4, 5]; track i) {
               <tr>
-                @for (c of [1, 2, 3, 4, 5, 6]; track c) {
+                @for (c of [1, 2, 3, 4, 5, 6, 7]; track c) {
                   <td><span class="esq"></span></td>
                 }
               </tr>
@@ -133,10 +134,26 @@
                   </span>
                 </td>
                 <td class="table__num">{{ hace(p.createdAt) }}</td>
+                <td class="table__min">
+                  <!-- Solo el autor (o un administrador) las ve: es la misma
+                       regla que aplica el servidor. -->
+                  @if (esMio(p)) {
+                    <span class="acciones" (click)="$event.stopPropagation()">
+                      <button class="accion" type="button" (click)="editar(p)" [attr.aria-label]="'Editar ' + p.nombre">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                      </button>
+                      <button class="accion accion--mal" type="button" [disabled]="borrando() === p.id" (click)="eliminar(p)" [attr.aria-label]="'Eliminar ' + p.nombre">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                      </button>
+                    </span>
+                  } @else {
+                    <span class="text-dim">—</span>
+                  }
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="6" class="table__vacia">
+                <td colspan="7" class="table__vacia">
                   @if (sinFiltros()) {
                     <b>Todavía no hay proyectos</b>
                     Registrá la primera idea del área y queda visible para tu grupo.
