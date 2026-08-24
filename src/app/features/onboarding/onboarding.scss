@@ -3,7 +3,8 @@
 .login__card { padding:clamp(28px,5vw,40px); }
 .login__title { font-size:clamp(26px,6vw,32px); margin:6px 0 10px; }
 .login__sub { margin-bottom:26px; font-size:15px; }
-.login__error { color:var(--text); font-size:13.5px; padding:11px 14px; border:1px solid var(--line-strong); border-left:3px solid var(--accent); border-radius:var(--r-md); background:var(--surface-2); margin-bottom:16px; }
+/* .login__error vive en styles.scss; aca solo el margen que necesita esta pantalla. */
+.login__error { margin-bottom:16px; }
 .login__submit { width:100%; margin-top:4px; }
 .login__sim { margin-top:22px; align-items:flex-start; line-height:1.5; }
 

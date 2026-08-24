@@ -176,18 +176,5 @@
 .fila__link { color: inherit; font-weight: 600; }
 .fila__link:hover { color: var(--accent-text); }
 
-/* Esqueleto de celda mientras carga */
-.esq {
-  display: block;
-  height: 11px;
-  width: 70%;
-  border-radius: var(--r-sm);
-  background: linear-gradient(90deg, var(--surface-2) 0%, var(--line) 50%, var(--surface-2) 100%);
-  background-size: 200% 100%;
-  animation: brillo 1.4s ease-in-out infinite;
-}
-@keyframes brillo {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-@media (prefers-reduced-motion: reduce) { .esq { animation: none; } }
+/* El esqueleto de celda (.esq) se promovio a styles.scss con el mismo nombre:
+   lo usa tambien el stepper de /documentos como banda indeterminada. */

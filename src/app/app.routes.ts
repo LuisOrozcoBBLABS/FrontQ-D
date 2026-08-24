@@ -49,7 +49,11 @@ export const routes: Routes = [
       },
       { path: 'proyectos', loadComponent: () => import('./features/projects/projects').then(m => m.Projects) },
       { path: 'asignaciones', loadComponent: () => import('./features/assignments/assignments').then(m => m.Assignments) },
-      { path: 'documentos', loadComponent: () => import('./features/documents/documents').then(m => m.Documents) },
+      {
+        path: 'documentos',
+        canActivate: [permissionGuard('ai.use')],
+        loadComponent: () => import('./features/documents/documents').then(m => m.Documents),
+      },
       {
         path: 'proyectos/nuevo',
         canActivate: [permissionGuard('projects.create')],

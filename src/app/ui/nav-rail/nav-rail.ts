@@ -62,7 +62,7 @@ export class NavRail {
       { path: '/inicio', label: 'Inicio', icon: 'inicio' as RailIcon, show: true },
       { path: '/proyectos', label: 'Proyectos', icon: 'proyectos' as RailIcon, show: true },
       { path: '/asignaciones', label: 'Asignaciones', icon: 'asignaciones' as RailIcon, show: true },
-      { path: '/documentos', label: 'Documentos', icon: 'documentos' as RailIcon, show: true },
+      { path: '/documentos', label: 'Documentos', icon: 'documentos' as RailIcon, show: this.auth.can('ai.use') },
       { path: '/grupos', label: 'Grupos', icon: 'grupos' as RailIcon, show: this.auth.can('groups.manage') },
       { path: '/usuarios', label: 'Usuarios', icon: 'usuarios' as RailIcon, show: this.auth.can('users.manage') },
     ].filter(i => i.show),
