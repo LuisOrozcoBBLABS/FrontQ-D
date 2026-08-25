@@ -22,15 +22,27 @@ describe('máquina de estados de una asignación', () => {
     expect(retrocesoDe('pendiente')).toBeNull();
   });
 
-  it('deja reabrir lo completado, devolviéndolo a en curso', () => {
-    expect(puedeIr('completada', 'en-curso')).toBe(true);
-    expect(retrocesoDe('completada')).toBe('en-curso');
-    expect(esFinal('completada')).toBe(false);
-  });
-
-  it('reabrir no salta más atrás que en curso', () => {
+  it('completada es final: no vuelve a ningún estado', () => {
+    // Estas tres afirmaciones decían lo contrario y codificaban el error: el
+    // servidor tiene `completada: []` y responde "ya está completada y no
+    // admite más cambios", pero el front creía que se podía reabrir. Con eso,
+    // la interfaz mostraba el botón de retroceso y dejaba arrastrar la tarjeta
+    // para que el servidor rechazara las dos cosas.
+    expect(puedeIr('completada', 'en-curso')).toBe(false);
     expect(puedeIr('completada', 'aceptada')).toBe(false);
     expect(puedeIr('completada', 'pendiente')).toBe(false);
+    expect(retrocesoDe('completada')).toBeNull();
+    expect(esFinal('completada')).toBe(true);
+  });
+
+  it('los demás estados NO son finales', () => {
+    // esFinal() solo tiene sentido si alguno devuelve true y otros false.
+    // Cuando la tabla del front le daba una transición a `completada`, la
+    // función no podía devolver true nunca y el guardia que la usa era letra
+    // muerta sin que nada lo dijera.
+    expect(esFinal('pendiente')).toBe(false);
+    expect(esFinal('aceptada')).toBe(false);
+    expect(esFinal('en-curso')).toBe(false);
   });
 
   it('acepta reenviar el mismo estado, igual que el servidor', () => {

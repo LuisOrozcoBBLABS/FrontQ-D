@@ -10,8 +10,14 @@ import { AssignmentStatus } from './models';
  * cambiarlas acá.
  *
  * Hacia adelante se avanza de a un paso, y hacia atrás se vuelve de a un paso
- * desde cualquier estado: una asignación completada por error se reabre a
- * `en-curso` en lugar de obligar a crear otra.
+ * desde `aceptada` y `en-curso`. `completada` NO vuelve: es final.
+ *
+ * Esa última regla estaba mal copiada. El front decía `completada: ['en-curso']`
+ * con el comentario "se puede reabrir", pero el servidor tiene `completada: []`
+ * y responde "La asignación ya está completada y no admite más cambios". O sea
+ * que la interfaz mostraba el botón de retroceso y dejaba arrastrar la tarjeta,
+ * y el servidor rechazaba las dos cosas — exactamente el error que este espejo
+ * existe para evitar.
  */
 export const SECUENCIA: AssignmentStatus[] = ['pendiente', 'aceptada', 'en-curso', 'completada'];
 
@@ -19,7 +25,7 @@ const PERMITIDAS: Record<AssignmentStatus, AssignmentStatus[]> = {
   pendiente: ['aceptada'],
   aceptada: ['en-curso', 'pendiente'],
   'en-curso': ['completada', 'aceptada'],
-  completada: ['en-curso'], // se puede reabrir
+  completada: [], // estado final, igual que en el servidor
 };
 
 /** Único avance válido desde cada estado, con el verbo de la acción. */
