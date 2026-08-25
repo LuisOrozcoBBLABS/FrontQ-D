@@ -240,7 +240,12 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 
 /* ---------- Formularios ---------- */
 .field{ display:flex; flex-direction:column; gap: var(--sp-2); margin-bottom: var(--sp-4); }
-.field > label{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); }
+/* Acepta <label> y .field__label. El span existe para los grupos de controles
+   —permisos, canales, foto— donde una <label> sin `for` y sin control envuelto
+   no se asocia a nada, asi que el grupo se anunciaba sin nombre. Ahi va
+   role="group" + aria-labelledby apuntando a este span. */
+.field > label,
+.field > .field__label{ display:block; font-family:var(--font-mono); font-size:var(--fs-2xs); letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); }
 /* Los campos nativos se fueron a PrimeNG; su CSS vivía acá y ahora estorbaba. */
 .field__error{ color:var(--danger-text); font-size:var(--fs-sm); }
 /* Texto de apoyo persistente bajo un campo (no reemplaza a la etiqueta). */

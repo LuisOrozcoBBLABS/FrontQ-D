@@ -12,7 +12,7 @@
         @if (avatarUrl()) {
           <img [src]="avatarUrl()" alt="Foto de perfil" />
         } @else {
-          <span>{{ initials(auth.currentUser()?.nombre ?? '?') }}</span>
+          <span aria-hidden="true">{{ initials(auth.currentUser()?.nombre ?? '?') }}</span>
         }
       </div>
       <h3 class="profile__name">{{ auth.currentUser()?.nombre }}</h3>
@@ -22,7 +22,14 @@
         <div><dt>Correo</dt><dd>{{ auth.currentUser()?.email }}</dd></div>
         <div><dt>Grupo</dt><dd>{{ auth.currentUser()?.grupo ?? '—' }}</dd></div>
         <div>
-          <dt>Cargo <span class="lock" title="Solo tu jefe o un administrador puede cambiarlo">bloqueado</span></dt>
+          <dt>
+            Cargo
+            <span class="lock">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+              <span class="sr-only">Campo bloqueado: solo tu jefatura o un administrador puede cambiarlo.</span>
+              <span aria-hidden="true">bloqueado</span>
+            </span>
+          </dt>
           <dd>{{ auth.currentUser()?.cargo || '—' }}</dd>
         </div>
         <div><dt>Género</dt><dd>{{ generoLabel(auth.currentUser()?.genero ?? null) }}</dd></div>
@@ -33,11 +40,11 @@
     <section class="card profile__form">
       <h3 class="profile__section">Editar mi información</h3>
 
-      <div class="field">
-        <label>Foto de perfil</label>
+      <div class="field" role="group" aria-labelledby="lbl-foto">
+        <span class="field__label" id="lbl-foto">Foto de perfil</span>
         <div class="photo-row">
           <div class="profile__avatar profile__avatar--sm">
-            @if (avatarUrl()) { <img [src]="avatarUrl()" alt="" /> } @else { <span>{{ initials(auth.currentUser()?.nombre ?? '?') }}</span> }
+            @if (avatarUrl()) { <img [src]="avatarUrl()" alt="" /> } @else { <span aria-hidden="true">{{ initials(auth.currentUser()?.nombre ?? '?') }}</span> }
           </div>
           <input #archivoFoto type="file" accept="image/*" (change)="onFile($event)" hidden />
           <p-button label="Subir foto" icon="pi pi-upload" size="small" [outlined]="true"

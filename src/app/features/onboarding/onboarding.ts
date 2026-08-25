@@ -3,20 +3,28 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { GENEROS, Genero } from '../../core/models';
-import { ThemeToggle } from '../../ui/theme-toggle';
+import { ThemeService } from '../../core/theme.service';
 import { DatePicker } from 'primeng/datepicker';
 import { SelectButton } from 'primeng/selectbutton';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-onboarding',
-  imports: [FormsModule, ThemeToggle, DatePicker, SelectButton, ButtonModule],
+  imports: [FormsModule, DatePicker, SelectButton, ButtonModule],
   templateUrl: './onboarding.html',
-  styleUrl: './onboarding.scss',
+  // La hoja de las pantallas de acceso, mas lo especifico de esta.
+  styleUrls: ['../login/login.scss', './onboarding.scss'],
 })
 export class Onboarding {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private tema = inject(ThemeService);
+
+  protected esOscuro = computed(() => this.tema.mode() === 'dark');
+
+  toggleTema(): void {
+    this.tema.toggle();
+  }
 
   protected generos = GENEROS;
   protected nombre = this.auth.currentUser()?.nombre?.split(/\s+/)[0] ?? '';
