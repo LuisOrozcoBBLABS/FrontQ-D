@@ -16,7 +16,6 @@ import { Select } from 'primeng/select';
 import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
-import { Tag } from 'primeng/tag';
 import { Skeleton } from 'primeng/skeleton';
 
 /** Filtro activo, para poder mostrarlo y quitarlo con un clic. */
@@ -37,7 +36,6 @@ interface FiltroActivo {
     InputText,
     IconField,
     InputIcon,
-    Tag,
     Skeleton,
     ProjectPanel,
   ],

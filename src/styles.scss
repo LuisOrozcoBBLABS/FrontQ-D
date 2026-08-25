@@ -350,9 +350,6 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 
 /* ---------- Theme toggle (igual que la SPA) ---------- */
 /* Botón de icono minimalista: sin borde ni caja, sólo un hover sutil */
-.theme-fab{ display:grid; place-items:center; width:38px; height:38px; border:none; border-radius:999px; background:transparent; color:var(--text-2); transition:color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
-.theme-fab svg{ width:18px; height:18px; }
-.theme-fab:hover{ color:var(--text); background:var(--surface-2); }
 
 /* ---------- Layout de la app ----------
    El dock de módulos flota fijo a la izquierda (app-nav-rail), así que el
@@ -368,7 +365,7 @@ body:has(app-nav-rail){ padding-left: var(--rail-clear); }
 }
 
 /* Ya no hay barra superior: el riel lateral lleva marca, modulos y utilidades.
-   Se conservan .theme-fab y .avatar porque los usan el perfil y el login. */
+   Se conserva .avatar, que si se usa. */
 .avatar{
   display:grid; place-items:center; width:36px; height:36px; border-radius:var(--r-full);
   background:var(--surface-2); border:1px solid var(--line); overflow:hidden;
@@ -459,9 +456,6 @@ html[data-theme="light"] .marca-fondo__txt{
 /* Animación de entrada */
 .enter{ animation:enter var(--dur-slow) var(--ease-out) both; }
 @keyframes enter{ from{opacity:0; transform:translateY(14px) scale(.99);} to{opacity:1; transform:none;} }
-@media (hover:none){
-  .btn:hover,.theme-fab:hover{ transform:none; }
-}
 @media (max-width:640px){
   .table th:nth-child(4),.table td:nth-child(4){ display:none; }
 }
@@ -494,10 +488,6 @@ html[data-theme="light"] .marca-fondo__txt{
 
 /* Búsqueda / filtros reutilizable */
 .filters{ display:flex; align-items:center; gap: var(--sp-3); flex-wrap:wrap; margin-bottom: var(--sp-5); }
-.search{ display:flex; align-items:center; gap: var(--sp-3); border:1px solid var(--line); border-radius:999px; padding: var(--sp-2) var(--sp-4); background:var(--surface); flex:1 1 240px; min-width:0; }
-.fchip{ padding: var(--sp-2) var(--sp-4); border:1px solid var(--line); border-radius:999px; color:var(--text-2); font-size:13px; white-space:nowrap; transition:transform var(--dur-fast) var(--ease), background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease); }
-.fchip:hover{ color:var(--text); border-color:var(--line-strong); }
-.fchip--on{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:500; }
 
 
 
@@ -582,9 +572,6 @@ html[data-theme="light"] .marca-fondo__txt{
 /* ---------- Respuesta al toque ----------
    Hundir el control mientras se lo presiona es lo que hace que un botón se
    sienta físico. Baja rápido y vuelve con resorte. */
-.btn:active:not(:disabled),
-.fchip:active,
-.theme-fab:active,
 .tab:active,
 .segmento__b:active {
   transform: scale(.97);
@@ -629,7 +616,7 @@ html[data-theme="light"] .marca-fondo__txt{
     scroll-behavior: auto !important;
   }
   .bg__orb { animation: none !important; }
-  .btn:hover, .theme-fab:hover, .quick__card:hover, .card:hover { transform: none; }
+  .quick__card:hover, .card:hover { transform: none; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
 }
 
@@ -710,7 +697,7 @@ html[data-theme="light"] .marca-fondo__txt{
 .p-select-dropdown { width: 38px; color: var(--text-dim); }
 .p-textarea { line-height: var(--lh-base); }
 
-/* Buscador: ocupa el lugar que dejó .search */
+/* Buscador de la barra de filtros. */
 .filters .p-iconfield,
 .barra .p-iconfield { flex: 1 1 240px; min-width: 0; }
 .filters .p-iconfield .p-inputtext,

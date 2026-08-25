@@ -23,7 +23,6 @@ import { Checkbox } from 'primeng/checkbox';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Dialog } from 'primeng/dialog';
 import { Tag } from 'primeng/tag';
-import { Tooltip } from 'primeng/tooltip';
 import { Skeleton } from 'primeng/skeleton';
 
 interface Draft {
@@ -42,7 +41,7 @@ interface Draft {
 @Component({
   selector: 'app-users',
   imports: [
-    FormsModule, Paginador, TableModule, ButtonModule, Select, SelectButton, InputText, IconField, InputIcon, Password, Checkbox, ToggleSwitch, Dialog, Tag, Tooltip, Skeleton,
+    FormsModule, Paginador, TableModule, ButtonModule, Select, SelectButton, InputText, IconField, InputIcon, Password, Checkbox, ToggleSwitch, Dialog, Tag, Skeleton,
   ],
   templateUrl: './users.html',
   styleUrl: './users.scss',
