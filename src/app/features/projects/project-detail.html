@@ -25,7 +25,7 @@
     />
 
     @if (tab() === 'resumen') {
-      <div class="card enter" style="max-width:760px">
+      <div class="card card--forma enter">
         <div class="block-sec"><span class="block__label">Problema identificado</span><p>{{ p.problema || '—' }}</p></div>
         <div class="block-sec"><span class="block__label">Dolores</span><p>{{ p.dolores || '—' }}</p></div>
         <div class="block-sec"><span class="block__label">Nuestra solución</span><p>{{ p.solucion || '—' }}</p></div>
@@ -54,26 +54,26 @@
 
     @if (tab() === 'gestion') {
       @if (canAssign()) {
-        <div class="toolbar enter" style="margin-bottom:18px">
+        <div class="toolbar enter">
           <p-button label="Asignar a un colaborador" icon="pi pi-user-plus" (onClick)="openAssign()" />
         </div>
       }
       @if (canManage()) {
-        <div class="card enter" style="max-width:760px">
-          <h3 style="font-size:16px;margin-bottom:14px">Estado y acciones</h3>
-          <div class="field" style="max-width:280px">
+        <div class="card card--forma enter">
+          <h3 class="pd__h">Estado y acciones</h3>
+          <div class="field field--corto">
             <label for="est">Estado</label>
             <p-select inputId="est" [options]="estados" [ngModel]="p.estado"
                       (ngModelChange)="setEstado($event)" optionLabel="label" optionValue="value"
                       [fluid]="true" />
           </div>
-          <div class="toolbar" style="margin:0">
+          <div class="toolbar toolbar--rasante">
             <p-button label="Editar proyecto" icon="pi pi-pencil" severity="secondary" size="small"
                       [outlined]="true" (onClick)="editar()" />
             <p-button label="Eliminar proyecto" icon="pi pi-trash" severity="danger" size="small"
                       [outlined]="true" (onClick)="remove()" />
           </div>
-          <p class="text-dim" style="font-size:12px;margin-top:10px">
+          <p class="field__hint pd__nota">
             Solo quien registró el proyecto —o un administrador— ve estas acciones.
             Eliminar lo archiva: sale de las listas y del tablero, pero no se pierde.
           </p>
@@ -97,7 +97,7 @@
       @if (result(); as envios) {
         <div class="assign-done">
           <p class="assign-done__title">Asignación creada</p>
-          <p class="text-2" style="font-size:14px;margin-bottom:14px">
+          <p class="pd__intro">
             <b>{{ userName(assignee()) }}</b> ya la ve en su bandeja. Estado de los avisos por canal:
           </p>
           @for (e of envios; track e.canal) {
@@ -147,7 +147,7 @@
         <div class="field">
           <label>Notificar por</label>
           @for (c of canales; track c.value) {
-            <label class="check" style="margin-bottom:8px" [for]="'canal-' + c.value">
+            <label class="check pd__canal" [for]="'canal-' + c.value">
               <p-checkbox
                 [inputId]="'canal-' + c.value"
                 [binary]="true"

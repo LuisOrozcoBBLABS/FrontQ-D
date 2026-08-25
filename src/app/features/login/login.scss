@@ -127,6 +127,8 @@
   color: var(--text-dim);
   line-height: var(--lh-snug);
 }
+/* Separada del bloque de arriba cuando no sigue a un campo. */
+.campo__ayuda--aire { margin-top: var(--sp-4); }
 
 /* ---------- Mensajes ---------- */
 .acceso__error {

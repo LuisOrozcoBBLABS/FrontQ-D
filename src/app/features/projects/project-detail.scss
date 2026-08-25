@@ -33,3 +33,12 @@
 .envio__st { margin-left: auto; color: var(--text-dim); font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; }
 
 /* IA */
+
+/* ---------- Lo que antes vivía en atributos style= ----------
+   Nueve declaraciones inline, tres de ellas con tamaños de fuente literales.
+   Un `style=` tiene la especificidad más alta que existe sin !important, así
+   que ninguna hoja podía corregirlos y stylelint no los ve siquiera. */
+.pd__h { margin-bottom: var(--sp-4); }
+.pd__nota { margin-top: var(--sp-3); }
+.pd__intro { font-size: var(--fs-sm); color: var(--text-2); margin-bottom: var(--sp-4); }
+.pd__canal { margin-bottom: var(--sp-2); }

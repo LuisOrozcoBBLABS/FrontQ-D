@@ -313,3 +313,7 @@
   padding-top: var(--sp-3);
   border-top: 1px solid var(--line);
 }
+
+/* La nota de ayuda de los permisos. Estaba inline con font-size 12.5px y un
+   margen negativo; ahora usa .field__hint del sistema y solo aporta el aire. */
+.mu__permisos-nota { margin-bottom: var(--sp-3); }

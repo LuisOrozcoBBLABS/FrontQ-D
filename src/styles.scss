@@ -228,6 +228,10 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* ---------- Superficies / tarjetas ---------- */
 .card{ border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding: var(--sp-6); }
 .card--tight{ padding: var(--sp-5); }
+/* Columna de lectura para tarjetas con formulario. Estaba repetida como
+   `style="max-width:760px"` en tres plantillas: el ancho de una línea cómoda no
+   es una decisión de cada pantalla, es del sistema. */
+.card--forma{ max-width:760px; }
 .hairline{ border-top:1px solid var(--line); }
 
 /* ---------- Chips / badges / tags ---------- */
@@ -250,6 +254,9 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .field__error{ color:var(--danger-text); font-size:var(--fs-sm); }
 /* Texto de apoyo persistente bajo un campo (no reemplaza a la etiqueta). */
 .field__hint{ color:var(--text-dim); font-size:var(--fs-xs); line-height:var(--lh-snug); }
+/* Campo que no necesita todo el ancho: un select de estado con 10 opciones
+   cortas se lee peor estirado a 760px que acotado. */
+.field--corto{ max-width:280px; }
 .field-inline{ display:flex; gap: var(--sp-3); flex-wrap:wrap; }
 .field-inline > *{ flex:1 1 200px; }
 
@@ -440,6 +447,8 @@ html[data-theme="light"] .marca-fondo__txt{
 .page__sub{ color:var(--text-2); margin-top: var(--sp-2); max-width:62ch; font-size:var(--fs-base); }
 
 .toolbar{ display:flex; align-items:center; gap: var(--sp-3); flex-wrap:wrap; margin-bottom: var(--sp-5); }
+/* Anidada dentro de una tarjeta: el aire de abajo lo pone el contenedor. */
+.toolbar--rasante{ margin:0; }
 .toolbar__spacer{ margin-left: auto; }
 
 

@@ -333,9 +333,9 @@
       </div>
     </div>
 
-    <div class="field">
-      <label>Permisos</label>
-      <p class="text-dim" style="font-size:12.5px;margin:-2px 0 10px">Los marcados en gris vienen del rol. Marca extras para dar permisos adicionales a esta persona.</p>
+    <div class="field" role="group" aria-labelledby="lbl-permisos">
+      <span class="field__label" id="lbl-permisos">Permisos</span>
+      <p class="field__hint mu__permisos-nota" id="ayuda-permisos">Los marcados en gris vienen del rol. Marca extras para dar permisos adicionales a esta persona.</p>
       <div class="perm-grid">
         @for (p of permisos(); track p.id) {
           <label class="check" [class.check--base]="isBase(p.id)" [for]="'perm-' + p.id">

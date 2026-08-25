@@ -15,7 +15,7 @@
     <p class="text-dim enter">Cargando el proyecto…</p>
   }
 
-  <div class="card enter" style="max-width:760px">
+  <div class="card card--forma enter">
     <div class="field">
       <label for="n">Nombre de la solución</label>
       <input pInputText id="n" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" placeholder="Ej. FreightAudit" />
@@ -87,9 +87,9 @@
     </div>
 
 
-    @if (error()) { <p class="login__error" style="margin-bottom:16px">{{ error() }}</p> }
+    @if (error()) { <p class="pf__error" role="alert">{{ error() }}</p> }
 
-    <div class="modal__foot" style="border-top:none;padding-top:0;margin-top:8px">
+    <div class="modal__foot modal__foot--liso">
       <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="cancel()" />
       <p-button [label]="verbo()" icon="pi pi-check" [loading]="guardando()" (onClick)="save()" />
     </div>
