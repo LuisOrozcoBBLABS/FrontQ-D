@@ -11,16 +11,21 @@
   </div>
 
   <div class="table-wrap enter">
-    <!-- Grupos son pocos y ya vienen todos cargados, asi que aca el orden del
-         cliente SI es honesto: ordena el conjunto completo, no una pagina. -->
+    <!-- [lazy] no es por la paginacion: es para que p-table NO ordene por su
+         cuenta. Recibe la pagina ya cortada, asi que si ordenara lo que recibe
+         reordenaria 8 filas y pareceria haber ordenado todos los grupos. El
+         orden se resuelve en `ordenados()`, sobre el conjunto completo.
+         Sin stateStorage a proposito: persistia `first`/`rows` de p-table en
+         localStorage y la paginacion real la lleva el <app-paginador> de abajo,
+         asi que los dos estados se peleaban. -->
     <p-table
       [value]="pagados()"
       styleClass="p-datatable-sm"
       [tableStyle]="{ 'min-width': '760px' }"
       [rowHover]="true"
       dataKey="id"
-      stateStorage="local"
-      stateKey="grupos-tabla-v1"
+      [lazy]="true"
+      (onSort)="ordenar($event)"
     >
       <ng-template #header>
         <tr>

@@ -358,9 +358,15 @@
 
   <ng-template #footer>
     <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="close()" />
+    <!-- Una sola fuente de verdad: `puedeGuardar()`. Cuando esta condicion se
+         escribia aparte, al crear le faltaba el minimo de contrasena que save()
+         si exige, asi que con una clave corta el boton se veia habilitado, el
+         clic no hacia nada y no salia ni un aviso. El hint del campo explica el
+         minimo, asi que el boton deshabilitado se entiende. -->
     <p-button
       [label]="isEdit() ? 'Guardar cambios' : 'Crear usuario'"
-      [disabled]="!draft()?.nombre?.trim() || !draft()?.email?.trim()"
+      [disabled]="!puedeGuardar() || guardando()"
+      [loading]="guardando()"
       (onClick)="save()"
     />
   </ng-template>

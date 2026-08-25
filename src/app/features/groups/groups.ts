@@ -45,9 +45,42 @@ export class Groups {
   /** Paginacion en el cliente: los grupos son pocos por naturaleza. */
   protected readonly porPagina = FILAS_POR_PAGINA;
   protected pagina = signal(1);
+
+  /**
+   * Orden pedido por la cabecera. Null = el orden en que vienen del servidor.
+   *
+   * Vive en una senal y no en p-table porque el orden tiene que resolverse
+   * sobre el conjunto COMPLETO y recien despues cortarse la pagina. Antes se le
+   * pasaba a p-table la pagina ya cortada, asi que ordenaba las 8 filas
+   * visibles y parecia haber ordenado los grupos enteros.
+   */
+  protected orden = signal<{ campo: string; dir: 'asc' | 'desc' } | null>(null);
+
+  ordenar(e: { field?: string; order?: number }): void {
+    if (!e.field) return;
+    const dir: 'asc' | 'desc' = e.order === -1 ? 'desc' : 'asc';
+    const actual = this.orden();
+    if (actual?.campo === e.field && actual.dir === dir) return;
+    this.pagina.set(1);
+    this.orden.set({ campo: e.field, dir });
+  }
+
+  /** Ordena el conjunto completo. Solo `nombre` es ordenable en la cabecera. */
+  private ordenados = computed(() => {
+    const orden = this.orden();
+    const lista = this.groups();
+    if (!orden) return lista;
+    const signo = orden.dir === 'asc' ? 1 : -1;
+    return [...lista].sort((a, b) => {
+      const va = String(a[orden.campo as keyof Group] ?? '');
+      const vb = String(b[orden.campo as keyof Group] ?? '');
+      return signo * va.localeCompare(vb, 'es', { sensitivity: 'base' });
+    });
+  });
+
   protected pagados = computed(() => {
     const desde = (this.pagina() - 1) * this.porPagina;
-    return this.groups().slice(desde, desde + this.porPagina);
+    return this.ordenados().slice(desde, desde + this.porPagina);
   });
   protected cargando = this.groupsSvc.cargando;
   protected errorCarga = this.groupsSvc.error;

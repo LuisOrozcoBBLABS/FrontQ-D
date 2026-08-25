@@ -59,7 +59,13 @@ export class UsersService {
   private readonly _solicitudes = signal<SolicitudReset[]>([]);
   /** Total que cumple los filtros en el servidor. */
   private readonly _total = signal(0);
-  /** Ultimo filtro usado, para poder recargar la misma pagina tras un cambio. */
+  /**
+   * Ultimo filtro usado. Solo lo consume `recargarPagina()`: `load()` sin
+   * argumentos NO lo reusa, a proposito. Cuando lo reusaba, el filtro de la
+   * tabla de usuarios se filtraba a las otras pantallas — el KPI "Usuarios"
+   * del inicio mostraba el conteo filtrado en `/usuarios` en lugar del total
+   * del area, o sea un numero que cambiaba segun por donde hubieras pasado.
+   */
   private ultimoFiltro: FiltroUsuarios = {};
   /**
    * Todas las personas activas, sin paginar. Va aparte de `_users` porque esa
@@ -79,9 +85,18 @@ export class UsersService {
 
   readonly todos = this._todos.asReadonly();
   readonly count = computed(() => this._total());
-  readonly activos = computed(() => this._users().filter(u => u.activo).length);
 
-  async load(filtro: FiltroUsuarios = this.ultimoFiltro): Promise<void> {
+  /**
+   * Recarga la MISMA pagina con el MISMO filtro. Es lo que hace falta despues
+   * de crear una persona o de asignarle clave temporal: quien esta mirando la
+   * tabla filtrada espera seguir viendo su filtro.
+   */
+  recargarPagina(): Promise<void> {
+    return this.load(this.ultimoFiltro);
+  }
+
+  /** Sin argumentos significa SIN FILTROS. Ver la nota de `ultimoFiltro`. */
+  async load(filtro: FiltroUsuarios = {}): Promise<void> {
     this.ultimoFiltro = filtro;
     this._cargando.set(true);
     this._error.set(null);
@@ -185,7 +200,7 @@ export class UsersService {
   async create(data: NuevoUsuario): Promise<User> {
     const creado = await firstValueFrom(this.http.post<User>(`${this.base}/users`, data));
     // La lista es una pagina del servidor: se recarga en lugar de insertar a mano.
-    await this.load();
+    await this.recargarPagina();
     return creado;
   }
 
@@ -236,7 +251,7 @@ export class UsersService {
     await firstValueFrom(this.http.post(`${this.base}/users/${id}/reset-password`, { nueva }));
     this._solicitudes.update(l => l.filter(s => s.user.id !== id));
     // Vuelve con debeCambiarPassword en true: la tabla lo refleja.
-    await this.load();
+    await this.recargarPagina();
   }
 
   /** Descarta un pedido sin tocar la contrasena. */
