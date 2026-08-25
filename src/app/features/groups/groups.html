@@ -140,7 +140,7 @@
   [visible]="formOpen()"
   (visibleChange)="formOpen.set($event)"
   [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="true"
-  [style]="{ width: 'min(94vw, 520px)' }"
+  [style]="{ width: 'min(calc(94vw - var(--rail-clear)), 520px)' }"
 >
   <ng-template #header>
     <div>
@@ -172,7 +172,7 @@
   [visible]="!!membersFor()"
   (visibleChange)="alCerrarIntegrantes($event)"
   [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="!cambios().total"
-  [style]="{ width: 'min(96vw, 860px)' }"
+  [style]="{ width: 'min(calc(96vw - var(--rail-clear)), 860px)' }"
 >
   <ng-template #header>
     <div>

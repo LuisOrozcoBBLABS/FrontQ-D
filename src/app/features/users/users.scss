@@ -134,7 +134,23 @@
 .mu__orden-btn:hover { border-color: var(--line-strong); color: var(--text); }
 .mu__orden-btn:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 1px; }
 
-.mu__filas { overflow-y: auto; overscroll-behavior: contain; min-height: 0; max-height: min(58dvh, 560px); }
+/* El select de rol necesita ancho propio: sus opciones son "Administrador" y
+   "Colaborador", y sin tope el control se encoge a la mas corta y baila al
+   cambiar de filtro. Estaba como [style] inline en la plantilla, que termina en
+   el DOM con la especificidad mas alta que existe sin !important. No es
+   espaciado, es el ancho de un control, asi que no hay token de --sp-* que
+   aplique. */
+.filtro-rol { min-width: 190px; }
+
+/* El overflow-x se declara: con solo overflow-y:auto, por spec el visible del
+   otro eje computa a auto y esta caja tenia su propia barra horizontal. */
+.mu__filas {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  min-height: 0;
+  max-height: min(58dvh, 560px);
+}
 .mu__filas:focus { outline: none; }
 .mu__filas:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: -2px; }
 

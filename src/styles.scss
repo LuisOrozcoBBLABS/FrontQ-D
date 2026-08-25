@@ -266,7 +266,11 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* Checkbox (permisos) */
 .check{ display:flex; align-items:center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-3); border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer; transition:border-color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
 .check:hover{ border-color:var(--line-strong); background:var(--surface-2); }
-.check input:checked + .check input:checked + .check__meta{ min-width:0; }
+/* Antes habia acá un `.check input:checked + .check input:checked + .check__meta`
+   que no puede matchear nada: dos `.check` hermanos consecutivos y un
+   `.check__meta` despues. Era regla muerta de antes del checkpoint. Lo que se
+   queria esta acotado y vivo en `.perm-grid .check__meta`. */
+.check__meta{ min-width:0; }
 .check__meta b{ font-weight:500; font-size:14.5px; }
 .check__meta span{ display:block; color:var(--text-dim); font-size:12.5px; }
 
@@ -316,7 +320,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .table__num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .table__min{ width:1%; white-space:nowrap; }
 .table__actions{ display:flex; align-items:center; gap: var(--sp-2); justify-content:flex-end; flex-wrap:nowrap; }
-.table__vacia{ padding: var(--sp-10) var(--sp-4); text-align:center; color:var(--text-dim); font-size:var(--fs-sm); }
+.table__vacia{ background:var(--surface); padding: var(--sp-10) var(--sp-4); text-align:center; color:var(--text-dim); font-size:var(--fs-sm); }
 .table__vacia b{ display:block; color:var(--text); font-weight:600; margin-bottom: var(--sp-1); }
 
 /* Fila que llega resaltada desde un aviso: se apaga sola */
@@ -346,7 +350,10 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* ---------- Modal ---------- */
 .modal{ position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding: var(--sp-5); }
 .modal__backdrop{ position:absolute; inset:0; background:var(--overlay); backdrop-filter:blur(4px); }
-.modal__panel{ position:relative; z-index:1; width:min(94vw,560px); max-height:90dvh; overflow-y:auto; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-lg); box-shadow:var(--shadow-lg); padding: var(--sp-6); animation:pop var(--dur-slow) var(--ease) both; }
+/* El 94vw descuenta el carril del riel: si no, el dialogo se centra sobre el
+   VIEWPORT y no sobre el area de contenido, asi que queda corrido a la
+   izquierda y su borde puede meterse debajo del riel. */
+.modal__panel{ position:relative; z-index:1; width:min(calc(94vw - var(--rail-clear)),560px); max-height:90dvh; overflow-y:auto; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-lg); box-shadow:var(--shadow-lg); padding: var(--sp-6); animation:pop var(--dur-slow) var(--ease) both; }
 @keyframes pop{ from{opacity:0; transform:scale(.94) translateY(20px);} to{opacity:1; transform:none;} }
 /* El fondo entra con el panel: sin esto el desenfoque aparece de golpe. */
 /* stylelint-disable-next-line no-duplicate-selectors -- la animacion vive con las demas animaciones, no con la geometria del modal */
@@ -836,7 +843,10 @@ html[data-theme="light"] .marca-fondo__txt{
 .p-paginator {
   background: transparent;
   border: none;
-  padding: var(--sp-4) 0 0;
+  /* Con padding horizontal: los encabezados de las listas maestro-detalle usan
+     var(--sp-4) a los lados, y sin el los botones tocaban el borde de la caja y
+     se leian como si se salieran. */
+  padding: var(--sp-4) var(--sp-4) var(--sp-3);
   gap: var(--sp-1);
   flex-wrap: wrap;
   justify-content: center;
@@ -1003,6 +1013,13 @@ html[data-theme="light"] .marca-fondo__txt{
 .p-datatable-thead > tr > th.col-num,
 .p-datatable-tbody > tr > td.col-num { text-align: right; }
 
+/* La columna de plazo no parte su texto. Con table-layout auto el reparto se lo
+   lleva la columna del proyecto —nombre mas la nota de abajo— y a esta le queda
+   el ancho de su encabezado, que es corto: "Sin fecha limite" se rompia en tres
+   lineas. Al th Y al td, mismo patron que .col-num. */
+.p-datatable-thead > tr > th.col-plazo,
+.p-datatable-tbody > tr > td.col-plazo { white-space: nowrap; }
+
 /* La columna de acciones no crece: ocupa lo que ocupan sus iconos. */
 .col-acciones {
   width: 1%;
@@ -1044,10 +1061,15 @@ html[data-theme="light"] .marca-fondo__txt{
    esa parte, y sin ella `[scrollable]` da scroll pero la cabecera se va con las
    filas. El fondo opaco es imprescindible — sin él, las filas se transparentan
    por debajo del encabezado al desplazarse. */
+/* UN SOLO nivel de sticky, y en el <thead>, que es donde PrimeNG ya lo pone.
+   PrimeNG 21 aplica `position: sticky` INLINE al thead y no le declara `top`.
+   Si ademas cada <th> era sticky, el th tenia como rectangulo de restriccion la
+   tabla COMPLETA, asi que podia deslizarse por encima del <tbody>: eso hacia
+   que "No tenes asignaciones" se leyera encima de los encabezados. El fondo
+   opaco se queda en el th, que es quien lo pinta. */
+.p-datatable-scrollable .p-datatable-thead { top: 0; z-index: 2; }
 .p-datatable-scrollable .p-datatable-thead > tr > th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  position: static;
   background: var(--surface-2);
 }
 

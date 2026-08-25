@@ -85,7 +85,7 @@
       [visible]="assignOpen()"
       (visibleChange)="alCerrarAsignacion($event)"
       [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="true"
-      [style]="{ width: 'min(94vw, 600px)' }"
+      [style]="{ width: 'min(calc(94vw - var(--rail-clear)), 600px)' }"
     >
       <ng-template #header>
         <div>

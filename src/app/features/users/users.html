@@ -80,7 +80,7 @@
       (ngModelChange)="filtrarRol($event)"
       optionLabel="label"
       optionValue="value"
-      [style]="{ minWidth: '190px' }"
+      styleClass="filtro-rol"
     />
 
     <p-selectbutton
@@ -256,7 +256,7 @@
   [draggable]="false"
   [resizable]="false"
   [dismissableMask]="true"
-  [style]="{ width: 'min(94vw, 720px)' }"
+  [style]="{ width: 'min(calc(94vw - var(--rail-clear)), 720px)' }"
 >
   <ng-template #header>
     <div>
@@ -380,7 +380,7 @@
   [draggable]="false"
   [resizable]="false"
   [dismissableMask]="true"
-  [style]="{ width: 'min(94vw, 520px)' }"
+  [style]="{ width: 'min(calc(94vw - var(--rail-clear)), 520px)' }"
 >
   <ng-template #header>
     <div>

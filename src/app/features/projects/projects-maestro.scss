@@ -21,13 +21,31 @@
   overflow: hidden;
 }
 
-/* ---------- Encabezado ---------- */
+/* ---------- Encabezado ----------
+   Grid y no flex, y align-items en start y no en flex-end. El motivo:
+   .mp__acciones no tiene tope de ancho y envuelve POR DENTRO. Medido con los
+   tokens del sistema, el bloque de controles pide ~880px —buscador de 300,
+   dos p-select de ~200 y el boton de ~160, mas los gaps— y lo disponible es
+   100vw menos 104 del riel, menos 48 del padding, menos el bloque del titulo.
+   Por debajo de ~1250px de ventana ya no entra y se parte en dos filas.
+
+   Con `align-items: flex-end` el bloque de controles crecia HACIA ARRIBA y el
+   titulo quedaba colgado del borde inferior, asi que la primera fila de filtros
+   terminaba por encima del eyebrow, a 24px del borde de la ventana. Eso era la
+   "barra de filtros desprendida y flotando arriba a la derecha".
+
+   Con una sola columna por debajo de 1100px los filtros bajan ENTEROS en vez de
+   treparse, y con start el titulo fija la linea de arriba pase lo que pase. */
 .mp__head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: var(--sp-4);
+}
+
+@media (max-width: 1100px) {
+  .mp__head { grid-template-columns: minmax(0, 1fr); }
+  .mp__acciones { justify-content: flex-start; }
 }
 
 .mp__title {
@@ -42,6 +60,8 @@
 .mp__acciones {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  max-width: 100%;
   gap: var(--sp-2);
   flex-wrap: wrap;
 }
@@ -137,6 +157,7 @@
 
 .mp__filas {
   overflow-y: auto;
+  overflow-x: hidden; /* si no, el visible del otro eje computa a auto */
   overscroll-behavior: contain;
   min-height: 0;
 }
