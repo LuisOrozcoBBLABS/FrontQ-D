@@ -812,12 +812,43 @@ html[data-theme="light"] .marca-fondo__txt{
    Las dos quedan definidas una sola vez, arriba. */
 
 /* ---------- Paginador ---------- */
-.p-paginator { background: transparent; border: none; padding: var(--sp-4) 0 0; gap: var(--sp-1); }
+/* Envuelve, y al envolverse centra. Vive en dos anchos muy distintos: debajo de
+   una tabla a todo lo ancho, y dentro de la columna FIJA de 320px de las vistas
+   maestro-detalle.
+
+   Ahi el ancho depende de la cantidad de paginas, y por eso el defecto se veia
+   en proyectos y no en usuarios. Medido: el informe ocupa 106px, cada boton
+   mide --ctl-sm con 4px de gap.
+     usuarios  — 18 registros = 3 paginas -> prev + 3 + next = 5 botones = 196px
+                 106 + 196 = 302, entra en 320.
+     proyectos — 29 registros = 4 paginas -> prev + 4 + next = 6 botones = 236px
+                 106 + 236 = 342, NO entra.
+   (Los iconos de primera y ultima pagina solo aparecen con mas de 5 paginas,
+   asi que todavia no suman.)
+
+   Como la columna es de ancho fijo, el excedente no la ensancha: se derrama
+   sobre la columna del detalle, que es el recuadro cortado que se veia. Y con
+   el margin-right:auto del informe, los botones que bajaban quedaban tirados a
+   un extremo en vez de alineados.
+
+   Con wrap + center: en ancho sobrado el informe queda a la izquierda y los
+   botones a la derecha, igual que antes; cuando no entran, bajan centrados. */
+.p-paginator {
+  background: transparent;
+  border: none;
+  padding: var(--sp-4) 0 0;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: var(--sp-2);
+}
 .p-paginator .p-paginator-page,
 .p-paginator .p-paginator-first,
 .p-paginator .p-paginator-prev,
 .p-paginator .p-paginator-next,
-.p-paginator .p-paginator-last { min-width: 34px; height: 34px; border-radius: var(--r-full); }
+/* --ctl-sm y no 34px: era uno de los tamanos de control sueltos que existian
+   antes de que la escala de control existiera. */
+.p-paginator .p-paginator-last { min-width: var(--ctl-sm); height: var(--ctl-sm); border-radius: var(--r-full); }
 .p-paginator .p-paginator-page.p-paginator-page-selected { background: var(--accent); color: var(--on-accent); font-weight: 600; }
 
 /* ---------- Etiquetas de estado ---------- */
