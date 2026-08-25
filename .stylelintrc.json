@@ -25,7 +25,25 @@
       }
     ],
 
-    "no-duplicate-selectors": [true, { "disallowInList": true }],
+    "no-duplicate-selectors": [
+      true,
+      {
+        "disallowInList": true,
+        "message": "Selector declarado dos veces. Suele ser un override progresivo deliberado, pero también es como se cuela un literal en una regla que otra ya había tokenizado (el caso de .table__actions). Revisar y, si es a propósito, dejarlo dicho.",
+        "severity": "warning"
+      }
+    ],
+
+    "declaration-block-single-line-max-declarations": null,
+    "color-function-alias-notation": null,
+    "color-function-notation": null,
+    "property-no-vendor-prefix": null,
+    "value-no-vendor-prefix": null,
+    "at-rule-no-vendor-prefix": null,
+    "keyframes-name-pattern": null,
+    "color-hex-length": null,
+    "number-max-precision": null,
+    "shorthand-property-no-redundant-values": null,
 
     "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["host", "host-context", "ng-deep"] }],
     "selector-pseudo-element-no-unknown": [

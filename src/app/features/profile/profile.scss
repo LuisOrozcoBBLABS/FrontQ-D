@@ -24,7 +24,7 @@
   font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
   color: var(--text-dim); margin-bottom: var(--sp-1); display: flex; align-items: center; gap: var(--sp-2);
 }
-.profile__meta dd { font-size: 14.5px; color: var(--text); word-break: break-word; }
+.profile__meta dd { font-size: 14.5px; color: var(--text); overflow-wrap: break-word; }
 .lock {
   font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .1em;
   /* stylelint-disable-next-line declaration-property-value-disallowed-list -- pastilla diminuta: 4px vertical la engordaria un 40% */
