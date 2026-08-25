@@ -5,7 +5,6 @@ import { UsersService } from '../../core/users.service';
 import { Group, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
-import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputText } from 'primeng/inputtext';
 import { Checkbox } from 'primeng/checkbox';
@@ -22,7 +21,6 @@ import { mensajeDeError } from '../../core/auth.service';
   imports: [
     FormsModule,
     Paginador,
-    TableModule,
     ButtonModule,
     InputText,
     Checkbox,
@@ -225,6 +223,23 @@ export class Groups {
   }
 
   members(g: Group): MiembroResumen[] { return this.groupsSvc.members(g.id); }
+
+  /**
+   * Cuantos avatares se dibujan antes de resumir en "+N". El tope vive aca y no
+   * en el CSS: no es una decision de estilo, es cuantas caras alcanzan para
+   * reconocer un equipo de un vistazo. Sin tope, los 17 de Bravo se partian en
+   * dos lineas y la fila de la tabla medía el doble que las otras tres.
+   */
+  protected readonly TOPE_AVATARES = 6;
+
+  protected avataresVisibles(g: Group): MiembroResumen[] {
+    return this.members(g).slice(0, this.TOPE_AVATARES);
+  }
+
+  /** Los que quedan fuera del tope. 0 = no hace falta el "+N". */
+  protected avataresRestantes(g: Group): number {
+    return Math.max(0, this.memberCount(g) - this.TOPE_AVATARES);
+  }
   memberCount(g: Group): number { return this.groupsSvc.memberCount(g.id); }
   esMiembro(u: User, g: Group): boolean { return u.groupId === g.id; }
   allUsers(): User[] { return this.usersSvc.users(); }

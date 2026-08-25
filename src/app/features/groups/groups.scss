@@ -1,15 +1,216 @@
+/* =============================================================
+   TABLERO DE EQUIPOS
 
-/* Integrantes dentro de la celda: iniciales apiladas mas el total */
-.integrantes { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
-.integrantes .celda-ini { overflow: hidden; }
-.integrantes .celda-ini img { width: 100%; height: 100%; object-fit: cover; }
-.integrantes__n {
-  font-size: var(--fs-2xs);
-  font-weight: 700;
-  color: var(--text-dim);
-  font-variant-numeric: tabular-nums;
+   Esto era una tabla y no debia serlo. La grilla imponia tres costos que no
+   pagaba nadie: la fila medía lo que su celda mas alta —los 17 avatares de
+   Bravo se partian en dos lineas y su fila era el doble de las otras—, la
+   columna mas ancha se dimensionaba por el peor caso y quedaba ocupada por
+   tres "Sin integrantes" en gris, y el lema, que es lo mejor que tiene esta
+   pantalla, vivia en una celda de var(--fs-sm) al lado de un guion.
+   ============================================================= */
+.equipos {
+  display: grid;
+  /* La medida la manda el lema: ~44ch es una linea comoda para una frase
+     corta. Dos columnas en escritorio, una en angosto, sin media queries. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 44ch), 1fr));
+  gap: var(--sp-5);
 }
 
+.equipos__pie { margin-top: var(--sp-5); }
+
+/* ---------- La tarjeta ---------- */
+.equipo {
+  display: grid;
+  /* Cuatro filas y el 1fr en la del lema: esa fila se come la holgura, asi los
+     pies de todas las tarjetas de una hilera quedan a la misma altura sin
+     importar cuanta gente tenga cada equipo. Es la desigualdad de alturas
+     resuelta por estructura, no por un min-height a ojo. */
+  grid-template-rows: auto 1fr auto auto;
+  gap: var(--sp-4);
+  padding: var(--sp-5) var(--sp-6) var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease);
+}
+
+.equipo:hover { border-color: var(--line-strong); box-shadow: var(--shadow); }
+/* Teclado: la tarjeta se marca cuando el foco entra en cualquiera de sus
+   controles, asi se sabe sobre que equipo se esta operando. */
+.equipo:focus-within { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .equipo { transition: none; }
+}
+
+/* Nombre en versalitas: es el distintivo del escuadron, no un titulo de
+   lectura. Chico y con tracking para no competir con el lema. */
+.equipo__nombre {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+/* ---------- El lema, al frente ---------- */
+.equipo__lema {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(var(--fs-md), calc(var(--fs-base) + .8vw), var(--fs-lg));
+  line-height: var(--lh-snug);
+  letter-spacing: -.01em;
+  color: var(--text);
+  text-wrap: balance;
+}
+/* Las comillas son del sistema, no del dato: los lemas se guardan sin ellas. */
+.equipo__lema::before { content: "\201C"; color: var(--accent-text); }
+.equipo__lema::after { content: "\201D"; color: var(--accent-text); }
+
+.equipo__lema--falta {
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  font-weight: 500;
+  color: var(--text-dim);
+}
+.equipo__lema--falta::before,
+.equipo__lema--falta::after { content: none; }
+
+.enlace-lema {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.enlace-lema:hover { text-decoration-color: var(--accent); }
+
+/* ---------- Integrantes ---------- */
+.equipo__gente {
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: start;
+}
+
+.equipo__rotulo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.equipo__n {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  color: var(--text-dim);
+}
+
+/* Los avatares se solapan y se cortan en el tope: nunca hay segunda linea, que
+   era lo que hacia la fila de Bravo el doble de alta. El tope vive en el
+   componente (TOPE_AVATARES): el CSS no debe decidir cuantos. */
+.pila { display: flex; align-items: center; }
+.pila__a { position: relative; overflow: hidden; }
+.pila__a img { width: 100%; height: 100%; object-fit: cover; }
+.pila__a + .pila__a { margin-left: calc(var(--sp-2) * -1); }
+.pila__a:hover { z-index: 1; }
+
+/* El "+N" se despega del apilado y cambia de color: es un resumen, no una
+   persona mas. Antes el total iba suelto al final y se leia como un avatar. */
+.pila__a + .pila__mas { margin-left: var(--sp-2); }
+.pila__mas {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  color: var(--accent-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* ---------- Sin integrantes: invitacion, no lapida ---------- */
+.sumar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: var(--ctl-md);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  color: var(--text-2);
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease);
+}
+/* El trazo pasa de punteado a solido: el hueco se convierte en algo lleno. */
+.sumar:hover {
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+.sumar i { font-size: var(--fs-md); color: var(--accent-text); }
+.sumar__txt { display: grid; }
+.sumar__t { font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
+.sumar__s { font-size: var(--fs-2xs); color: var(--text-dim); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sumar { transition: none; }
+}
+
+/* ---------- Acciones ---------- */
+.equipo__acciones {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+/* Archivar es destructivo: se va al extremo opuesto para que no se pulse por
+   inercia justo despues de Editar. */
+.equipo__acciones .equipo__archivar { margin-left: auto; }
+
+/* ---------- Sin grupos ---------- */
+.equipos__vacio {
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-12) var(--sp-6);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  text-align: center;
+}
+.equipos__vacio b { font-family: var(--font-display); font-size: var(--fs-md); }
+.equipos__vacio p {
+  max-width: 44ch;
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+@media (max-width: 640px) {
+  .equipo { padding: var(--sp-4); }
+}
 /* =============================================================
    SELECTOR DE INTEGRANTES — dos paneles
 
