@@ -266,6 +266,13 @@
 .similares { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); font-size: var(--fs-sm); }
 .similares a { color: var(--accent-text); }
 
+/* Separado del pie con una línea: mover la etapa cambia el estado del proyecto
+   para todo el equipo, no es una acción de navegación como las de abajo. */
+.panel__mover {
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+
 .panel__pie {
   display: flex;
   flex-wrap: wrap;

@@ -160,6 +160,19 @@ body{
 .mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
 .display{ font-family:var(--font-display); font-weight:700; letter-spacing:-.02em; line-height:var(--lh-tight); }
 .text-2{ color:var(--text-2); } .text-dim{ color:var(--text-dim); }
+
+/* Visible solo para lectores de pantalla. Ya se usaba en project-card antes de
+   existir, asi que el motivo de la alerta se renderizaba VISIBLE dentro de
+   .tarjeta__aviso —una caja absoluta de 14px en la esquina— y desbordaba sobre
+   la tarjeta. Es ademas la herramienta base para nombrar lo que solo se
+   comunica por forma o color, y para las regiones vivas que anuncian el
+   resultado de una accion.
+   clip-path en vez del viejo clip: rect(): el texto sigue siendo seleccionable
+   por el lector y no se rompe con transform en los ancestros. */
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0;
+}
 h1,h2,h3{ font-family:var(--font-display); font-weight:700; letter-spacing:-.015em; line-height:var(--lh-tight); text-wrap:balance; }
 h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(--fs-md); }
 

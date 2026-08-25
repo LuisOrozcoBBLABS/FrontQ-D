@@ -126,6 +126,21 @@ export function etapaDe(estado: ProjectStatus): EtapaProyecto {
   return ETAPAS.find(e => e.value === estado) ?? ETAPAS[0];
 }
 
+/**
+ * Etapa contigua en el orden de ETAPAS, que es el mismo en que se pintan las
+ * columnas: lo que el ojo ve a la izquierda es lo que la flecha izquierda
+ * alcanza. Devuelve null en los extremos y con un estado desconocido.
+ *
+ * Vive acá, como funcion pura, y no dentro del tablero, porque es la unica
+ * parte del movimiento por teclado con casos de borde de verdad — y asi se
+ * testea sin TestBed ni servicios simulados.
+ */
+export function etapaVecina(estado: ProjectStatus, direccion: -1 | 1): ProjectStatus | null {
+  const i = ETAPAS.findIndex(e => e.value === estado);
+  if (i === -1) return null;
+  return ETAPAS[i + direccion]?.value ?? null;
+}
+
 /** Una entrada del historial: cuándo el proyecto entró a una etapa. */
 export interface CambioEstado {
   estado: ProjectStatus;

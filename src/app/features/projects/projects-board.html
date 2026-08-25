@@ -1,4 +1,15 @@
 <div class="page page--tablero">
+  <!-- Instrucción del atajo. La apuntan las tarjetas movibles con
+       aria-describedby, asi que se lee una vez al enfocar la tarjeta y no en
+       cada pulsacion. -->
+  <p id="kb-ayuda-tablero" class="sr-only">
+    Usá Control más flecha izquierda o derecha para mover esta tarjeta de columna.
+  </p>
+  <!-- assertive y no polite: el movimiento de una tarjeta es el resultado de
+       una accion deliberada, y si el anuncio espera a que el lector termine lo
+       que estaba diciendo, llega despues de que la persona ya intento otra vez. -->
+  <p class="sr-only" role="status" aria-live="assertive">{{ anuncio() }}</p>
+
   <!-- ======================= Encabezado ======================= -->
   <header class="tab__head enter">
     <div class="tab__enc">
@@ -230,6 +241,7 @@
                   [seleccionada]="abierta()?.id === p.id"
                   [prioridad]="prioridadDe(p)"
                   (abrir)="abrir($event)"
+                  (mover)="moverPorTeclado(p, $event)"
                 />
                 <div class="hueco" *cdkDragPlaceholder></div>
               </div>
@@ -258,5 +270,11 @@
 </div>
 
 @if (abierta(); as sel) {
-  <app-project-panel [resumen]="sel" (cerrar)="cerrarPanel()" (eliminado)="cerrarPanel()" />
+  <app-project-panel
+    [resumen]="sel"
+    [puedeMoverEtapa]="puedeMover(sel)"
+    (moverA)="mover(sel, $event)"
+    (cerrar)="cerrarPanel()"
+    (eliminado)="cerrarPanel()"
+  />
 }

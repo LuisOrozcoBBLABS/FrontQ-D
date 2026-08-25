@@ -16,6 +16,7 @@ import {
   ASIG_ESTADOS,
   ETAPAS,
   EtapaProyecto,
+  etapaVecina,
   PRIORIDADES,
   Project,
   ProjectStatus,
@@ -311,6 +312,39 @@ export class ProjectsBoard {
     return this.assignSvc.forUser(u.id).some(a => a.projectId === p.id);
   }
 
+  /**
+   * Region viva que anuncia el resultado de un movimiento por teclado.
+   *
+   * El toast no alcanza para esto: se va solo a los 3.2 segundos, que no dan
+   * para que un lector de pantalla llegue al mensaje, lo lea y la persona
+   * reaccione. Y como el movimiento por teclado no tiene la confirmacion visual
+   * del arrastre, sin anuncio no hay ninguna senal de que algo paso.
+   */
+  protected anuncio = signal('');
+
+  /** Arrastre, teclado y selector del panel terminan acá: una sola definicion. */
+  async mover(proyecto: Project, destino: ProjectStatus): Promise<void> {
+    this.moviendo.set(proyecto.id);
+    try {
+      await this.projectsSvc.moverEstado(proyecto.id, destino);
+      const i = ETAPAS.findIndex(e => e.value === destino);
+      const etapa = ETAPAS[i];
+      this.toast.success(`“${proyecto.nombre}” pasó a ${etapa?.columna ?? destino}.`);
+      this.anuncio.set(
+        `${proyecto.nombre} movido a ${etapa?.columna ?? destino}, columna ${i + 1} de ${ETAPAS.length}.`,
+      );
+      if (this.abierta()?.id === proyecto.id) {
+        this.abierta.set(this.columna(destino).find(p => p.id === proyecto.id) ?? null);
+      }
+    } catch (e) {
+      const msg = mensajeDeError(e, 'No se pudo mover el proyecto. Volvió a su columna.');
+      this.toast.error(msg);
+      this.anuncio.set(msg);
+    } finally {
+      this.moviendo.set(null);
+    }
+  }
+
   async soltar(evento: CdkDragDrop<ProjectStatus>): Promise<void> {
     const destino = evento.container.data;
     const origen = evento.previousContainer.data;
@@ -319,19 +353,26 @@ export class ProjectsBoard {
     // Mismo contenedor: el orden dentro de la columna no se persiste.
     if (origen === destino) return;
 
-    this.moviendo.set(proyecto.id);
-    try {
-      await this.projectsSvc.moverEstado(proyecto.id, destino);
-      const etapa = ETAPAS.find(e => e.value === destino);
-      this.toast.success(`“${proyecto.nombre}” pasó a ${etapa?.columna ?? destino}.`);
-      if (this.abierta()?.id === proyecto.id) {
-        this.abierta.set(this.columna(destino).find(p => p.id === proyecto.id) ?? null);
-      }
-    } catch (e) {
-      this.toast.error(mensajeDeError(e, 'No se pudo mover el proyecto. Volvió a su columna.'));
-    } finally {
-      this.moviendo.set(null);
+    await this.mover(proyecto, destino);
+  }
+
+  /**
+   * Alternativa por teclado al arrastre. `direccion` es -1 o +1 sobre el orden
+   * de ETAPAS, que es el mismo orden en que se pintan las columnas: lo que el
+   * ojo ve a la izquierda es lo que la flecha izquierda alcanza.
+   */
+  async moverPorTeclado(proyecto: Project, direccion: -1 | 1): Promise<void> {
+    if (!this.puedeMover(proyecto) || this.moviendo()) return;
+    const destino = etapaVecina(proyecto.estado, direccion);
+    if (!destino) {
+      // Sin destino no se dice nada por toast —seria ruido en cada intento— pero
+      // si se anuncia, porque quien no ve el tablero no sabe que llego al borde.
+      this.anuncio.set(
+        direccion === 1 ? 'Ya está en la última columna.' : 'Ya está en la primera columna.',
+      );
+      return;
     }
+    await this.mover(proyecto, destino);
   }
 
   abrir(p: Project): void {

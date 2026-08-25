@@ -4,8 +4,10 @@ import { ProjectsService } from '../../core/projects.service';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
-import { Project, etapaDe } from '../../core/models';
+import { ESTADOS_PROYECTO, Project, ProjectStatus, etapaDe } from '../../core/models';
 import { ButtonModule } from 'primeng/button';
+import { FormsModule } from '@angular/forms';
+import { Select } from 'primeng/select';
 import { diasEnEtapa, diasEnEtapas, diasTotales, humano, tramos } from '../../core/tiempos';
 
 /**
@@ -19,7 +21,7 @@ import { diasEnEtapa, diasEnEtapas, diasTotales, humano, tramos } from '../../co
  */
 @Component({
   selector: 'app-project-panel',
-  imports: [RouterLink, ButtonModule],
+  imports: [RouterLink, ButtonModule, FormsModule, Select],
   templateUrl: './project-panel.html',
   styleUrl: './project-panel.scss',
 })
@@ -38,6 +40,22 @@ export class ProjectPanel {
    * embebido no hay capa oscura ni boton de cerrar: no hay nada que cerrar.
    */
   readonly embebido = input<boolean>(false);
+  /**
+   * Si quien mira puede mover la etapa. Llega de afuera y no se calcula acá a
+   * proposito: la regla del servidor es autor, administrador O responsable, y
+   * la parte de "responsable" necesita las asignaciones, que el tablero ya
+   * tiene cargadas. Recalcularlas acá seria una tercera copia de la misma regla.
+   *
+   * Ojo con la diferencia respecto de `esMio()`: mover la etapa y editar el
+   * contenido NO son el mismo permiso. Quien ejecuta avanza su etapa, pero no
+   * reescribe la propuesta de otro. Ese matiz es justo el que faltaba: la unica
+   * alternativa por teclado que existia estaba detras del permiso de editar, mas
+   * angosto, asi que un colaborador con el proyecto asignado podia moverlo con
+   * el mouse y no tenia ninguna forma de moverlo con el teclado.
+   */
+  readonly puedeMoverEtapa = input<boolean>(false);
+  /** Etapa elegida en el selector. La resuelve quien contiene al panel. */
+  readonly moverA = output<ProjectStatus>();
   readonly cerrar = output<void>();
   /** Avisa que el proyecto ya no está: el tablero cierra el panel. */
   readonly eliminado = output<string>();
@@ -141,6 +159,14 @@ export class ProjectPanel {
 
   /** Editar y eliminar son del autor, igual que en el servidor. */
   protected esMio = computed(() => this.auth.esAutorOAdmin(this.p().autorId));
+
+  protected etapas = ESTADOS_PROYECTO;
+
+  /** Solo emite si cambió: el select dispara al abrirse en algunos navegadores. */
+  protected elegirEtapa(destino: ProjectStatus): void {
+    if (destino === this.p().estado) return;
+    this.moverA.emit(destino);
+  }
 
   protected borrando = signal(false);
 

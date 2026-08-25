@@ -145,6 +145,24 @@
     </section>
   }
 
+  @if (puedeMoverEtapa()) {
+    <div class="field panel__mover">
+      <label [attr.for]="'etapa-' + p().id">Mover a la etapa</label>
+      <p-select
+        [inputId]="'etapa-' + p().id"
+        [options]="etapas"
+        [ngModel]="p().estado"
+        (ngModelChange)="elegirEtapa($event)"
+        optionLabel="label"
+        optionValue="value"
+        [fluid]="true"
+      />
+      <span class="field__hint">
+        Es la misma acción que arrastrar la tarjeta entre columnas.
+      </span>
+    </div>
+  }
+
   <footer class="panel__pie">
     <p-button
       label="Abrir la ficha completa"

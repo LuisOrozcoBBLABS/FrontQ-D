@@ -21,6 +21,28 @@ export class ProjectCard {
   readonly seleccionada = input<boolean>(false);
 
   readonly abrir = output<Project>();
+  /**
+   * Pedido de mover una columna a la izquierda (-1) o a la derecha (+1).
+   *
+   * Existe porque @angular/cdk NO implementa arrastre por teclado: `cdkDrag`
+   * escucha mousedown y touchstart, y nada mas. Sin esto, mover una tarjeta era
+   * imposible con teclado, con conmutador, con control por voz y con lector de
+   * pantalla — una funcionalidad entera perdida, no una molestia.
+   */
+  readonly mover = output<-1 | 1>();
+
+  /**
+   * Ctrl/Cmd + flecha mueve de columna. Lleva modificador a proposito: las
+   * flechas solas ya desplazan la pista horizontal del tablero, y robarselas
+   * romperia la navegacion de quien solo quiere mirar.
+   */
+  protected tecla(e: KeyboardEvent): void {
+    if (!this.movible()) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    this.mover.emit(e.key === 'ArrowRight' ? 1 : -1);
+  }
 
   protected diasEtapa = computed(() => diasEnEtapa(this.proyecto()));
   protected diasTotal = computed(() => diasTotales(this.proyecto()));
@@ -55,6 +77,11 @@ export class ProjectCard {
 
   protected titulo = computed(() => {
     const p = this.proyecto();
-    return this.movible() ? p.nombre : `${p.nombre} — solo el autor o un administrador puede moverlo`;
+    // El texto decia "solo el autor o un administrador", pero quien la tiene
+    // asignada tambien puede moverla: el mensaje mentia justo a la persona que
+    // mas lo iba a leer.
+    return this.movible()
+      ? `${p.nombre} — Ctrl + flecha para moverla de columna`
+      : `${p.nombre} — solo quien lo registró, quien lo tiene a cargo o un administrador puede moverlo`;
   });
 }

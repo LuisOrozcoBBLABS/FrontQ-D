@@ -5,8 +5,11 @@
   [class.tarjeta--fija]="!movible()"
   [class]="'tarjeta tarjeta--' + alerta()"
   [attr.aria-current]="seleccionada() ? 'true' : null"
+  [attr.aria-roledescription]="movible() ? 'tarjeta movible' : null"
+  [attr.aria-describedby]="movible() ? 'kb-ayuda-tablero' : null"
   [title]="titulo()"
   (click)="abrir.emit(proyecto())"
+  (keydown)="tecla($event)"
 >
   <span class="tarjeta__top">
     @if (prioridadLabel(); as pr) {
