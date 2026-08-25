@@ -356,11 +356,44 @@
 }
 
 .col__vacia {
+  /* Una columna vacia no es un hueco: es un destino de arrastre disponible.
+     Antes era un guion centrado en una superficie de ~600px, y con el embudo
+     vacio eso son tres columnas de espacio muerto ocupando medio ancho de
+     pantalla.
+
+     La columna sigue estirandose a la altura completa a proposito, y no es
+     descuido: es el area donde se suelta una tarjeta. Encogerla a su contenido
+     dejaria un blanco de 90px casi imposible de acertar arrastrando. Lo que
+     cambia es que ahora se LEE como destino — trazo punteado, como el de
+     .sumar en equipos — en vez de leerse como nada. */
   margin: 0;
-  padding: var(--sp-4) 0;
+  display: grid;
+  place-content: center;
+  gap: var(--sp-1);
+  height: 100%;
+  min-height: 0;
+  padding: var(--sp-4) var(--sp-3);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
   text-align: center;
-  font-size: var(--fs-xs);
+  font-size: var(--fs-2xs);
+  letter-spacing: .06em;
+  text-transform: uppercase;
   color: var(--text-dim);
+}
+/* La lista empaqueta al inicio (align-content: start), asi que un hijo con
+   height:100% resolveria contra una fila dimensionada por su contenido y el
+   marco quedaria chico arriba. Cuando la columna esta vacia —y solo entonces—
+   la fila se estira, para que el destino de arrastre ocupe la columna entera. */
+.col__lista:has(.col__vacia) { align-content: stretch; }
+
+/* Mientras se arrastra, el destino se enciende: el trazo se vuelve solido y
+   toma el acento, asi la columna vacia deja de ser la menos evidente. */
+.col__lista.cdk-drop-list-receiving .col__vacia,
+.col__lista.cdk-drop-list-dragging .col__vacia {
+  border-style: solid;
+  border-color: var(--accent-ui);
+  color: var(--text-2);
 }
 
 .col__mas {

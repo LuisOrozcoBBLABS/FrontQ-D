@@ -286,7 +286,14 @@
   color: var(--text-2);
 }
 .avisos__marcar:hover { color: var(--text); }
-.avisos__lista { max-height: 56vh; overflow-y: auto; padding: var(--sp-2); }
+/* 44vh y no 56. El panel crece HACIA ARRIBA desde la campana, asi que su
+   techo no es el viewport sino la distancia que hay hasta ella — y eso depende
+   de donde caiga el dock, que el CSS no puede calcular. Con 56vh, en una
+   ventana de ~900px el panel llegaba pegado al borde superior sin un pixel de
+   aire, y como .avisos tiene overflow:hidden el ultimo aviso se leia rebanado
+   en vez de desplazable. El tope conservador deja el margen visible que dice
+   "esto sigue". */
+.avisos__lista { max-height: 44vh; overflow-y: auto; padding: var(--sp-2); }
 .avisos__item {
   display: flex;
   flex-direction: column;

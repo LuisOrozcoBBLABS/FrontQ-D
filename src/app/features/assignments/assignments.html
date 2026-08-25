@@ -24,7 +24,11 @@
     <header class="bloque__head">
       <h2 class="bloque__t">
         Mis asignaciones
-        <span class="bloque__n mono">{{ mias().length }}</span>
+        <!-- Abiertas sobre total. Antes la pastilla mostraba solo el total y quedaba
+             al lado de una bajada que decia las abiertas: dos numeros distintos
+             pegados, sin nada que dijera que contaba cada uno. -->
+        <span class="bloque__n mono" aria-hidden="true">{{ pendientesDeMias() }}/{{ mias().length }}</span>
+        <span class="sr-only">{{ pendientesDeMias() }} abiertas de {{ mias().length }} en total</span>
       </h2>
       <div class="vista">
         <p class="bloque__nota">
