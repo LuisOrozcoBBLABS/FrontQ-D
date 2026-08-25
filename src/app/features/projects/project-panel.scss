@@ -115,7 +115,7 @@
   transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .panel__x:hover { border-color: var(--line-strong); color: var(--text); }
-.panel__x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.panel__x:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 2px; }
 .panel__x svg { width: 15px; height: 15px; }
 
 .panel__bloque { display: grid; gap: var(--sp-3); }

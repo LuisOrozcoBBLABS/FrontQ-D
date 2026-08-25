@@ -58,8 +58,17 @@ html[data-theme="dark"]{
   color-scheme:dark;
   --bg:#0B0A07; --surface:#131210; --surface-2:#1B1A17;
   --line:#262421; --line-strong:#38352F;
-  --text:#F7F7F5; --text-2:#A8A6A0; --text-dim:#6F6C65;
+  /* --text-dim sube de #6F6C65 a #8F8C84: el anterior daba 3.78:1 contra --bg
+     y 3.32:1 contra --surface-2, por debajo del 4.5:1 que pide WCAG AA. Y no es
+     un color decorativo: es el de TODAS las etiquetas de formulario y las
+     cabeceras de tabla, todas entre 10.5 y 13.5px, asi que tampoco aplica el
+     umbral de texto grande. Ahora da 5.09 / 4.80 / 4.47. */
+  --text:#F7F7F5; --text-2:#A8A6A0; --text-dim:#8F8C84;
   --accent:var(--bb-lime); --on-accent:var(--bb-obsidian); --accent-text:var(--bb-lime);
+  /* Acento para elementos NO textuales: anillo de foco, bordes de seleccion,
+     trazo del sparkline. Tiene su propio token porque el requisito es 3:1 y en
+     tema claro el lima puro no llega. Ver el bloque del tema claro. */
+  --accent-ui:var(--bb-lime);
   --accent-soft:rgba(178,234,54,.14);
   --glass:rgba(19,18,16,.62);
   --glass-rail:rgba(30,29,26,.5);
@@ -70,14 +79,30 @@ html[data-theme="dark"]{
   --shadow-rail:0 20px 60px -16px rgba(0,0,0,.8);
   --overlay:rgba(4,4,3,.74);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.12);
+  /* En oscuro el rojo de marca ya da 5.84:1, asi que el token de texto coincide
+     con el de marca. Existe igual para que los componentes no tengan que saber
+     en que tema estan. */
+  --danger-text:var(--bb-red);
 }
 
 html[data-theme="light"]{
   color-scheme:light;
   --bg:#FFFFFF; --surface:#FAFAF9; --surface-2:#F1F1EF;
   --line:#E6E6E6; --line-strong:#D2D2CE;
-  --text:#0B0A07; --text-2:#54524D; --text-dim:#8A8880;
+  /* --text-dim baja de #8A8880 a #6B6963 por el mismo motivo que en oscuro:
+     daba 3.55:1 sobre blanco y 3.14:1 sobre --surface-2. Ahora 5.85 / 5.18. */
+  --text:#0B0A07; --text-2:#54524D; --text-dim:#6B6963;
   --accent:var(--bb-lime); --on-accent:var(--bb-obsidian); --accent-text:var(--bb-lime-ink);
+  /* Acá está la razón de que --accent-ui exista. El lima puro sobre las
+     superficies claras da entre 1.26:1 y 1.43:1, contra el minimo de 3:1 que
+     pide WCAG 1.4.11 para elementos de interfaz. El manual ya habia resuelto el
+     caso del TEXTO con --bb-lime-ink, pero la correccion nunca se propago a lo
+     no textual: el anillo de foco era invisible en tema claro sobre todas las
+     superficies. --bb-lime-ink es la eleccion correcta porque cumple 3:1 sobre
+     --bg, --surface, --surface-2 y ademas sobre el propio lima (3.83:1), que es
+     el caso que rompe cualquier otra opcion cuando el anillo cae sobre un boton
+     primario. */
+  --accent-ui:var(--bb-lime-ink);
   --accent-soft:rgba(178,234,54,.24);
   --glass:rgba(255,255,255,.72);
   --glass-rail:rgba(255,255,255,.62);
@@ -88,6 +113,11 @@ html[data-theme="light"]{
   --shadow-rail:0 18px 50px -18px rgba(11,10,7,.28);
   --overlay:rgba(24,24,22,.5);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.1);
+  /* El rojo de marca sobre fondo claro da 3.39:1: no llega a 4.5:1 y el texto
+     de error de formulario es exactamente lo que no puede fallar contraste.
+     #C22A31 da 6.09:1 sobre blanco y 5.83 sobre --surface. --bb-red se queda
+     para bordes, fondos y puntos, que solo necesitan 3:1. */
+  --danger-text:#C22A31;
 }
 
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
@@ -111,7 +141,7 @@ body{
   button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
   svg{ display:block; }
   ul{ list-style:none; }
-  :focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:4px; }
+  :focus-visible{ outline:2px solid var(--accent-ui); outline-offset:3px; border-radius:4px; }
 }
 
 /* ---------- Fondo animado (orbes) ---------- */
@@ -152,7 +182,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .field{ display:flex; flex-direction:column; gap:7px; margin-bottom:16px; }
 .field > label{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); }
 /* Los campos nativos se fueron a PrimeNG; su CSS vivía acá y ahora estorbaba. */
-.field__error{ color:var(--danger); font-size:var(--fs-sm); }
+.field__error{ color:var(--danger-text); font-size:var(--fs-sm); }
 /* Texto de apoyo persistente bajo un campo (no reemplaza a la etiqueta). */
 .field__hint{ color:var(--text-dim); font-size:var(--fs-xs); line-height:var(--lh-snug); }
 .field-inline{ display:flex; gap:12px; flex-wrap:wrap; }
@@ -238,7 +268,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* Encabezado ordenable: lo usan las tablas de usuarios y proyectos */
 .th-sort{ display:inline-flex; align-items:center; gap:6px; font:inherit; color:inherit; letter-spacing:inherit; text-transform:inherit; cursor:pointer; }
 .th-sort:hover{ color:var(--text); }
-.th-sort:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+.th-sort:focus-visible{ outline:2px solid var(--accent-ui); outline-offset:2px; border-radius:4px; }
 .th-sort__ind{ color:var(--accent-text); min-width:8px; font-variant-numeric:tabular-nums; }
 
 /* ---------- Modal ---------- */
@@ -761,7 +791,7 @@ html[data-theme="light"] .marca-fondo__txt{
   background: var(--surface-2);
   color: var(--text);
 }
-.p-button-text.p-button-danger:not(:disabled):hover { background: var(--danger-bg); color: var(--danger); }
+.p-button-text.p-button-danger:not(:disabled):hover { background: var(--danger-bg); color: var(--danger-text); }
 .p-button-outlined { border-color: var(--line-strong); color: var(--text-2); }
 .p-button-outlined:not(:disabled):hover { border-color: var(--line-strong); }
 

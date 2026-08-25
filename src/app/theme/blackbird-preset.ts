@@ -34,7 +34,7 @@ export const BlackbirdPreset = definePreset(Aura, {
     focusRing: {
       width: '2px',
       style: 'solid',
-      color: 'var(--accent)',
+      color: 'var(--accent-ui)',
       offset: '3px',
       shadow: 'none',
     },
@@ -46,7 +46,7 @@ export const BlackbirdPreset = definePreset(Aura, {
       paddingX: '14px',
       paddingY: '11px',
       borderRadius: 'var(--r-md)',
-      focusRing: { width: '2px', style: 'solid', color: 'var(--accent)', offset: '2px', shadow: 'none' },
+      focusRing: { width: '2px', style: 'solid', color: 'var(--accent-ui)', offset: '2px', shadow: 'none' },
       transitionDuration: 'var(--dur)',
     },
 
@@ -77,6 +77,9 @@ export const BlackbirdPreset = definePreset(Aura, {
 function esquema() {
   return {
     primary: {
+      // Lima puro a proposito: esto es un RELLENO, y su texto es --on-accent
+      // (obsidiana), que sobre lima da 13.87:1. El requisito de 3:1 de
+      // --accent-ui aplica al acento sobre el fondo de la pagina, no acá.
       color: 'var(--accent)',
       contrastColor: 'var(--on-accent)',
       hoverColor: 'var(--accent)',

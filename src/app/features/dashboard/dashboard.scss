@@ -83,7 +83,7 @@
   font-variant-numeric: tabular-nums;
 }
 .mini__q { font-size: var(--fs-xs); color: var(--text-dim); }
-.mini--mal .mini__n { color: var(--danger); }
+.mini--mal .mini__n { color: var(--danger-text); }
 .mini--atencion .mini__n { color: var(--bb-blue); }
 
 @media (max-width: 640px) {
@@ -118,7 +118,7 @@
   transition: border-color var(--dur-fast) var(--ease);
 }
 .kpi:hover { border-color: var(--line-strong); }
-.kpi:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kpi:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 2px; }
 
 .kpi__etiqueta {
   margin: 0;
@@ -154,7 +154,10 @@
 .kpi__delta--bien { color: var(--accent-text); }
 .kpi__delta--atencion { color: var(--bb-blue); }
 
-.kpi__spark { margin-top: var(--sp-2); color: var(--accent); }
+/* --accent-ui y no --accent: el sparkline transmite informacion (la tendencia),
+   no es decoracion, asi que le aplica el minimo de 3:1 de WCAG 1.4.11. El lima
+   puro daba 1.37:1 sobre la superficie clara — literalmente invisible. */
+.kpi__spark { margin-top: var(--sp-2); color: var(--accent-ui); }
 
 .kpi--esq { gap: var(--sp-2); }
 

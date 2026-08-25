@@ -135,7 +135,7 @@
 .rail__item:hover { color: var(--text); }
 .rail__item:hover svg { transform: scale(1.12); }
 .rail__item:active { transform: scale(0.94); }
-.rail__item:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.rail__item:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 3px; }
 
 /* Sobre el lime, el icono va en obsidiana: 11:1 de contraste */
 .rail__item.on,
@@ -143,7 +143,7 @@
 
 /* Las utilidades no tienen indicador deslizante: marcan su estado al pasar */
 .rail__item--btn:hover { background: var(--surface-2); }
-.rail__item--salir:hover { color: var(--danger); }
+.rail__item--salir:hover { color: var(--danger-text); }
 
 /* Perfil: el avatar es el propio botón */
 .rail__perfil { overflow: hidden; }

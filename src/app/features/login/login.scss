@@ -154,7 +154,7 @@
   transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
 }
 .acceso__link:hover { color: var(--text); text-decoration-color: var(--accent); }
-.acceso__link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.acceso__link:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 3px; border-radius: 4px; }
 
 .acceso__pie {
   position: relative;

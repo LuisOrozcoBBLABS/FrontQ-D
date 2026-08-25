@@ -26,7 +26,7 @@
 }
 
 .tarjeta:hover { border-color: var(--line-strong); transform: translateY(-1px); }
-.tarjeta:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tarjeta:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 2px; }
 .tarjeta:active { cursor: grabbing; }
 
 /* Seleccionada = su detalle está abierto en el panel. */
@@ -131,7 +131,7 @@
 .tiempo svg { width: 12px; height: 12px; }
 .tiempo .mono { font-family: var(--font-mono); font-weight: 700; font-variant-numeric: tabular-nums; }
 .tiempo__que { color: var(--text-dim); }
-.tiempo--alerta { color: var(--danger); }
+.tiempo--alerta { color: var(--danger-text); }
 .tiempo--total { color: var(--text-dim); }
 
 .tarjeta__inicio { margin-left: auto; color: var(--text-dim); }
@@ -161,7 +161,7 @@
   text-transform: uppercase;
   color: var(--text-2);
 }
-.prio-pin--urgente { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+.prio-pin--urgente { border-color: var(--danger); color: var(--danger-text); background: var(--danger-bg); }
 .prio-pin--alta { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
 .prio-pin--media { border-color: var(--line-strong); }
 .prio-pin--baja { opacity: .75; }

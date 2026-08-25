@@ -80,7 +80,7 @@
 
 /* Solo se tiñe cuando hay algo que mirar: un cero en rojo es ruido. */
 .res--mal { border-color: var(--danger); }
-.res--mal .res__n { color: var(--danger); }
+.res--mal .res__n { color: var(--danger-text); }
 
 /* ---------- Barra de filtros ---------- */
 .filtros {
@@ -114,7 +114,7 @@
 }
 .chip-btn svg { width: 15px; height: 15px; }
 .chip-btn:hover { border-color: var(--line-strong); color: var(--text); }
-.chip-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chip-btn:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 2px; }
 
 /* Activo por forma y por color: el borde de acento más el relleno suave. */
 .chip-btn--on {
@@ -182,7 +182,7 @@
   cursor: pointer;
 }
 .pastilla svg { width: 11px; height: 11px; }
-.pastilla:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pastilla:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 2px; }
 
 .pastilla--limpiar {
   border-color: var(--line);

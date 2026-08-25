@@ -57,7 +57,7 @@
   margin-top: var(--sp-2);
   font-size: var(--fs-2xs);
   font-weight: 600;
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 /* Modal de restablecimiento */
@@ -136,11 +136,11 @@
   transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 .mu__orden-btn:hover { border-color: var(--line-strong); color: var(--text); }
-.mu__orden-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.mu__orden-btn:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 1px; }
 
 .mu__filas { overflow-y: auto; overscroll-behavior: contain; min-height: 0; max-height: min(58dvh, 560px); }
 .mu__filas:focus { outline: none; }
-.mu__filas:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.mu__filas:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: -2px; }
 
 .mu__fila {
   display: grid;
@@ -159,7 +159,7 @@
   transition: background var(--dur-fast) var(--ease);
 }
 .mu__fila:hover { background: var(--surface-2); }
-.mu__fila:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.mu__fila:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: -2px; }
 
 /* La seleccion se marca con el filo de acento: se distingue del hover incluso
    en escala de grises, que el color de fondo por si solo no logra. */

@@ -59,7 +59,7 @@
 .fila__link { color: inherit; font-weight: 600; }
 .fila__link:hover { color: var(--accent-text); }
 
-.plazo--alerta { color: var(--danger); font-weight: 600; }
+.plazo--alerta { color: var(--danger-text); font-weight: 600; }
 .plazo__icono { display: inline-block; width: 13px; height: 13px; vertical-align: -2px; margin-right: 4px; }
 
 .cerrada {
@@ -152,7 +152,7 @@
 .kard__proyecto:hover { color: var(--accent-text); }
 .kard__nota { font-size: 12.5px; color: var(--text-2); line-height: var(--lh-snug); }
 .kard__plazo { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-dim); }
-.kard__plazo--alerta { color: var(--danger); }
+.kard__plazo--alerta { color: var(--danger-text); }
 .kard__pie { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
 .kard__acciones { display: flex; align-items: center; gap: 6px; }
 .kard__b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: var(--r-sm); border: 1px solid var(--line); color: var(--text-dim); transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease); }
