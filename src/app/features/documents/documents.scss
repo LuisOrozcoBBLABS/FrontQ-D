@@ -89,8 +89,8 @@
 .proximo__pill {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 7px 16px;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
   border: 1px solid var(--glass-line);
   border-radius: var(--r-full);
   background: var(--glass);
@@ -161,7 +161,7 @@
   font-size: 14.5px;
   font-weight: 600;
   color: var(--text);
-  margin: 8px 0 6px;
+  margin: var(--sp-2) 0 var(--sp-2);
 }
 .proximo__paso-x {
   font-size: 13px;

@@ -5,9 +5,15 @@
    ============================================================= */
 
 :host {
-  --item: 46px; // área táctil mínima
-  --gap: 6px;
-  --pad: 7px;
+  /* 48 y no 46, por dos razones que apuntan al mismo número.
+     La primera: styles.scss declara --rail-w:64px y lo describe como "diámetro
+     del dock", pero el diámetro real era --item + --pad*2 = 46 + 14 = 60. El
+     token mentía por 4px, y --rail-clear y el padding móvil se calculan sobre
+     él. Con 48 + 8*2 = 64 el token pasa a decir la verdad.
+     La segunda: 46 quedaba por debajo del objetivo táctil de 48px. */
+  --item: var(--ctl-lg); // 48px: objetivo táctil, y hace honesto a --rail-w
+  --gap: var(--sp-2);
+  --pad: var(--sp-2);
 }
 
 .rail {
@@ -173,7 +179,7 @@
   right: 3px;
   min-width: 17px;
   height: 17px;
-  padding: 0 4px;
+  padding: 0 var(--sp-1);
   display: grid;
   place-items: center;
   border-radius: var(--r-full);
@@ -191,7 +197,7 @@
   position: absolute;
   left: calc(100% + 12px);
   top: 50%;
-  padding: 7px 13px;
+  padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-full);
   color: var(--text);
   font-family: var(--font-display);
@@ -215,6 +221,7 @@
 .rail__tip--doble {
   display: flex;
   flex-direction: column;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 1px entre nombre y rol del tooltip: ajuste tipografico */
   gap: 1px;
   border-radius: var(--r-md);
   text-align: left;
@@ -257,7 +264,7 @@
 .avisos__item {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--sp-1);
   width: 100%;
   text-align: left;
   padding: var(--sp-3);
@@ -274,7 +281,7 @@
 .avisos__accion {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-1);
   margin-top: var(--sp-2);
   font-family: var(--font-display);
   font-size: var(--fs-2xs);
@@ -289,7 +296,10 @@
 
 /* ---------- Ventanas bajas: apretar un poco ---------- */
 @media (max-height: 780px) {
-  :host { --item: 40px; --gap: 4px; --pad: 6px; }
+  /* --item se queda en 40px: es un tamano de control, no ritmo, y achicar el
+     objetivo tactil justo en las pantallas chicas seria al reves. El aire
+     alrededor si baja al paso mas chico de la escala. */
+  :host { --item: 40px; --gap: var(--sp-1); --pad: var(--sp-1); }
   .rail__item svg { width: 18px; height: 18px; }
   .rail__ini { width: 28px; height: 28px; font-size: 10px; }
 }
@@ -336,7 +346,10 @@
 }
 
 @media (max-width: 480px) {
-  :host { --item: 40px; --gap: 3px; --pad: 5px; }
+  /* --item se queda en 40px: es un tamano de control, no ritmo, y achicar el
+     objetivo tactil justo en las pantallas chicas seria al reves. El aire
+     alrededor si baja al paso mas chico de la escala. */
+  :host { --item: 40px; --gap: var(--sp-1); --pad: var(--sp-1); }
   .rail { gap: var(--sp-1); }
   .rail__item svg { width: 18px; height: 18px; }
 }

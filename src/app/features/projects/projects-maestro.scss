@@ -60,7 +60,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  padding: 4px 10px;
+  padding: var(--sp-1) var(--sp-3);
   border: 1px solid var(--accent);
   border-radius: var(--r-full);
   background: var(--accent-soft);
@@ -121,7 +121,7 @@
 .mp__orden { margin-left: auto; display: flex; gap: var(--sp-1); }
 
 .mp__orden-btn {
-  padding: 3px 9px;
+  padding: var(--sp-1) var(--sp-2);
   border: 1px solid var(--line);
   border-radius: var(--r-full);
   background: transparent;
@@ -176,6 +176,7 @@
 .mp__fila--sel .mp__filo { background: var(--accent); }
 .mp__fila--sel .mp__fila-n { font-weight: 700; }
 
+/* stylelint-disable-next-line declaration-property-value-disallowed-list -- 1px entre lineas de la fila: ajuste tipografico */
 .mp__fila-txt { min-width: 0; display: grid; gap: 1px; padding: var(--sp-3) 0; }
 
 .mp__fila-n {

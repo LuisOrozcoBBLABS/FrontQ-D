@@ -1,20 +1,16 @@
 .perm-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 10px;
+  gap: var(--sp-3);
 }
 .check--base {
   opacity: 0.7;
   cursor: default;
 }
-.modal__foot {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line);
-}
+/* .modal__foot vivia acá como copia literal de la regla global de styles.scss.
+   Angular encapsula los estilos de componente, asi que no pisaba nada: solo
+   duplicaba bytes y creaba un segundo lugar donde el pie de modal podia
+   desviarse. Se borra; la global aplica igual. */
 
 /* =============================================================
    Pedidos de restablecimiento de contrasena
@@ -41,7 +37,7 @@
   place-items: center;
   min-width: 22px;
   height: 21px;
-  padding: 0 6px;
+  padding: 0 var(--sp-2);
   border-radius: var(--r-full);
   background: var(--accent);
   color: var(--on-accent);
@@ -124,7 +120,7 @@
 .mu__orden { margin-left: auto; display: flex; gap: var(--sp-1); }
 
 .mu__orden-btn {
-  padding: 3px 9px;
+  padding: var(--sp-1) var(--sp-2);
   border: 1px solid var(--line);
   border-radius: var(--r-full);
   background: transparent;
@@ -173,6 +169,7 @@
 .mu__fila--inactiva .mu__fila-n,
 .mu__fila--inactiva .mu__fila-sub { opacity: .55; }
 
+/* stylelint-disable-next-line declaration-property-value-disallowed-list -- 1px entre lineas de la fila: ajuste tipografico */
 .mu__fila-txt { min-width: 0; display: grid; gap: 1px; padding: var(--sp-2) 0; }
 
 .mu__fila-n {
@@ -257,6 +254,7 @@
 }
 
 .ficha__mail { margin: 0; font-size: var(--fs-xs); color: var(--text-dim); }
+/* stylelint-disable-next-line declaration-property-value-disallowed-list -- 2px de ajuste optico bajo el titulo */
 .ficha__tags { display: flex; gap: var(--sp-2); margin-top: 2px; }
 
 .ficha__datos { margin: 0; display: grid; gap: var(--sp-2); }
@@ -300,7 +298,7 @@
 /* Los del rol y los extras se distinguen por forma, no solo por color: el
    contorno lleno es del rol, el de acento es un extra dado a esa persona. */
 .perm {
-  padding: 3px 10px;
+  padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-full);
   font-size: var(--fs-2xs);
   font-weight: 600;

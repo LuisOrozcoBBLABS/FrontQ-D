@@ -127,7 +127,7 @@
   color: var(--text-2);
 }
 
-.tiempo { display: inline-flex; align-items: center; gap: 4px; }
+.tiempo { display: inline-flex; align-items: center; gap: var(--sp-1); }
 .tiempo svg { width: 12px; height: 12px; }
 .tiempo .mono { font-family: var(--font-mono); font-weight: 700; font-variant-numeric: tabular-nums; }
 .tiempo__que { color: var(--text-dim); }
@@ -152,7 +152,8 @@
 /* Prioridad de la asignación propia. Ocupa el lugar del sector: en el tablero
    de lo que tengo a cargo, la prioridad manda más que el rubro. */
 .prio-pin {
-  padding: 1px 8px;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- pastilla diminuta: 4px vertical la engordaria un 40% */
+  padding: 1px var(--sp-2);
   border-radius: var(--r-full);
   border: 1px solid var(--line);
   font-size: 9px;

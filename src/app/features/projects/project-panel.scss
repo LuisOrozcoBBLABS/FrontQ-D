@@ -72,7 +72,7 @@
 
 .panel__etapa {
   justify-self: start;
-  padding: 3px 10px;
+  padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-full);
   border: 1px solid var(--line);
   background: var(--surface-2);
@@ -99,6 +99,7 @@
 }
 
 .panel__meta { margin: 0; font-size: var(--fs-xs); color: var(--text-2); }
+/* stylelint-disable-next-line declaration-property-value-disallowed-list -- separador tipografico, no ritmo de layout */
 .panel__sep { color: var(--text-dim); margin: 0 2px; }
 
 .panel__x {
@@ -148,6 +149,7 @@
 
 .cifra {
   display: grid;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 1-2px entre cifra y etiqueta: ajuste tipografico */
   gap: 2px;
   padding: var(--sp-3);
   border: 1px solid var(--line);
@@ -229,7 +231,11 @@
   flex: none;
   width: 9px;
   height: 9px;
-  margin-top: 5px;
+  /* 5px NO es ritmo: centra ópticamente un punto de 9px contra la primera
+     línea del texto de al lado. Redondearlo al paso de 4 lo descuadra, y el
+     hilo que une los puntos (::before, top:14px) se calcula contra esta
+     posición. Es una excepción documentada, no una deuda. */
+  margin-top: 5px; /* stylelint-disable-line declaration-property-value-disallowed-list -- corrección óptica */
   border-radius: var(--r-full);
   background: var(--surface);
   border: 2px solid var(--line-strong);
@@ -237,6 +243,7 @@
 
 .linea__it--hoy .linea__punto { background: var(--accent); border-color: var(--accent); }
 
+/* stylelint-disable-next-line declaration-property-value-disallowed-list -- 1-2px entre lineas de texto: ajuste tipografico */
 .linea__cuerpo { display: grid; gap: 2px; min-width: 0; }
 
 .linea__et {
@@ -248,7 +255,8 @@
 }
 
 .linea__ahora {
-  padding: 1px 7px;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- pastilla diminuta: 4px vertical la engordaria un 40% */
+  padding: 1px var(--sp-2);
   border-radius: var(--r-full);
   background: var(--accent-soft);
   color: var(--accent-text);
@@ -260,7 +268,7 @@
 
 .linea__d { font-size: var(--fs-xs); color: var(--text-dim); }
 .linea__d .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.linea__sep { margin: 0 4px; }
+.linea__sep { margin: 0 var(--sp-1); }
 
 /* ---------- Similares y pie ---------- */
 .similares { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); font-size: var(--fs-sm); }

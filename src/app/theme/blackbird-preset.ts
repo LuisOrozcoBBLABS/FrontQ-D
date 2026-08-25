@@ -43,25 +43,33 @@ export const BlackbirdPreset = definePreset(Aura, {
     anchorGutter: '4px',
 
     formField: {
-      paddingX: '14px',
-      paddingY: '11px',
+      // Alineado con el `.p-inputtext { padding: var(--sp-3) var(--sp-4) }` de
+      // styles.scss. Antes el preset decía 11px y styles.scss 12px, pero
+      // styles.scss solo pisa a los inputs de texto: .p-multiselect-label,
+      // .p-inputnumber, .p-autocomplete, .p-inputmask y .p-password se quedaban
+      // con el valor del preset. O sea que un p-select y un p-multiselect uno al
+      // lado del otro tenían un pixel de diferencia de alto — visible, y de esa
+      // clase de cosa que se siente mal sin poder nombrarla.
+      paddingX: 'var(--sp-4)',
+      paddingY: 'var(--sp-3)',
       borderRadius: 'var(--r-md)',
       focusRing: { width: '2px', style: 'solid', color: 'var(--accent-ui)', offset: '2px', shadow: 'none' },
       transitionDuration: 'var(--dur)',
     },
 
+    // Los overlays de select y multiselect: mismo ritmo de 4pt que el resto.
     list: {
-      padding: '6px',
-      gap: '2px',
-      option: { padding: '9px 12px', borderRadius: 'var(--r-sm)' },
-      optionGroup: { padding: '8px 12px', fontWeight: '600' },
+      padding: 'var(--sp-1)',
+      gap: '0',
+      option: { padding: 'var(--sp-2) var(--sp-3)', borderRadius: 'var(--r-sm)' },
+      optionGroup: { padding: 'var(--sp-2) var(--sp-3)', fontWeight: '600' },
     },
 
     content: { borderRadius: 'var(--r-md)' },
     mask: { transitionDuration: 'var(--dur-slow)' },
     navigation: {
-      list: { padding: '6px', gap: '2px' },
-      item: { padding: '9px 12px', borderRadius: 'var(--r-sm)', gap: '9px' },
+      list: { padding: 'var(--sp-1)', gap: '0' },
+      item: { padding: 'var(--sp-2) var(--sp-3)', borderRadius: 'var(--r-sm)', gap: 'var(--sp-2)' },
     },
 
     // Un solo juego de valores para los dos esquemas: las variables de

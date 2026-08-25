@@ -1,0 +1,51 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "ignoreFiles": ["node_modules/**", "dist/**", ".angular/**", ".design-opciones/**"],
+
+  "rules": {
+    "declaration-property-value-disallowed-list": [
+      {
+        "/^(padding|margin|gap|row-gap|column-gap)/": [
+          "/(?:^|[^\\w.$-])-?(?:[1-9]\\d*(?:\\.\\d+)?|0?\\.\\d+)px\\b/",
+          "/(?:^|[^\\w.$-])-?(?:[1-9]\\d*(?:\\.\\d+)?|0?\\.\\d+)r?em\\b/"
+        ]
+      },
+      {
+        "message": "Espaciado con unidad cruda. Usá la escala de 4pt: var(--sp-1) … var(--sp-16). Se permiten 0 y las funciones (calc/clamp/env) construidas sobre tokens. Si es una corrección óptica y no ritmo, dejalo con un stylelint-disable-line que diga por qué.",
+        "severity": "error"
+      }
+    ],
+
+    "selector-disallowed-list": [
+      ["/^(a|button|input|select|textarea|label|table|tr|th|td|ul|ol|li|svg|dialog|form|fieldset|option)(:[a-z-]+(\\([^)]*\\))?)*$/"],
+      {
+        "splitList": true,
+        "message": "Selector de elemento sin capa: le gana a TODA la capa `primeng` sin importar la especificidad. Un `button { background: none }` fuera de capa ya dejó una vez a todos los .p-button sin fondo. Si es un reset, va dentro de @layer base con un stylelint-disable-next-line que lo diga.",
+        "severity": "error"
+      }
+    ],
+
+    "no-duplicate-selectors": [true, { "disallowInList": true }],
+
+    "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["host", "host-context", "ng-deep"] }],
+    "selector-pseudo-element-no-unknown": [
+      true,
+      { "ignorePseudoElements": ["ng-deep", "view-transition-old", "view-transition-new"] }
+    ],
+
+    "selector-class-pattern": null,
+    "no-descending-specificity": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "alpha-value-notation": null,
+    "color-function-notation": null,
+    "media-feature-range-notation": null,
+    "value-keyword-case": null,
+    "custom-property-empty-line-before": null,
+    "declaration-empty-line-before": null,
+    "comment-empty-line-before": null,
+    "rule-empty-line-before": null,
+    "at-rule-empty-line-before": null,
+    "scss/comment-no-empty": null,
+    "scss/double-slash-comment-empty-line-before": null
+  }
+}
