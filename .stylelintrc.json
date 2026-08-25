@@ -28,9 +28,9 @@
     "no-duplicate-selectors": [
       true,
       {
-        "disallowInList": true,
-        "message": "Selector declarado dos veces. Suele ser un override progresivo deliberado, pero también es como se cuela un literal en una regla que otra ya había tokenizado (el caso de .table__actions). Revisar y, si es a propósito, dejarlo dicho.",
-        "severity": "warning"
+        "disallowInList": false,
+        "message": "Selector declarado dos veces. Así se cuela una contradicción silenciosa: dos reglas de la misma especificidad discutiendo la misma propiedad, donde gana la última y la otra queda como letra muerta que igual se lee. Pasó con .table__actions, .check y .table__min. Si la repetición es deliberada, dejalo dicho con un stylelint-disable-next-line que explique por qué.",
+        "severity": "error"
       }
     ],
 

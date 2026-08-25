@@ -264,7 +264,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* El interruptor es <p-toggleswitch>. */
 
 /* Checkbox (permisos) */
-.check{ display:flex; align-items:flex-start; gap: var(--sp-3); padding: var(--sp-3) var(--sp-3); border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer; transition:border-color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
+.check{ display:flex; align-items:center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-3); border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer; transition:border-color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
 .check:hover{ border-color:var(--line-strong); background:var(--surface-2); }
 .check input:checked + .check input:checked + .check__meta{ min-width:0; }
 .check__meta b{ font-weight:500; font-size:14.5px; }
@@ -315,7 +315,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .table--compacta td{ padding: var(--sp-3) var(--sp-4); }
 .table__num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .table__min{ width:1%; white-space:nowrap; }
-.table__actions{ display:flex; gap: var(--sp-2); justify-content:flex-end; flex-wrap:wrap; }
+.table__actions{ display:flex; align-items:center; gap: var(--sp-2); justify-content:flex-end; flex-wrap:nowrap; }
 .table__vacia{ padding: var(--sp-10) var(--sp-4); text-align:center; color:var(--text-dim); font-size:var(--fs-sm); }
 .table__vacia b{ display:block; color:var(--text); font-weight:600; margin-bottom: var(--sp-1); }
 
@@ -349,6 +349,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .modal__panel{ position:relative; z-index:1; width:min(94vw,560px); max-height:90dvh; overflow-y:auto; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-lg); box-shadow:var(--shadow-lg); padding: var(--sp-6); animation:pop var(--dur-slow) var(--ease) both; }
 @keyframes pop{ from{opacity:0; transform:scale(.94) translateY(20px);} to{opacity:1; transform:none;} }
 /* El fondo entra con el panel: sin esto el desenfoque aparece de golpe. */
+/* stylelint-disable-next-line no-duplicate-selectors -- la animacion vive con las demas animaciones, no con la geometria del modal */
 .modal__backdrop{ animation:fundido var(--dur) var(--ease-out) both; }
 @keyframes fundido{ from{opacity:0;} to{opacity:1;} }
 .modal__head{ display:flex; align-items:flex-start; justify-content:space-between; gap: var(--sp-4); margin-bottom: var(--sp-5); }
@@ -361,6 +362,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* ---------- Layout de la app ----------
    El dock de módulos flota fijo a la izquierda (app-nav-rail), así que el
    contenido reserva ese carril. En móvil el dock baja y reserva altura abajo. */
+/* stylelint-disable-next-line no-duplicate-selectors -- token derivado, declarado junto a su unico consumidor y no en el bloque de arriba */
 :root{ --rail-clear:calc(var(--rail-w) + var(--rail-gap) * 2); }
 body:has(app-nav-rail){ padding-left: var(--rail-clear); }
 @media (max-width:900px){
@@ -472,6 +474,7 @@ html[data-theme="light"] .marca-fondo__txt{
 /* =============================================================
    15. PULIDO — transición de vista, prioridades, scrollbar
    ============================================================= */
+/* stylelint-disable-next-line no-duplicate-selectors -- la animacion de entrada vive en la seccion de movimiento, no en la de layout */
 .page{ animation:viewIn 380ms var(--ease) both; }
 @keyframes viewIn{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:none;} }
 
@@ -569,6 +572,7 @@ html[data-theme="light"] .marca-fondo__txt{
 
 /* Las filas de una tabla entran igual, pero más rápido: son muchas y el ojo
    las recorre en bloque. */
+/* stylelint-disable-next-line no-duplicate-selectors -- idem: la animacion de fila vive con las animaciones */
 .table tbody tr { animation: enterFila var(--dur) var(--ease-out) both; }
 @keyframes enterFila { from { opacity: 0; transform: translateY(6px); } }
 .table tbody tr:nth-child(1) { animation-delay: 20ms; }
@@ -718,8 +722,11 @@ html[data-theme="light"] .marca-fondo__txt{
 }
 .p-iconfield .p-inputicon { color: var(--text-dim); }
 
-/* ---------- Casillas dentro de .check ---------- */
-.check { align-items: center; }
+/* ---------- Casillas dentro de .check ----------
+   El `align-items: center` que vivia acá se movio a la regla de .check de mas
+   arriba: eran dos reglas de la misma especificidad discutiendo la misma
+   propiedad, asi que el flex-start declarado alla era letra muerta y nadie lo
+   sabia al leerlo. */
 .check .p-checkbox { flex: 0 0 auto; }
 .perm-grid .check__meta { min-width: 0; }
 
@@ -771,11 +778,10 @@ html[data-theme="light"] .marca-fondo__txt{
 .p-datatable-sm .p-datatable-tbody > tr > td { padding: var(--sp-3) var(--sp-4); }
 
 /* Celda de acciones: los botones no estiran la fila */
-/* Sin `gap`: la declaracion de arriba ya lo fija en var(--sp-2). Cuando esta
-   regla lo repetia en 6px reintroducia el literal que aquella habia tokenizado
-   —misma especificidad, gana la ultima— y nadie decidio esa diferencia. */
-.table__actions { display: flex; align-items: center; flex-wrap: nowrap; }
-.table__min { width: 1%; white-space: nowrap; }
+/* .table__actions y .table__min vivian tambien acá, repetidas. La primera
+   contradecia en silencio a su gemela de mas arriba —flex-wrap wrap contra
+   nowrap— y la segunda era una copia identica declaracion por declaracion.
+   Las dos quedan definidas una sola vez, arriba. */
 
 /* ---------- Paginador ---------- */
 .p-paginator { background: transparent; border: none; padding: var(--sp-4) 0 0; gap: var(--sp-1); }
@@ -864,12 +870,16 @@ html[data-theme="light"] .marca-fondo__txt{
   color: var(--text);
 }
 .p-button-text.p-button-danger:not(:disabled):hover { background: var(--danger-bg); color: var(--danger-text); }
+/* Sin regla de :hover para el borde. Habia una que fijaba var(--line-strong),
+   el mismo valor que esta: era defensiva contra el hover de PrimeNG, pero no
+   hace falta. Esta regla esta FUERA de capa y la de PrimeNG dentro, y lo no
+   capado gana sobre lo capado sin importar la especificidad. */
 .p-button-outlined { border-color: var(--line-strong); color: var(--text-2); }
-.p-button-outlined:not(:disabled):hover { border-color: var(--line-strong); }
 
 /* Las etiquetas seguían la paleta de PrimeNG (verde, naranja, azul). La
    plataforma nunca usó eso: sus estados son una pí­ldora con borde y un punto
    de color, con lima reservada para lo positivo. */
+/* stylelint-disable-next-line no-duplicate-selectors -- la tipografia de .p-tag se define arriba; acá va solo el color, que es lo que este comentario explica */
 .p-tag {
   background: transparent;
   border: 1px solid var(--line-strong);
@@ -898,6 +908,7 @@ html[data-theme="light"] .marca-fondo__txt{
 .p-tag:has(.p-tag-icon)::before { display: none; }
 
 /* El nombre de una persona no se parte en dos líneas. */
+/* stylelint-disable-next-line no-duplicate-selectors -- ajuste de tabla, junto a las demas reglas de tabla */
 .celda-persona { white-space: nowrap; }
 .p-datatable-tbody > tr > td .celda-persona { max-width: 100%; }
 

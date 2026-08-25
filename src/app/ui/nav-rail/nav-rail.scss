@@ -381,6 +381,7 @@
 /* El riel no cambia entre rutas: si entra en la foto de la transición de vista,
    se cruza consigo mismo y el indicador deja un fantasma en la posición
    anterior. Con nombre propio queda fuera de ese cruce y solo se desliza. */
+/* stylelint-disable-next-line no-duplicate-selectors -- el nombre de view-transition va con su comentario, que explica el fantasma que evita */
 .rail {
   view-transition-name: rail;
 }
