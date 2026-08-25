@@ -31,11 +31,11 @@
 }
 .rail > * { pointer-events: auto; }
 
-/* ---------- Cristal compartido ---------- */
+/* ---------- Cristal compartido ----------
+   Sin .avisos: ver el comentario largo en su propia regla. */
 .rail__marca,
 .rail__dock,
-.rail__tip,
-.avisos {
+.rail__tip {
   background: var(--glass-rail);
   backdrop-filter: blur(22px) saturate(180%);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
@@ -217,6 +217,13 @@
   opacity: 1;
   transform: translate(0, -50%) scale(1);
 }
+/* Con el panel de avisos abierto, el foco se queda en la campana, :focus-visible
+   sigue activo y su etiqueta quedaba encendida por detras del panel. Un boton
+   expandido ya se explica con el panel que abrio; la etiqueta sobra.
+   El unico item del riel con aria-expanded es ese, asi que la regla no toca a
+   los demas tooltips. Solo opacity: el transform lo resuelve la regla base, que
+   ademas cambia de origen en el breakpoint movil. */
+.rail__item[aria-expanded="true"] .rail__tip { opacity: 0; }
 /* La del perfil lleva nombre y rol en dos líneas */
 .rail__tip--doble {
   display: flex;
@@ -239,6 +246,25 @@
   width: min(330px, calc(100vw - var(--rail-w) - var(--rail-gap) * 4));
   border-radius: var(--r-lg);
   overflow: hidden;
+  /* OPACO, y por dos razones distintas.
+
+     La primera es que el cristal acá nunca funcionó. Este panel esta dentro de
+     .rail__dock--util, que tambien lleva backdrop-filter, y todo elemento con
+     backdrop-filter establece un Backdrop Root para sus descendientes: lo que
+     .avisos podia muestrear quedaba recortado a la caja de 64px del dock. Y el
+     panel se dibuja en left: calc(100% + 14px), entero fuera de esa caja. El
+     blur desenfocaba la nada y solo quedaba el color plano al 50% de alfa, con
+     la lista de atras leyendose atraves del texto.
+
+     La segunda es que aunque funcionara, no corresponde. Sobre fondo
+     semitransparente el contraste del texto no es un numero sino un rango:
+     depende de la pantalla que haya detras. El cristal es material para
+     superficies chicas y macizas —el dock, una etiqueta de una palabra—, no
+     para un panel con parrafos sobre una tabla densa. Mismo tratamiento que
+     .modal__panel, que ya resolvia este caso en el sistema. */
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-lg);
   animation: avisosIn var(--dur) var(--ease-spring) both;
 }
 @keyframes avisosIn {
@@ -275,7 +301,11 @@
 .avisos__item:hover { background: var(--surface-2); }
 .avisos__item b { color: var(--text); font-size: var(--fs-sm); font-weight: 600; }
 .avisos__item span { font-size: var(--fs-xs); line-height: var(--lh-snug); }
-.avisos__item--nuevo { border-left: 2px solid var(--accent); }
+/* El filo del acento va como sombra interior y no como borde: un border-left
+   ocupa lugar en el layout y desplazaba 2px el texto de los avisos sin leer
+   respecto de los leidos. Una sombra pinta en el mismo sitio sin empujar nada,
+   asi que las dos variantes quedan alineadas y no hay padding que compensar. */
+.avisos__item--nuevo { box-shadow: inset 2px 0 0 var(--accent); }
 
 /* Que va a pasar al hacer clic: el aviso lleva a resolverlo */
 .avisos__accion {
@@ -371,8 +401,7 @@
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .rail__marca,
   .rail__dock,
-  .rail__tip,
-  .avisos {
+  .rail__tip {
     background: var(--surface);
   }
 }

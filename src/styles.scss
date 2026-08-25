@@ -710,14 +710,42 @@ html[data-theme="light"] .marca-fondo__txt{
 .p-select-dropdown { width: 38px; color: var(--text-dim); }
 .p-textarea { line-height: var(--lh-base); }
 
-/* Buscador de la barra de filtros. */
+/* ---------- Campos con icono ----------
+   PrimeNG deja lugar al icono sangrando el texto con
+   `padding-inline-start: calc((form.field.padding.x * 2) + icon.size)`.
+   Pero esa regla vive DENTRO de la capa `primeng`, y el `.p-inputtext {
+   padding: ... }` de arriba está FUERA de capa: lo no capado gana sobre lo
+   capado sin importar especificidad, asi que le borraba el sangrado y el texto
+   arrancaba justo encima del icono.
+
+   El proyecto lo devolvia a mano, pero solo bajo `.filters` y `.barra`. De los
+   cuatro buscadores de la aplicacion, uno solo cae ahi: el de usuarios usa
+   `.filters`, el maestro de proyectos usa `.mp__acciones`, el tablero usa
+   `.filtros` —en español— y los campos de perfil usan `.field`. Tres de cuatro
+   se veian con el texto pisando el icono.
+
+   Esta regla restituye la formula de PrimeNG para TODOS los contextos, con los
+   mismos valores que el preset ya declara: --sp-4 es el padding horizontal que
+   el preset le pasa a formField, y --p-icon-size es el iconSize del propio
+   preset, asi que si cambia el tamano del icono el sangrado lo sigue solo. Cualquier campo con icono que se
+   agregue en el futuro queda cubierto sin tener que acordarse de nada. */
+.p-iconfield .p-inputtext:not(:first-child),
+.p-iconfield .p-inputwrapper:not(:first-child) .p-inputtext {
+  padding-inline-start: calc((var(--sp-4) * 2) + var(--p-icon-size));
+}
+.p-iconfield .p-inputtext:not(:last-child) {
+  padding-inline-end: calc((var(--sp-4) * 2) + var(--p-icon-size));
+}
+
+/* Buscador de la barra de filtros: solo la forma, el sangrado ya está arriba. */
 .filters .p-iconfield,
+.filtros .p-iconfield,
 .barra .p-iconfield { flex: 1 1 240px; min-width: 0; }
 .filters .p-iconfield .p-inputtext,
+.filtros .p-iconfield .p-inputtext,
 .barra .p-iconfield .p-inputtext {
   width: 100%;
   border-radius: var(--r-full);
-  padding-left: var(--sp-10);
   background: var(--surface);
 }
 .p-iconfield .p-inputicon { color: var(--text-dim); }
