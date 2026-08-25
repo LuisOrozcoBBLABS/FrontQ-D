@@ -161,6 +161,35 @@ body{
 }
 /* stylelint-enable selector-disallowed-list */
 
+/* ---------- Salto al contenido ----------
+   Escondido fuera de la pantalla hasta que recibe el foco, que es la unica
+   forma de que sirva sin ocupar lugar. Se mueve con transform y no con `top`
+   para que el navegador no recalcule layout, igual que el resto del sistema de
+   movimiento; el bloque de prefers-reduced-motion de mas abajo ya lo cubre. */
+.skip-link{
+  position:fixed; top:var(--sp-3); left:var(--sp-3); z-index:200;
+  padding:var(--sp-3) var(--sp-4);
+  border-radius:var(--r-full);
+  background:var(--surface); color:var(--text);
+  border:1px solid var(--line-strong);
+  box-shadow:var(--shadow);
+  font-size:var(--fs-sm); font-weight:600;
+  transform:translateY(-200%);
+  transition:transform var(--dur-fast) var(--ease);
+}
+/* `:focus` y no `:focus-visible`. A este enlace solo se llega con el teclado
+   —está fuera de la pantalla hasta que recibe el foco—, así que no hay ningún
+   caso de "foco por mouse" que evitar. Y `:focus-visible` depende de una
+   heurística del navegador que un focus() por código no dispara: con él, un
+   salto programático dejaba el enlace invisible mientras estaba enfocado. */
+.skip-link:focus{ transform:none; }
+
+/* El <main> se enfoca POR CODIGO al cambiar de ruta, no porque alguien haya
+   tabulado hasta el. Un anillo alrededor de toda la pagina en cada navegacion
+   seria ruido: la senal que hace falta es que el lector empiece a leer desde
+   ahi, y esa la da el foco, no el contorno. */
+#contenido:focus{ outline:none; }
+
 /* ---------- Fondo animado (orbes) ---------- */
 .bg{ position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none; }
 .bg__orb{ position:absolute; border-radius:50%; filter:blur(80px); will-change:transform; }
