@@ -1,0 +1,280 @@
+<div class="page page--tablero">
+  <!-- Instrucción del atajo. La apuntan las tarjetas movibles con
+       aria-describedby, asi que se lee una vez al enfocar la tarjeta y no en
+       cada pulsacion. -->
+  <p id="kb-ayuda-tablero" class="sr-only">
+    Usá Control más flecha izquierda o derecha para mover esta tarjeta de columna.
+  </p>
+  <!-- assertive y no polite: el movimiento de una tarjeta es el resultado de
+       una accion deliberada, y si el anuncio espera a que el lector termine lo
+       que estaba diciendo, llega despues de que la persona ya intento otra vez. -->
+  <p class="sr-only" role="status" aria-live="assertive">{{ anuncio() }}</p>
+
+  <!-- ======================= Encabezado ======================= -->
+  <header class="tab__head enter">
+    <div class="tab__enc">
+      <p class="eyebrow">Mi trabajo, de punta a punta</p>
+      <h1 class="tab__title">Proyectos a cargo</h1>
+    </div>
+
+    <div class="resumen">
+      <div class="res">
+        <span class="res__n mono">{{ aCargo() }}</span>
+        <span class="res__q">a cargo</span>
+      </div>
+      <div class="res">
+        <span class="res__n mono">{{ enCurso() }}</span>
+        <span class="res__q">en ejecución</span>
+      </div>
+      <div class="res" [class.res--mal]="demorados() > 0">
+        <span class="res__n mono">{{ demorados() }}</span>
+        <span class="res__q">demorados</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================= Filtros ======================= -->
+  <div class="filtros enter">
+    <div class="filtros__linea">
+      <p-iconfield class="filtro-buscar">
+        <p-inputicon styleClass="pi pi-search" />
+        <input
+          pInputText
+          type="text"
+          [ngModel]="query()"
+          (ngModelChange)="escribir($event)"
+          placeholder="Buscar por nombre, problema o solución"
+          aria-label="Buscar en mis proyectos"
+        />
+        @if (query()) {
+          <p-inputicon styleClass="pi pi-times filtro-buscar__x" (click)="quitar('q')" />
+        }
+      </p-iconfield>
+
+      <button
+        class="chip-btn"
+        type="button"
+        [class.chip-btn--on]="filtrosAbiertos()"
+        [attr.aria-expanded]="filtrosAbiertos()"
+        (click)="filtrosAbiertos.set(!filtrosAbiertos())"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        Filtros
+        @if (activos().length) { <span class="chip-btn__n mono">{{ activos().length }}</span> }
+      </button>
+
+      <button
+        class="chip-btn"
+        type="button"
+        [class.chip-btn--on]="vencidosF()"
+        (click)="vencidosF.set(!vencidosF())"
+      >
+        Plazo vencido
+      </button>
+
+      <button
+        class="chip-btn"
+        type="button"
+        [class.chip-btn--on]="demoradosF()"
+        (click)="demoradosF.set(!demoradosF())"
+      >
+        Demorados en su etapa
+      </button>
+    </div>
+
+    @if (filtrosAbiertos()) {
+      <div class="filtros__panel">
+        <label class="campo">
+          <span class="campo__t">Sector</span>
+          <p-select
+            [options]="opcionesSector"
+            [ngModel]="sectorF()"
+            (ngModelChange)="sectorF.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [fluid]="true"
+            size="small"
+          />
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Prioridad</span>
+          <p-select
+            [options]="opcionesPrioridad"
+            [ngModel]="prioridadF()"
+            (ngModelChange)="prioridadF.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [fluid]="true"
+            size="small"
+          />
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Estado de mi asignación</span>
+          <p-select
+            [options]="opcionesEstadoAsig"
+            [ngModel]="estadoAsigF()"
+            (ngModelChange)="estadoAsigF.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [fluid]="true"
+            size="small"
+          />
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Me lo asignó</span>
+          <p-select
+            [options]="opcionesJefe()"
+            [ngModel]="asignadoPorF()"
+            (ngModelChange)="asignadoPorF.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [fluid]="true"
+            size="small"
+          />
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Registrado desde</span>
+          <p-datepicker
+            [ngModel]="desdeComoDato()"
+            (ngModelChange)="fijarDesde($event)"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [showButtonBar]="true"
+            [fluid]="true"
+            size="small"
+          />
+        </label>
+
+        <label class="campo">
+          <span class="campo__t">Registrado hasta</span>
+          <p-datepicker
+            [ngModel]="hastaComoDato()"
+            (ngModelChange)="fijarHasta($event)"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            [showButtonBar]="true"
+            [fluid]="true"
+            size="small"
+          />
+        </label>
+      </div>
+    }
+
+    @if (hayFiltro()) {
+      <div class="pastillas">
+        @for (f of activos(); track f.clave) {
+          <button class="pastilla" type="button" (click)="quitar(f.clave)">
+            {{ f.etiqueta }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        }
+        <button class="pastilla pastilla--limpiar" type="button" (click)="limpiarTodo()">Limpiar todo</button>
+      </div>
+    }
+
+    @if (errorCarga()) {
+      <div class="alerta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
+        <span>{{ errorCarga() }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- ======================= Tablero ======================= -->
+  @if (vacio()) {
+    <div class="tab__vacio enter">
+      @if (hayFiltro()) {
+        <b>Nada coincide con el filtro</b>
+        <span>Con estos filtros no queda ningún proyecto a tu cargo.</span>
+        <p-button label="Limpiar el filtro" icon="pi pi-filter-slash" [text]="true" size="small" (onClick)="limpiarTodo()" />
+      } @else {
+        <b>Todavía no tenés proyectos a cargo</b>
+        <span>Cuando te asignen uno, aparece en la columna de la etapa en la que esté.</span>
+        <p-button label="Ver mis asignaciones" icon="pi pi-inbox" [outlined]="true" size="small" routerLink="/asignaciones" />
+      }
+    </div>
+  } @else {
+  <div class="pista enter" [style.--n]="etapas.length">
+    <!-- Banda de fases: agrupa las columnas del flujo. -->
+    <div class="fases" aria-hidden="true">
+      @for (f of fases; track f.id) {
+        <div class="fase" [class]="'fase fase--' + f.id" [style.--cols]="columnasDeFase(f.id)">
+          <span>{{ f.titulo }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="tablero" cdkDropListGroup>
+      @for (e of etapas; track e.value) {
+        <section class="col" [class]="'col fase-' + e.fase">
+          <header class="col__head">
+            <h2 class="col__t">{{ e.columna }}</h2>
+            <span class="col__n mono">{{ total(e.value) }}</span>
+          </header>
+
+          <div
+            class="col__lista"
+            cdkDropList
+            [id]="idColumna(e)"
+            [cdkDropListData]="e.value"
+            (cdkDropListDropped)="soltar($event)"
+          >
+            @if (cargando() && !columna(e.value).length) {
+              @for (i of [1, 2]; track i) { <div class="esq-tarjeta"></div> }
+            }
+
+            @for (p of columna(e.value); track p.id) {
+              <div
+                cdkDrag
+                [cdkDragData]="p"
+                [cdkDragDisabled]="!puedeMover(p)"
+                class="arrastrable"
+                [class.arrastrable--guardando]="moviendo() === p.id"
+              >
+                <app-project-card
+                  [proyecto]="p"
+                  [movible]="puedeMover(p)"
+                  [seleccionada]="abierta()?.id === p.id"
+                  [prioridad]="prioridadDe(p)"
+                  (abrir)="abrir($event)"
+                  (mover)="moverPorTeclado(p, $event)"
+                />
+                <div class="hueco" *cdkDragPlaceholder></div>
+              </div>
+            }
+
+            @if (!cargando() && !columna(e.value).length) {
+              <p class="col__vacia">Sin proyectos</p>
+            }
+          </div>
+
+          @if (faltan(e.value) > 0) {
+            <button
+              class="col__mas"
+              type="button"
+              [disabled]="cargandoColumna(e.value)"
+              (click)="cargarMas(e.value)"
+            >
+              {{ cargandoColumna(e.value) ? 'Trayendo…' : 'Ver ' + faltan(e.value) + ' más' }}
+            </button>
+          }
+        </section>
+      }
+    </div>
+  </div>
+  }
+</div>
+
+@if (abierta(); as sel) {
+  <app-project-panel
+    [resumen]="sel"
+    [puedeMoverEtapa]="puedeMover(sel)"
+    (moverA)="mover(sel, $event)"
+    (cerrar)="cerrarPanel()"
+    (eliminado)="cerrarPanel()"
+  />
+}

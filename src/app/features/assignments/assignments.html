@@ -24,7 +24,11 @@
     <header class="bloque__head">
       <h2 class="bloque__t">
         Mis asignaciones
-        <span class="bloque__n mono">{{ mias().length }}</span>
+        <!-- Abiertas sobre total. Antes la pastilla mostraba solo el total y quedaba
+             al lado de una bajada que decia las abiertas: dos numeros distintos
+             pegados, sin nada que dijera que contaba cada uno. -->
+        <span class="bloque__n mono" aria-hidden="true">{{ pendientesDeMias() }}/{{ mias().length }}</span>
+        <span class="sr-only">{{ pendientesDeMias() }} abiertas de {{ mias().length }} en total</span>
       </h2>
       <div class="vista">
         <p class="bloque__nota">
@@ -34,18 +38,19 @@
             El botón de la última columna es el único paso que el servidor acepta desde el estado actual.
           }
         </p>
-        <div class="segmento" role="group" aria-label="Forma de ver las asignaciones">
-          <button class="segmento__b" type="button" [class.segmento__b--on]="vista() === 'tabla'"
-                  [attr.aria-pressed]="vista() === 'tabla'" (click)="cambiarVista('tabla')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
-            Tabla
-          </button>
-          <button class="segmento__b" type="button" [class.segmento__b--on]="vista() === 'tablero'"
-                  [attr.aria-pressed]="vista() === 'tablero'" (click)="cambiarVista('tablero')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.2"/><rect x="9.5" y="4" width="5" height="11" rx="1.2"/><rect x="16" y="4" width="5" height="14" rx="1.2"/></svg>
-            Tablero
-          </button>
-        </div>
+        <p-selectbutton
+          [options]="opcionesVista"
+          [ngModel]="vista()"
+          (ngModelChange)="cambiarVista($event)"
+          optionLabel="label"
+          optionValue="value"
+          [allowEmpty]="false"
+        >
+          <ng-template #item let-opcion>
+            <i [class]="opcion.icono"></i>
+            <span>{{ opcion.label }}</span>
+          </ng-template>
+        </p-selectbutton>
       </div>
     </header>
 
@@ -80,7 +85,7 @@
                   (dragend)="alTerminarArrastre()"
                 >
                   <div class="kard__top">
-                    <span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span>
+                    <p-tag [value]="prioridadLabel(a.prioridad)" [severity]="severidadPrioridad(a.prioridad)" [rounded]="true" />
                     @if (vencida(a)) {
                       <svg class="kard__alerta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Vencida"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
                     }
@@ -105,10 +110,8 @@
                         </button>
                       }
                       @if (siguientePaso(a); as paso) {
-                        <button class="btn btn--primary btn--sm" type="button"
-                                [disabled]="moviendo() === a.id" (click)="mover(a, paso.estado)">
-                          {{ moviendo() === a.id ? 'Guardando…' : paso.verbo }}
-                        </button>
+                        <p-button [label]="paso.verbo" size="small" [loading]="moviendo() === a.id"
+                                  (onClick)="mover(a, paso.estado)" />
                       }
                     </div>
                   </footer>
@@ -122,82 +125,73 @@
       </div>
     } @else {
       <div class="table-wrap">
-        <div class="table-scroll">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Proyecto</th>
-                <th>Prioridad</th>
-                <th>Estado</th>
-                <th>Plazo</th>
-                <th>Asignó</th>
-                <th class="table__min">Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (cargando() && !mias().length) {
-                @for (i of [1, 2, 3]; track i) {
-                  <tr>
-                    @for (c of [1, 2, 3, 4, 5, 6]; track c) { <td><span class="esq"></span></td> }
-                  </tr>
+        <!-- [lazy] no es por paginacion: es para que p-table no ordene la porcion
+             visible. El orden se aplica al conjunto completo en el componente y
+             despues se corta la pagina. -->
+        <p-table
+          [value]="miasPagina()"
+          [loading]="cargando() && !mias().length"
+          styleClass="p-datatable-sm"
+          [tableStyle]="{ 'min-width': '900px' }"
+          [rowHover]="true"
+          dataKey="id"
+          [scrollable]="true"
+          scrollHeight="min(56dvh, 560px)"
+          [lazy]="true"
+          (onSort)="ordenarMias($event)"
+        >
+          <ng-template #header>
+            <tr>
+              <th pSortableColumn="proyecto">Proyecto <p-sortIcon field="proyecto" /></th>
+              <th pSortableColumn="prioridad">Prioridad <p-sortIcon field="prioridad" /></th>
+              <th pSortableColumn="estado">Estado <p-sortIcon field="estado" /></th>
+              <th class="col-plazo" pSortableColumn="plazo">Plazo <p-sortIcon field="plazo" /></th>
+              <th pSortableColumn="asignadoPor">Asignó <p-sortIcon field="asignadoPor" /></th>
+              <th class="col-acciones">Acción</th>
+            </tr>
+          </ng-template>
+
+          <ng-template #body let-a>
+            <tr [class.destacada]="destacada() === a.id" [attr.id]="'asg-' + a.id">
+              <td>
+                <a class="fila__link" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a>
+                @if (a.nota) { <span class="celda-sub">{{ recorte(a.nota) }}</span> }
+              </td>
+              <td><p-tag [value]="prioridadLabel(a.prioridad)" [severity]="severidadPrioridad(a.prioridad)" [rounded]="true" /></td>
+              <td><p-tag [value]="estadoLabel(a.estado)" [severity]="severidadEstado(a.estado)" /></td>
+              <td class="col-plazo" [class.plazo--alerta]="vencida(a)">
+                @if (vencida(a)) { <i class="pi pi-exclamation-circle plazo__icono"></i> }
+                {{ plazo(a.fechaLimite) }}
+              </td>
+              <td>
+                <span class="celda-persona">
+                  <span class="celda-ini" aria-hidden="true">{{ iniciales(asignadoPor(a)) }}</span>
+                  {{ asignadoPor(a) }}
+                </span>
+              </td>
+              <td class="col-acciones">
+                @if (siguientePaso(a); as paso) {
+                  <p-button [label]="paso.verbo" size="small" [loading]="moviendo() === a.id" (onClick)="avanzar(a)" />
+                } @else if (retroceso(a); as atras) {
+                  <span class="cerrada-fila">
+                    <p-tag value="Cerrada" severity="success" icon="pi pi-check" />
+                    <p-button label="Reabrir" icon="pi pi-replay" size="small" [outlined]="true"
+                              [loading]="moviendo() === a.id" (onClick)="mover(a, atras)" />
+                  </span>
                 }
-              } @else {
-                @for (a of miasPagina(); track a.id) {
-                  <tr [class.destacada]="destacada() === a.id" [attr.id]="'asg-' + a.id">
-                    <td>
-                      <a class="fila__link" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a>
-                      @if (a.nota) { <span class="celda-sub">{{ recorte(a.nota) }}</span> }
-                    </td>
-                    <td><span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span></td>
-                    <td><span [class]="'estado estado--' + a.estado">{{ estadoLabel(a.estado) }}</span></td>
-                    <td [class.plazo--alerta]="vencida(a)">
-                      @if (vencida(a)) {
-                        <svg class="plazo__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
-                      }
-                      {{ plazo(a.fechaLimite) }}
-                    </td>
-                    <td>
-                      <span class="celda-persona">
-                        <span class="celda-ini" aria-hidden="true">{{ iniciales(asignadoPor(a)) }}</span>
-                        {{ asignadoPor(a) }}
-                      </span>
-                    </td>
-                    <td class="table__min">
-                      @if (siguientePaso(a); as paso) {
-                        <button
-                          class="btn btn--primary btn--sm"
-                          type="button"
-                          [disabled]="moviendo() === a.id"
-                          (click)="avanzar(a)"
-                        >
-                          {{ moviendo() === a.id ? 'Guardando…' : paso.verbo }}
-                        </button>
-                      } @else if (retroceso(a); as atras) {
-                        <span class="cerrada-fila">
-                          <span class="cerrada">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>
-                            Cerrada
-                          </span>
-                          <button class="btn btn--ghost btn--sm" type="button" [disabled]="moviendo() === a.id"
-                                  (click)="mover(a, atras)">
-                            {{ moviendo() === a.id ? 'Guardando…' : 'Reabrir' }}
-                          </button>
-                        </span>
-                      }
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="6" class="table__vacia">
-                      <b>No tenés asignaciones</b>
-                      Cuando el jefe de innovación te asigne un proyecto, aparece acá con su prioridad y su plazo.
-                    </td>
-                  </tr>
-                }
-              }
-            </tbody>
-          </table>
-        </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="6" class="table__vacia">
+                <b>No tenés asignaciones</b>
+                Cuando el jefe de innovación te asigne un proyecto, aparece acá con su prioridad y su plazo.
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
 
         <app-paginador
           [pagina]="pagMias()"
@@ -225,55 +219,64 @@
       </header>
 
       <div class="table-wrap">
-        <div class="table-scroll">
-          <table class="table table--compacta">
-            <thead>
-              <tr>
-                <th>Proyecto</th>
-                <th>Responsable</th>
-                <th>Prioridad</th>
-                <th>Estado</th>
-                <th>Plazo</th>
-                <th>Aviso</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (a of todasPagina(); track a.id) {
-                <tr [class.destacada]="destacada() === a.id">
-                  <td><a class="fila__link" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a></td>
-                  <td>
-                    <span class="celda-persona">
-                      <span class="celda-ini" aria-hidden="true">{{ iniciales(responsable(a)) }}</span>
-                      {{ responsable(a) }}
+        <p-table
+          [value]="todasPagina()"
+          styleClass="p-datatable-sm"
+          [tableStyle]="{ 'min-width': '940px' }"
+          [rowHover]="true"
+          dataKey="id"
+          [scrollable]="true"
+          scrollHeight="min(56dvh, 560px)"
+          [lazy]="true"
+          (onSort)="ordenarTodas($event)"
+        >
+          <ng-template #header>
+            <tr>
+              <th pSortableColumn="proyecto">Proyecto <p-sortIcon field="proyecto" /></th>
+              <th pSortableColumn="responsable">Responsable <p-sortIcon field="responsable" /></th>
+              <th pSortableColumn="prioridad">Prioridad <p-sortIcon field="prioridad" /></th>
+              <th pSortableColumn="estado">Estado <p-sortIcon field="estado" /></th>
+              <th class="col-plazo" pSortableColumn="plazo">Plazo <p-sortIcon field="plazo" /></th>
+              <th>Aviso</th>
+            </tr>
+          </ng-template>
+
+          <ng-template #body let-a>
+            <tr [class.destacada]="destacada() === a.id">
+              <td><a class="fila__link" [routerLink]="['/proyectos', a.projectId]">{{ projectName(a) }}</a></td>
+              <td>
+                <span class="celda-persona">
+                  <span class="celda-ini" aria-hidden="true">{{ iniciales(responsable(a)) }}</span>
+                  {{ responsable(a) }}
+                </span>
+              </td>
+              <td><p-tag [value]="prioridadLabel(a.prioridad)" [severity]="severidadPrioridad(a.prioridad)" [rounded]="true" /></td>
+              <td><p-tag [value]="estadoLabel(a.estado)" [severity]="severidadEstado(a.estado)" /></td>
+              <td class="col-plazo" [class.plazo--alerta]="vencida(a)">{{ plazo(a.fechaLimite) }}</td>
+              <td>
+                <div class="envios-celda">
+                  @for (e of a.envios ?? []; track e.canal) {
+                    <span class="envio" [pTooltip]="e.destino" tooltipPosition="top">
+                      <span class="envio__canal">{{ e.canal }}</span>
+                      <span class="envio__estado">{{ e.estado }}</span>
                     </span>
-                  </td>
-                  <td><span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span></td>
-                  <td><span [class]="'estado estado--' + a.estado">{{ estadoLabel(a.estado) }}</span></td>
-                  <td [class.plazo--alerta]="vencida(a)">{{ plazo(a.fechaLimite) }}</td>
-                  <td>
-                    <div class="envios-celda">
-                      @for (e of a.envios ?? []; track e.canal) {
-                        <span class="envio" [title]="e.destino">
-                          <span class="envio__canal">{{ e.canal }}</span>
-                          <span class="envio__estado">{{ e.estado }}</span>
-                        </span>
-                      } @empty {
-                        <span class="text-dim">—</span>
-                      }
-                    </div>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="6" class="table__vacia">
-                    <b>Todavía no asignaste ningún proyecto</b>
-                    Entrá a un proyecto y usá “Asignar a un colaborador”.
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+                  } @empty {
+                    <span class="text-dim">—</span>
+                  }
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template #emptymessage>
+            <tr>
+              <td colspan="6" class="table__vacia">
+                <b>Todavía no asignaste ningún proyecto</b>
+                Entrá a un proyecto y usá “Asignar a un colaborador”.
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
 
         <app-paginador
           [pagina]="pagTodas()"

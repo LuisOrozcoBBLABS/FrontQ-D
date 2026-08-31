@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, WritableSignal, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AssignmentsService } from '../../core/assignments.service';
@@ -8,13 +8,18 @@ import { UsersService } from '../../core/users.service';
 import { ToastService } from '../../core/toast.service';
 import { ASIG_ESTADOS, Assignment, AssignmentStatus, PRIORIDADES, Prioridad } from '../../core/models';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
-import { SECUENCIA, SIGUIENTE, esFinal, puedeIr, retrocesoDe } from '../../core/transiciones';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { SelectButton } from 'primeng/selectbutton';
+import { Tag } from 'primeng/tag';
+import { Tooltip } from 'primeng/tooltip';
+import { SECUENCIA, SIGUIENTE, puedeIr, retrocesoDe } from '../../core/transiciones';
 
 
 
 @Component({
   selector: 'app-assignments',
-  imports: [RouterLink, FormsModule, Paginador],
+  imports: [RouterLink, FormsModule, Paginador, TableModule, ButtonModule, SelectButton, Tag, Tooltip],
   templateUrl: './assignments.html',
   styleUrl: './assignments.scss',
 })
@@ -93,13 +98,82 @@ export class Assignments {
   protected pagMias = signal(1);
   protected pagTodas = signal(1);
 
+  /**
+   * Orden elegido por la persona, por tabla. Se aplica al conjunto COMPLETO y
+   * despues se corta la pagina: ordenar la porcion visible reordenaria 8 filas
+   * y pareceria haber ordenado todo.
+   *
+   * Null = vale el orden por defecto, que en "mis asignaciones" no es alfabetico
+   * sino por urgencia (lo vencido primero, despues por prioridad, lo cerrado al
+   * final). Un buen defecto ahorra mas que cualquier control de orden.
+   */
+  protected ordenMias = signal<{ campo: string; dir: 'asc' | 'desc' } | null>(null);
+  protected ordenTodas = signal<{ campo: string; dir: 'asc' | 'desc' } | null>(null);
+
+  ordenarMias(e: { field?: string; order?: number }): void {
+    this.aplicarOrden(this.ordenMias, this.pagMias, e);
+  }
+  ordenarTodas(e: { field?: string; order?: number }): void {
+    this.aplicarOrden(this.ordenTodas, this.pagTodas, e);
+  }
+
+  private aplicarOrden(
+    destino: WritableSignal<{ campo: string; dir: 'asc' | 'desc' } | null>,
+    pagina: WritableSignal<number>,
+    e: { field?: string; order?: number },
+  ): void {
+    if (!e.field) return;
+    const dir: 'asc' | 'desc' = e.order === -1 ? 'desc' : 'asc';
+    const actual = destino();
+    if (actual?.campo === e.field && actual.dir === dir) return;
+    pagina.set(1);
+    destino.set({ campo: e.field, dir });
+  }
+
+  /** Peso de la prioridad: urgente pesa mas que baja, no alfabeticamente. */
+  private readonly pesoPrioridad: Record<string, number> = {
+    urgente: 0, alta: 1, media: 2, baja: 3,
+  };
+
+  /**
+   * Valor comparable de una fila para un campo. Devuelve numero o texto segun
+   * el campo, porque ordenar prioridades o fechas como texto da un orden que
+   * parece correcto y no lo es ("alta" antes que "urgente").
+   */
+  private valorDe(a: Assignment, campo: string): string | number {
+    switch (campo) {
+      case 'proyecto': return this.projectName(a).toLowerCase();
+      case 'responsable': return this.responsable(a).toLowerCase();
+      case 'asignadoPor': return this.asignadoPor(a).toLowerCase();
+      case 'prioridad': return this.pesoPrioridad[a.prioridad] ?? 99;
+      case 'estado': return SECUENCIA.indexOf(a.estado);
+      // Sin plazo va al final: no tener fecha no es tener la fecha mas antigua.
+      case 'plazo': return a.fechaLimite ? Date.parse(a.fechaLimite) : Number.MAX_SAFE_INTEGER;
+      default: return 0;
+    }
+  }
+
+  /** Ordena una lista completa segun el orden elegido. */
+  private ordenar(lista: Assignment[], orden: { campo: string; dir: 'asc' | 'desc' } | null): Assignment[] {
+    if (!orden) return lista;
+    const signo = orden.dir === 'asc' ? 1 : -1;
+    return [...lista].sort((a, b) => {
+      const va = this.valorDe(a, orden.campo);
+      const vb = this.valorDe(b, orden.campo);
+      if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * signo;
+      return String(va).localeCompare(String(vb), 'es') * signo;
+    });
+  }
+
   protected miasPagina = computed(() => {
+    const completo = this.ordenar(this.misOrdenadas(), this.ordenMias());
     const desde = (this.pagMias() - 1) * this.porPagina;
-    return this.misOrdenadas().slice(desde, desde + this.porPagina);
+    return completo.slice(desde, desde + this.porPagina);
   });
   protected todasPagina = computed(() => {
+    const completo = this.ordenar(this.todas(), this.ordenTodas());
     const desde = (this.pagTodas() - 1) * this.porPagina;
-    return this.todas().slice(desde, desde + this.porPagina);
+    return completo.slice(desde, desde + this.porPagina);
   });
 
   /** Recorta la nota para usarla de subtitulo sin romper la altura de la fila. */
@@ -186,6 +260,32 @@ export class Assignments {
   /** La vista elegida se recuerda: quien trabaja con el tablero lo quiere de entrada. */
   protected vista = signal<'tabla' | 'tablero'>(leerVista());
 
+  /** Las dos formas de ver el trabajo propio. */
+  protected readonly opcionesVista = [
+    { label: 'Tabla', value: 'tabla' as const, icono: 'pi pi-list' },
+    { label: 'Tablero', value: 'tablero' as const, icono: 'pi pi-th-large' },
+  ];
+
+  /** La prioridad se pinta con el color que le corresponde en la escala. */
+  severidadPrioridad(p: Prioridad): 'danger' | 'warn' | 'info' | 'secondary' {
+    switch (p) {
+      case 'urgente': return 'danger';
+      case 'alta': return 'warn';
+      case 'media': return 'info';
+      default: return 'secondary';
+    }
+  }
+
+  /** Lo cerrado se lee distinto de lo que sigue abierto. */
+  severidadEstado(e: AssignmentStatus): 'success' | 'info' | 'warn' | 'secondary' {
+    switch (e) {
+      case 'completada': return 'success';
+      case 'en-curso': return 'info';
+      case 'aceptada': return 'warn';
+      default: return 'secondary';
+    }
+  }
+
   protected cambiarVista(v: 'tabla' | 'tablero'): void {
     this.vista.set(v);
     try {
@@ -214,11 +314,9 @@ export class Assignments {
   }
 
   protected alIniciarArrastre(a: Assignment, e: DragEvent): void {
-    // Completada es final: sus tarjetas no se mueven.
-    if (esFinal(a.estado)) {
-      e.preventDefault();
-      return;
-    }
+    // Sin guardia de "estado final": no hay ninguno. La plantilla ya calcula
+    // draggable con `retroceso(a) || siguientePaso(a)`, que es el criterio real
+    // — una completada tiene retroceso a en-curso, asi que SI se arrastra.
     this.arrastrando.set(a);
     e.dataTransfer?.setData('text/plain', a.id);
     if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';

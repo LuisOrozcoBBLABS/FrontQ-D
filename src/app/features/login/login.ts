@@ -1,12 +1,15 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { Password } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
 import { AuthService } from '../../core/auth.service';
 import { ThemeService } from '../../core/theme.service';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, Password, ButtonModule, InputText],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

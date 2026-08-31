@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, catchError, filter, switchMap, take, throwError } from 'rxjs';
+import { Observable, catchError, switchMap, take, throwError } from 'rxjs';
 import { Subject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { TokenStore } from './token.store';
@@ -38,11 +38,19 @@ export function authInterceptor(
       if (!es401 || !tokens.refreshToken) return throwError(() => error);
 
       // Ya hay una renovación en curso: esperar su resultado y reintentar.
+      //
+      // El `null` que emite la rama de fallo SE ATIENDE, no se filtra. Antes
+      // había un `filter(t => t !== null)` acá: el null se descartaba, y como
+      // `tokenNuevo$` es un Subject que nunca completa ni emite error, estas
+      // peticiones no emitían, no completaban y no fallaban NUNCA. Quedaban
+      // colgadas para siempre, con su promesa sin resolver y su señal de
+      // "cargando" en true. Y no era un caso raro: el tablero pide una consulta
+      // por columna, así que una sesión vencida dejaba nueve peticiones colgadas
+      // mientras la décima se iba a /login.
       if (renovando) {
         return tokenNuevo$.pipe(
-          filter((t): t is string => t !== null),
           take(1),
-          switchMap(t => next(conToken(t))),
+          switchMap(t => (t ? next(conToken(t)) : throwError(() => error))),
         );
       }
 

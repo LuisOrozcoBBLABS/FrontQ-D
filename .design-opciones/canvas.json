@@ -1,0 +1,17 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 620, "h": 700, "title": "Cómo leer esto" },
+    { "file": "TablaA-Densa.dc.html", "x": 700, "y": 0, "w": 1060, "h": 560, "title": "A · Tabla densa" },
+    { "file": "TablaB-Comoda.dc.html", "x": 1840, "y": 0, "w": 1060, "h": 560, "title": "B · Tabla cómoda" },
+    { "file": "TablaC-MaestroDetalle.dc.html", "x": 2980, "y": 0, "w": 1060, "h": 700, "title": "C · Maestro-detalle" },
+    { "file": "IntegrantesD-DosPaneles.dc.html", "x": 700, "y": 800, "w": 820, "h": 700, "title": "D · Dos paneles" },
+    { "file": "IntegrantesE-BuscarChips.dc.html", "x": 1600, "y": 800, "w": 560, "h": 700, "title": "E · Buscar y agregar" },
+    { "file": "IntegrantesF-DesdePersonas.dc.html", "x": 2240, "y": 800, "w": 820, "h": 700, "title": "F · Desde personas" }
+  ],
+  "annotations": [
+    { "id": "fila-tablas", "x": 700, "y": -120, "w": 420, "text": "FILA 1 — TABLAS\nTres direcciones distintas, no tres matices de la misma. Elegí por cómo trabajás: comparar muchas filas (A), leer sin esfuerzo (B), o ir registro por registro (C)." },
+    { "id": "fila-integrantes", "x": 700, "y": 680, "w": 420, "text": "FILA 2 — INTEGRANTES\nEl problema de hoy: 17 interruptores sin buscador, y cada uno mueve a alguien de grupo al instante sin decir de dónde lo saca. Las tres opciones muestran la consecuencia antes de aplicarla." },
+    { "id": "que-no-cambia", "x": 0, "y": 760, "w": 620, "text": "Lo que no cambia en ninguna opción: números a la derecha con cifras tabulares, encabezado pegado al hacer scroll, orden resuelto en el servidor, y las acciones destructivas con confirmación.\n\nSi ninguna te cierra, decime qué te molesta de la que más se acerque y armo una cuarta." }
+  ],
+  "launch": { "view": "canvas" }
+}

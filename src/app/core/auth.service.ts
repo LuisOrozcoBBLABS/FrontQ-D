@@ -124,6 +124,20 @@ export class AuthService {
     return this.permissions().includes(permission);
   }
 
+  /**
+   * Quién puede modificar o eliminar algo propio: su autor o un administrador.
+   *
+   * Espeja exactamente la regla del servidor (`soloAutorOAdmin`). Antes cada
+   * pantalla lo resolvía a su manera y el detalle usaba `projects.viewAll`,
+   * que es un permiso de LECTURA: la jefatura veía el botón de eliminar y la
+   * API le devolvía 403. Un solo lugar evita que vuelva a desalinearse.
+   */
+  esAutorOAdmin(autorId: string | null | undefined): boolean {
+    const u = this.currentUser();
+    if (!u || !autorId) return false;
+    return u.id === autorId || u.rol === 'admin';
+  }
+
   /** Actualiza el perfil propio (lo usan perfil y onboarding). */
   async updateCurrent(patch: Partial<User>): Promise<void> {
     const actualizado = await firstValueFrom(

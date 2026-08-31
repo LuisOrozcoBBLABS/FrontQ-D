@@ -14,15 +14,18 @@
       <p class="page__sub">{{ p.grupo ? 'Grupo ' + p.grupo : 'Sin grupo' }} · por {{ autor() }}</p>
     </div>
 
-    <div class="tabs enter">
-      <button class="tab" type="button" [class.tab--on]="tab()==='resumen'" (click)="tab.set('resumen')">Resumen</button>
-      @if (canAssign() || canManage()) {
-        <button class="tab" type="button" [class.tab--on]="tab()==='gestion'" (click)="tab.set('gestion')">Gestión</button>
-      }
-    </div>
+    <p-selectbutton
+      class="enter"
+      [options]="opcionesTab()"
+      [ngModel]="tab()"
+      (ngModelChange)="tab.set($event)"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="false"
+    />
 
     @if (tab() === 'resumen') {
-      <div class="card enter" style="max-width:760px">
+      <div class="card card--forma enter">
         <div class="block-sec"><span class="block__label">Problema identificado</span><p>{{ p.problema || '—' }}</p></div>
         <div class="block-sec"><span class="block__label">Dolores</span><p>{{ p.dolores || '—' }}</p></div>
         <div class="block-sec"><span class="block__label">Nuestra solución</span><p>{{ p.solucion || '—' }}</p></div>
@@ -51,93 +54,122 @@
 
     @if (tab() === 'gestion') {
       @if (canAssign()) {
-        <div class="toolbar enter" style="margin-bottom:18px">
-          <button class="btn btn--primary" type="button" (click)="openAssign()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
-            Asignar a un colaborador
-          </button>
+        <div class="toolbar enter">
+          <p-button label="Asignar a un colaborador" icon="pi pi-user-plus" (onClick)="openAssign()" />
         </div>
       }
       @if (canManage()) {
-        <div class="card enter" style="max-width:760px">
-          <h3 style="font-size:16px;margin-bottom:14px">Estado y acciones</h3>
-          <div class="field" style="max-width:280px">
+        <div class="card card--forma enter">
+          <h3 class="pd__h">Estado y acciones</h3>
+          <div class="field field--corto">
             <label for="est">Estado</label>
-            <select id="est" class="select" [ngModel]="p.estado" (ngModelChange)="setEstado($event)">
-              @for (e of estados; track e.value) { <option [value]="e.value">{{ e.label }}</option> }
-            </select>
+            <p-select inputId="est" [options]="estados" [ngModel]="p.estado"
+                      (ngModelChange)="setEstado($event)" optionLabel="label" optionValue="value"
+                      [fluid]="true" />
           </div>
-          <button class="btn btn--danger btn--sm" type="button" (click)="remove()">Eliminar proyecto</button>
+          <div class="toolbar toolbar--rasante">
+            <p-button label="Editar proyecto" icon="pi pi-pencil" severity="secondary" size="small"
+                      [outlined]="true" (onClick)="editar()" />
+            <p-button label="Eliminar proyecto" icon="pi pi-trash" severity="danger" size="small"
+                      [outlined]="true" (onClick)="remove()" />
+          </div>
+          <p class="field__hint pd__nota">
+            Solo quien registró el proyecto —o un administrador— ve estas acciones.
+            Eliminar lo archiva: sale de las listas y del tablero, pero no se pierde.
+          </p>
         </div>
       }
     }
-    <!-- Modal de asignación -->
-    @if (assignOpen()) {
-      <div class="modal" role="dialog" aria-modal="true">
-        <div class="modal__backdrop" (click)="closeAssign()"></div>
-        <div class="modal__panel" appTrapFocus (dismiss)="closeAssign()">
-          <div class="modal__head">
-            <div><p class="eyebrow">Asignar proyecto</p><h2 class="modal__title">{{ p.nombre }}</h2></div>
-            <button class="theme-fab" type="button" (click)="closeAssign()" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-          </div>
+    <!-- Asignación -->
+    <p-dialog
+      [visible]="assignOpen()"
+      (visibleChange)="alCerrarAsignacion($event)"
+      [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="true"
+      [style]="{ width: 'min(calc(94vw - var(--rail-clear)), 600px)' }"
+    >
+      <ng-template #header>
+        <div>
+          <p class="eyebrow">Asignar proyecto</p>
+          <h2 class="modal__title">{{ p.nombre }}</h2>
+        </div>
+      </ng-template>
 
-          @if (result(); as envios) {
-            <div class="assign-done">
-              <p class="assign-done__title">Asignación creada</p>
-              <p class="text-2" style="font-size:14px;margin-bottom:14px">
-                <b>{{ userName(assignee()) }}</b> ya la ve en su bandeja. Estado de los avisos por canal:
-              </p>
-              @for (e of envios; track e.canal) {
-                <div class="envio">
-                  <span class="badge badge--on">{{ e.canal }}</span>
-                  <span class="envio__dest">{{ e.destino }}</span>
-                  <span class="envio__st">{{ e.estado }}</span>
-                </div>
-              }
-              <div class="modal__foot"><button class="btn btn--primary" type="button" (click)="closeAssign()">Listo</button></div>
-            </div>
-          } @else {
-            <div class="field">
-              <label for="asg">Colaborador</label>
-              <select id="asg" class="select" [ngModel]="assignee()" (ngModelChange)="assignee.set($event)">
-                <option value="" disabled>Selecciona…</option>
-                @for (u of assignableUsers(); track u.id) { <option [value]="u.id">{{ u.nombre }}{{ u.grupo ? ' · ' + u.grupo : '' }}</option> }
-              </select>
-            </div>
-            <div class="field-inline">
-              <div class="field">
-                <label for="pri">Prioridad</label>
-                <select id="pri" class="select" [ngModel]="prioridad()" (ngModelChange)="prioridad.set($event)">
-                  @for (p2 of prioridades; track p2.value) { <option [value]="p2.value">{{ p2.label }}</option> }
-                </select>
-              </div>
-              <div class="field">
-                <label for="fl">Fecha límite</label>
-                <input id="fl" class="input" type="date" [ngModel]="fechaLimite()" (ngModelChange)="fechaLimite.set($event)" />
-              </div>
-            </div>
-            <div class="field">
-              <label for="nt">Nota</label>
-              <textarea id="nt" class="textarea" rows="2" [ngModel]="nota()" (ngModelChange)="nota.set($event)" placeholder="Contexto de la asignación (opcional)"></textarea>
-            </div>
-            <div class="field">
-              <label>Notificar por</label>
-              @for (c of canales; track c.value) {
-                <label class="check" style="margin-bottom:8px">
-                  <input type="checkbox" [checked]="canalesSel().includes(c.value)" (change)="toggleCanal(c.value)" />
-                  <span class="check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
-                  <span class="check__meta"><b>{{ c.label }}</b><span>{{ c.nota }}</span></span>
-                </label>
-              }
-            </div>
-            <div class="modal__foot">
-              <button class="btn btn--ghost" type="button" (click)="closeAssign()">Cancelar</button>
-              <button class="btn btn--primary" type="button" (click)="doAssign()" [disabled]="!assignee()">Asignar y notificar</button>
+      @if (result(); as envios) {
+        <div class="assign-done">
+          <p class="assign-done__title">Asignación creada</p>
+          <p class="pd__intro">
+            <b>{{ userName(assignee()) }}</b> ya la ve en su bandeja. Estado de los avisos por canal:
+          </p>
+          @for (e of envios; track e.canal) {
+            <div class="envio">
+              <p-tag [value]="e.canal" severity="success" />
+              <span class="envio__dest">{{ e.destino }}</span>
+              <span class="envio__st">{{ e.estado }}</span>
             </div>
           }
         </div>
-      </div>
-    }
+      } @else {
+        <div class="field">
+          <label for="asg">Colaborador</label>
+          <p-select
+            inputId="asg"
+            [options]="opcionesColaborador()"
+            [ngModel]="assignee()"
+            (ngModelChange)="assignee.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [filter]="true"
+            filterPlaceholder="Buscar persona"
+            placeholder="Selecciona…"
+            [fluid]="true"
+          />
+        </div>
+        <div class="field-inline">
+          <div class="field">
+            <label for="pri">Prioridad</label>
+            <p-select inputId="pri" [options]="prioridades" [ngModel]="prioridad()"
+                      (ngModelChange)="prioridad.set($event)" optionLabel="label" optionValue="value"
+                      [fluid]="true" />
+          </div>
+          <div class="field">
+            <label for="fl">Fecha límite</label>
+            <p-datepicker inputId="fl" [ngModel]="limiteComoDato()" (ngModelChange)="fijarLimite($event)"
+                          dateFormat="dd/mm/yy" [showIcon]="true" [minDate]="hoy" [fluid]="true"
+                          placeholder="dd/mm/aaaa" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="nt">Nota</label>
+          <textarea pTextarea id="nt" rows="2" [autoResize]="true" [ngModel]="nota()"
+                    (ngModelChange)="nota.set($event)"
+                    placeholder="Contexto de la asignación (opcional)"></textarea>
+        </div>
+        <div class="field">
+          <label>Notificar por</label>
+          @for (c of canales; track c.value) {
+            <label class="check pd__canal" [for]="'canal-' + c.value">
+              <p-checkbox
+                [inputId]="'canal-' + c.value"
+                [binary]="true"
+                [ngModel]="canalesSel().includes(c.value)"
+                (onChange)="toggleCanal(c.value)"
+              />
+              <span class="check__meta"><b>{{ c.label }}</b><span>{{ c.nota }}</span></span>
+            </label>
+          }
+        </div>
+      }
+
+      <ng-template #footer>
+        @if (result()) {
+          <p-button label="Listo" (onClick)="closeAssign()" />
+        } @else {
+          <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="closeAssign()" />
+          <p-button label="Asignar y notificar" icon="pi pi-send" [disabled]="!assignee()"
+                    [loading]="asignando()" (onClick)="doAssign()" />
+        }
+      </ng-template>
+    </p-dialog>
   } @else {
     <div class="card enter"><p class="text-2">Proyecto no encontrado. <a routerLink="/proyectos">Volver a proyectos</a>.</p></div>
   }

@@ -1,3 +1,9 @@
+<!-- Primer elemento enfocable de la aplicación, y escondido hasta que alguien
+     lo enfoca. Sin él, el riel es lo primero que recibe el foco en CADA cambio
+     de ruta, así que llegar al contenido cuesta entre 6 y 10 pulsaciones de
+     Tab, otra vez, cada vez. -->
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
 <!-- Marca de agua: la identidad del área ocupando el fondo, sin robar lectura.
      Vive detrás de todo y no recibe eventos. -->
 <div class="marca-fondo" aria-hidden="true">
@@ -6,4 +12,12 @@
 
 <app-nav-rail />
 
-<router-outlet />
+<!-- El landmark principal existía solo en las tres pantallas de acceso; ninguna
+     pantalla de la aplicación autenticada lo tenía, así que quien navega por
+     landmarks no encontraba el contenido en ningún lado.
+     tabindex="-1" no lo mete en el orden de tabulación: lo hace enfocable POR
+     CÓDIGO, que es lo que necesita el salto del enlace de arriba y el foco que
+     se le mueve al cambiar de ruta. -->
+<main #contenido id="contenido" tabindex="-1">
+  <router-outlet />
+</main>

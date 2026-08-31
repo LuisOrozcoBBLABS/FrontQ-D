@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; font-family: Montserrat, "Segoe UI", system-ui, sans-serif; }
+    a { color: #B2EA36; } a:hover { color: #C7FFDF; }
+  </style>
+</helmet>
+
+<div style="width: 620px; min-height: 700px; box-sizing: border-box; padding: 32px; background: #0B0A07; color: #F7F7F5;">
+
+  <p style="margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #6F6C65;">Plataforma R&amp;D · decisión de diseño</p>
+  <h1 style="margin: 0 0 8px; font-size: 32px; font-weight: 700; letter-spacing: -.03em; line-height: 1.1;">Seis direcciones</h1>
+  <p style="margin: 0 0 28px; font-size: 15px; line-height: 1.6; color: #A8A6A0;">Dos veces rediseñé las tablas adivinando qué no te gustaba. Acá están las opciones a la vista: elegí una de cada fila y la implemento. Todas usan tus tokens reales, así que lo que ves es lo que queda.</p>
+
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+
+    <div>
+      <p style="margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #B2EA36;">Fila 1 — Tablas</p>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 12px; padding: 14px; border: 1px solid #262421; border-radius: 14px; background: #131210;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #B2EA36;">A</span>
+          <div>
+            <p style="margin: 0 0 3px; font-size: 15px; font-weight: 600;">Densa</p>
+            <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #A8A6A0;">Filas de 40px, cromo callado, el color solo en la etapa. Máxima cantidad de filas por pantalla. <span style="color: #6F6C65;">Cuesta cuando hay texto largo: aparecen puntos suspensivos.</span></p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 12px; padding: 14px; border: 1px solid #262421; border-radius: 14px; background: #131210;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #B2EA36;">B</span>
+          <div>
+            <p style="margin: 0 0 3px; font-size: 15px; font-weight: 600;">Cómoda, con jerarquía</p>
+            <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #A8A6A0;">Filas de 64px, dato principal grande y apoyo debajo, columnas agrupadas por tema. Se lee sin esfuerzo. <span style="color: #6F6C65;">Entran la mitad de filas.</span></p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 12px; padding: 14px; border: 1px solid #262421; border-radius: 14px; background: #131210;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #B2EA36;">C</span>
+          <div>
+            <p style="margin: 0 0 3px; font-size: 15px; font-weight: 600;">Maestro-detalle</p>
+            <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #A8A6A0;">Deja de ser una tabla ancha: lista angosta a la izquierda, ficha completa a la derecha. Para trabajar registro por registro. <span style="color: #6F6C65;">No sirve para comparar muchas columnas entre filas.</span></p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div>
+      <p style="margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #B9C9E9;">Fila 2 — Integrantes de un grupo</p>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 12px; padding: 14px; border: 1px solid #262421; border-radius: 14px; background: #131210;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #B9C9E9;">D</span>
+          <div>
+            <p style="margin: 0 0 3px; font-size: 15px; font-weight: 600;">Dos paneles</p>
+            <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #A8A6A0;">Disponibles a la izquierda, el equipo a la derecha. Se ven los dos lados y de dónde sale cada persona. <span style="color: #6F6C65;">Ocupa ancho; en móvil hay que apilarlo.</span></p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 12px; padding: 14px; border: 1px solid #262421; border-radius: 14px; background: #131210;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #B9C9E9;">E</span>
+          <div>
+            <p style="margin: 0 0 3px; font-size: 15px; font-weight: 600;">Buscar y agregar</p>
+            <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #A8A6A0;">El equipo como fichas arriba; abajo un buscador que trae personas y avisa de qué grupo saldría cada una. Escala a cientos. <span style="color: #6F6C65;">No se ve la lista completa de un vistazo.</span></p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 22px 1fr; gap: 12px; padding: 14px; border: 1px solid #262421; border-radius: 14px; background: #131210;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; font-weight: 700; color: #B9C9E9;">F</span>
+          <div>
+            <p style="margin: 0 0 3px; font-size: 15px; font-weight: 600;">Desde la tabla de personas</p>
+            <p style="margin: 0; font-size: 13.5px; line-height: 1.55; color: #A8A6A0;">Se deja de administrar por grupo: en la tabla de personas se cambia el grupo en la propia fila, y se pueden mover varias a la vez. <span style="color: #6F6C65;">Deja de haber una pantalla de "armar el equipo".</span></p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <p style="margin: 28px 0 0; padding-top: 16px; border-top: 1px solid #262421; font-size: 12px; line-height: 1.6; color: #6F6C65;">Lo que ninguna opción cambia: los números siguen alineados a la derecha con cifras tabulares, el encabezado sigue pegado al hacer scroll, y el orden se resuelve en el servidor.</p>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,73 +1,97 @@
 <div class="page">
   <div class="page__head enter">
-    <p class="eyebrow">Nuevo proyecto</p>
-    <h1 class="page__title">Registrar una idea de innovación</h1>
-    <p class="page__sub">Describe la propuesta. Quedá registrada para el área y podés asignarla a alguien del equipo.</p>
+    <p class="eyebrow">{{ editando ? 'Editar' : 'Nuevo proyecto' }}</p>
+    <h1 class="page__title">{{ editando ? 'Editar el proyecto' : 'Registrar una idea de innovación' }}</h1>
+    <p class="page__sub">
+      @if (editando) {
+        Cambiá lo que haga falta. La etapa no se toca acá: eso se mueve en el tablero.
+      } @else {
+        Describe la propuesta. Quedá registrada para el área y podés asignarla a alguien del equipo.
+      }
+    </p>
   </div>
 
-  <div class="card enter" style="max-width:760px">
+  @if (cargando()) {
+    <p class="text-dim enter">Cargando el proyecto…</p>
+  }
+
+  <div class="card card--forma enter">
     <div class="field">
       <label for="n">Nombre de la solución</label>
-      <input id="n" class="input" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" placeholder="Ej. FreightAudit" />
+      <input pInputText id="n" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" placeholder="Ej. FreightAudit" />
     </div>
 
     <div class="field-inline">
       <div class="field">
         <label for="s">Sector</label>
-        <select id="s" class="select" [ngModel]="sector()" (ngModelChange)="sector.set($event)">
-          <option value="" disabled>Selecciona…</option>
-          @for (sec of sectores; track sec) { <option [value]="sec">{{ sec }}</option> }
-        </select>
+        <p-select
+          inputId="s"
+          [options]="opcionesSector"
+          [ngModel]="sector()"
+          (ngModelChange)="sector.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          [filter]="true"
+          filterPlaceholder="Buscar sector"
+          placeholder="Selecciona…"
+          [fluid]="true"
+        />
       </div>
       <div class="field">
         <label for="g">Grupo</label>
-        <select id="g" class="select" [ngModel]="grupo()" (ngModelChange)="grupo.set($event)">
-          <option [ngValue]="null">Sin grupo</option>
-          @for (gr of grupos(); track gr.id) { <option [ngValue]="gr.id">Grupo {{ gr.nombre }}</option> }
-        </select>
+        <p-select
+          inputId="g"
+          [options]="opcionesGrupo()"
+          [ngModel]="grupo()"
+          (ngModelChange)="grupo.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          [fluid]="true"
+        />
       </div>
     </div>
 
     <div class="field">
       <label for="pr">Problema identificado</label>
-      <textarea id="pr" class="textarea" rows="2" [ngModel]="problema()" (ngModelChange)="problema.set($event)" placeholder="¿Qué problema del sector estás atacando?"></textarea>
+      <textarea pTextarea id="pr" rows="2" [autoResize]="true" [ngModel]="problema()" (ngModelChange)="problema.set($event)" placeholder="¿Qué problema del sector estás atacando?"></textarea>
     </div>
 
     <div class="field">
       <label for="do">Dolores</label>
-      <textarea id="do" class="textarea" rows="2" [ngModel]="dolores()" (ngModelChange)="dolores.set($event)" placeholder="Los dolores concretos dentro de ese problema"></textarea>
+      <textarea pTextarea id="do" rows="2" [autoResize]="true" [ngModel]="dolores()" (ngModelChange)="dolores.set($event)" placeholder="Los dolores concretos dentro de ese problema"></textarea>
     </div>
 
     <div class="field">
       <label for="so">Nuestra solución</label>
-      <textarea id="so" class="textarea" rows="2" [ngModel]="solucion()" (ngModelChange)="solucion.set($event)" placeholder="Qué hace la solución que planteas"></textarea>
+      <textarea pTextarea id="so" rows="2" [autoResize]="true" [ngModel]="solucion()" (ngModelChange)="solucion.set($event)" placeholder="Qué hace la solución que planteas"></textarea>
     </div>
 
     <div class="field">
       <label>Aplicaciones o programas parecidos (con URL)</label>
       @for (s of similares(); track $index) {
         <div class="similar-row">
-          <input class="input" [ngModel]="s.name" (ngModelChange)="patchSimilar($index, 'name', $event)" placeholder="Nombre" />
-          <input class="input" [ngModel]="s.url" (ngModelChange)="patchSimilar($index, 'url', $event)" placeholder="https://…" />
-          <button class="btn btn--ghost btn--sm" type="button" (click)="removeSimilar($index)" aria-label="Quitar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-          </button>
+          <input pInputText [ngModel]="s.name" (ngModelChange)="patchSimilar($index, 'name', $event)" placeholder="Nombre" />
+          <input pInputText [ngModel]="s.url" (ngModelChange)="patchSimilar($index, 'url', $event)" placeholder="https://…" />
+          <p-button icon="pi pi-times" size="small" [text]="true" severity="secondary"
+                    ariaLabel="Quitar" pTooltip="Quitar" tooltipPosition="top"
+                    (onClick)="removeSimilar($index)" />
         </div>
       }
-      <button class="btn btn--ghost btn--sm" type="button" (click)="addSimilar()" style="margin-top:8px">+ Agregar otra</button>
+      <p-button label="Agregar otra" icon="pi pi-plus" size="small" [text]="true"
+                styleClass="similar-add" (onClick)="addSimilar()" />
     </div>
 
     <div class="field">
       <label for="pl">El PLUS con IA</label>
-      <textarea id="pl" class="textarea" rows="3" [ngModel]="plusIA()" (ngModelChange)="plusIA.set($event)" placeholder="¿Qué agregarías con IA para diferenciarte de esas apps que ya existen?"></textarea>
+      <textarea pTextarea id="pl" rows="3" [autoResize]="true" [ngModel]="plusIA()" (ngModelChange)="plusIA.set($event)" placeholder="¿Qué agregarías con IA para diferenciarte de esas apps que ya existen?"></textarea>
     </div>
 
 
-    @if (error()) { <p class="login__error" style="margin-bottom:16px">{{ error() }}</p> }
+    @if (error()) { <p class="pf__error" role="alert">{{ error() }}</p> }
 
-    <div class="modal__foot" style="border-top:none;padding-top:0;margin-top:8px">
-      <button class="btn btn--ghost" type="button" (click)="cancel()">Cancelar</button>
-      <button class="btn btn--primary" type="button" (click)="save()">Guardar proyecto</button>
+    <div class="modal__foot modal__foot--liso">
+      <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="cancel()" />
+      <p-button [label]="verbo()" icon="pi pi-check" [loading]="guardando()" (onClick)="save()" />
     </div>
   </div>
 </div>

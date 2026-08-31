@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; font-family: Montserrat, "Segoe UI", system-ui, sans-serif; }
+    a { color: #B2EA36; } a:hover { color: #C7FFDF; }
+  </style>
+</helmet>
+
+<div style="width: 1060px; box-sizing: border-box; padding: 28px; background: #0B0A07; color: #F7F7F5;">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px;">
+    <div>
+      <p style="margin: 0 0 2px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #B2EA36;">OPCIÓN C</p>
+      <h2 style="margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.02em;">Maestro-detalle</h2>
+    </div>
+    <p style="margin: 0; max-width: 400px; font-size: 12px; line-height: 1.5; color: #6F6C65; text-align: right;">Deja de haber tabla ancha. Lista angosta a la izquierda con lo mínimo para elegir; la ficha completa a la derecha, siempre visible. Se recorren treinta registros sin abrir y cerrar nada.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 300px 1fr; gap: 16px;">
+
+    <div style="border: 1px solid #262421; border-radius: 20px; background: #131210; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #262421; background: #1B1A17;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6F6C65" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span style="font-size: 13px; color: #6F6C65;">Buscar entre 28</span>
+      </div>
+
+      <sc-for list="{{lista}}" as="l" hint-placeholder-count="7">
+        <div style="display: grid; grid-template-columns: 3px 1fr auto; gap: 10px; align-items: center; padding: 11px 14px 11px 0; border-bottom: 1px solid #262421; background: {{l.fondo}};">
+          <span style="width: 3px; height: 100%; background: {{l.filo}};"></span>
+          <span style="min-width: 0;">
+            <span style="display: block; font-size: 13.5px; font-weight: {{l.peso}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: {{l.color}};">{{l.nombre}}</span>
+            <span style="display: block; margin-top: 1px; font-size: 11px; color: #6F6C65;">{{l.etapa}}</span>
+          </span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-variant-numeric: tabular-nums; color: {{l.diasColor}}; padding-right: 14px;">{{l.dias}}d</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="border: 1px solid #262421; border-radius: 20px; background: #131210; padding: 22px;">
+
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 20px;">
+        <div>
+          <span style="display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border: 1px solid rgba(178,234,54,.45); border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #B2EA36;">En desarrollo</span>
+          <h3 style="margin: 8px 0 4px; font-size: 26px; font-weight: 700; letter-spacing: -.02em;">StockSync</h3>
+          <p style="margin: 0; font-size: 12px; color: #A8A6A0;">Retail / E-commerce · Grupo Manglar · registró Luis Orozco</p>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <span style="display: flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px; border: 1px solid #38352F; font-size: 12px; font-weight: 600;">Editar</span>
+          <span style="display: grid; place-items: center; width: 32px; height: 32px; border-radius: 999px; border: 1px solid #38352F;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A6A0" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px;">
+        <sc-for list="{{cifras}}" as="c" hint-placeholder-count="3">
+          <div style="padding: 12px 14px; border: 1px solid #262421; border-radius: 14px; background: #1B1A17;">
+            <span style="display: block; font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em;">{{c.n}}</span>
+            <span style="display: block; margin-top: 2px; font-size: 12px; color: #A8A6A0;">{{c.q}}</span>
+            <span style="display: block; font-size: 11px; color: #6F6C65;">{{c.nota}}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <p style="margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6F6C65;">Historial de etapas</p>
+      <div style="display: flex; flex-direction: column; gap: 0; margin-bottom: 20px;">
+        <sc-for list="{{historial}}" as="h" hint-placeholder-count="3">
+          <div style="display: grid; grid-template-columns: 9px 1fr; gap: 12px; padding-bottom: 14px;">
+            <span style="width: 9px; height: 9px; margin-top: 5px; border-radius: 999px; background: {{h.punto}}; border: 2px solid {{h.borde}};"></span>
+            <span>
+              <span style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600;">{{h.etapa}}
+                <sc-if value="{{h.ahora}}" hint-placeholder-val="{{ true }}">
+                  <span style="padding: 1px 7px; border-radius: 999px; background: rgba(178,234,54,.14); color: #B2EA36; font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;">ahora</span>
+                </sc-if>
+              </span>
+              <span style="display: block; margin-top: 1px; font-size: 12px; color: #6F6C65;">{{h.detalle}}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+
+      <p style="margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6F6C65;">Problema identificado</p>
+      <p style="margin: 0; font-size: 13.5px; line-height: 1.6; color: #A8A6A0;">Las tiendas ajustan inventario en planillas separadas, así que el stock que ve el canal web no coincide con el del local y se venden productos que no existen.</p>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    const lista = [
+      { nombre: 'StockSync', etapa: 'En desarrollo', dias: '12', sel: true },
+      { nombre: 'ShiftPlan', etapa: 'Code review / QA', dias: '19', demorado: true },
+      { nombre: 'OrderMesh', etapa: 'Aprobado', dias: '5' },
+      { nombre: 'TariffGuard', etapa: 'Backlog', dias: '5' },
+      { nombre: 'InvoiceIQ', etapa: 'En evaluación', dias: '5' },
+      { nombre: 'CareLink', etapa: 'En pruebas (UAT)', dias: '8' },
+      { nombre: 'BillSense', etapa: 'Backlog', dias: '5' },
+    ].map(l => ({
+      ...l,
+      fondo: l.sel ? '#1B1A17' : 'transparent',
+      filo: l.sel ? '#B2EA36' : 'transparent',
+      peso: l.sel ? '700' : '500',
+      color: l.sel ? '#F7F7F5' : '#A8A6A0',
+      diasColor: l.demorado ? '#F2545B' : '#6F6C65',
+    }));
+    const cifras = [
+      { n: '12 días', q: 'en desarrollo', nota: 'etapa actual' },
+      { n: '31 días', q: 'de punta a punta', nota: 'desde que se registró' },
+      { n: '3', q: 'etapas recorridas', nota: 'sin reprocesos' },
+    ];
+    const historial = [
+      { etapa: 'En desarrollo', detalle: 'Entró el 12 de agosto · 12 días y contando', ahora: true, punto: '#B2EA36', borde: '#B2EA36' },
+      { etapa: 'Análisis y diseño', detalle: 'Entró el 2 de agosto · 10 días', ahora: false, punto: '#131210', borde: '#38352F' },
+      { etapa: 'Aprobado', detalle: 'Entró el 24 de julio · 9 días', ahora: false, punto: '#131210', borde: '#38352F' },
+    ];
+    return { lista, cifras, historial };
+  }
+}
+</script>
+</body>
+</html>

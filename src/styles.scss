@@ -31,12 +31,22 @@
   --sp-1:4px; --sp-2:8px;  --sp-3:12px; --sp-4:16px; --sp-5:20px;
   --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px;
 
+  /* ---------- Alturas de control ----------
+     Aparte de la escala de espaciado a proposito. La escala de 4pt salta de 24
+     a 32 a 40 a 48, y los controles interactivos necesitan 36 y 44: no son
+     ritmo, son objetivos tactiles. Mientras no existieron, cada control
+     invento la suya y aparecieron 34, 36 y 44 sueltos por el proyecto — la
+     deriva se colaba por la puerta de los tamanos en vez de la del espaciado.
+     36 es el compacto de tabla, 44 el minimo de WCAG 2.5.5 y 48 el objetivo
+     tactil comodo, que es el que usa el dock del riel. */
+  --ctl-sm:36px; --ctl-md:44px; --ctl-lg:48px;
+
   /* ---------- Radios: la marca usa esquinas generosas ---------- */
   --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-full:999px;
 
   --maxw:1160px; --pad:var(--sp-6);
   --rail-w:64px;    /* diámetro del dock lateral */
-  --rail-gap:20px;  /* aire entre el dock y el borde de la ventana */
+  --rail-gap: var(--sp-5);  /* aire entre el dock y el borde de la ventana */
 
   /* ---------- Movimiento ----------
      Una sola familia de curvas para toda la aplicación: arranque rápido y
@@ -58,8 +68,17 @@ html[data-theme="dark"]{
   color-scheme:dark;
   --bg:#0B0A07; --surface:#131210; --surface-2:#1B1A17;
   --line:#262421; --line-strong:#38352F;
-  --text:#F7F7F5; --text-2:#A8A6A0; --text-dim:#6F6C65;
+  /* --text-dim sube de #6F6C65 a #8F8C84: el anterior daba 3.78:1 contra --bg
+     y 3.32:1 contra --surface-2, por debajo del 4.5:1 que pide WCAG AA. Y no es
+     un color decorativo: es el de TODAS las etiquetas de formulario y las
+     cabeceras de tabla, todas entre 10.5 y 13.5px, asi que tampoco aplica el
+     umbral de texto grande. Ahora da 5.09 / 4.80 / 4.47. */
+  --text:#F7F7F5; --text-2:#A8A6A0; --text-dim:#8F8C84;
   --accent:var(--bb-lime); --on-accent:var(--bb-obsidian); --accent-text:var(--bb-lime);
+  /* Acento para elementos NO textuales: anillo de foco, bordes de seleccion,
+     trazo del sparkline. Tiene su propio token porque el requisito es 3:1 y en
+     tema claro el lima puro no llega. Ver el bloque del tema claro. */
+  --accent-ui:var(--bb-lime);
   --accent-soft:rgba(178,234,54,.14);
   --glass:rgba(19,18,16,.62);
   --glass-rail:rgba(30,29,26,.5);
@@ -70,14 +89,30 @@ html[data-theme="dark"]{
   --shadow-rail:0 20px 60px -16px rgba(0,0,0,.8);
   --overlay:rgba(4,4,3,.74);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.12);
+  /* En oscuro el rojo de marca ya da 5.84:1, asi que el token de texto coincide
+     con el de marca. Existe igual para que los componentes no tengan que saber
+     en que tema estan. */
+  --danger-text:var(--bb-red);
 }
 
 html[data-theme="light"]{
   color-scheme:light;
   --bg:#FFFFFF; --surface:#FAFAF9; --surface-2:#F1F1EF;
   --line:#E6E6E6; --line-strong:#D2D2CE;
-  --text:#0B0A07; --text-2:#54524D; --text-dim:#8A8880;
+  /* --text-dim baja de #8A8880 a #6B6963 por el mismo motivo que en oscuro:
+     daba 3.55:1 sobre blanco y 3.14:1 sobre --surface-2. Ahora 5.85 / 5.18. */
+  --text:#0B0A07; --text-2:#54524D; --text-dim:#6B6963;
   --accent:var(--bb-lime); --on-accent:var(--bb-obsidian); --accent-text:var(--bb-lime-ink);
+  /* Acá está la razón de que --accent-ui exista. El lima puro sobre las
+     superficies claras da entre 1.26:1 y 1.43:1, contra el minimo de 3:1 que
+     pide WCAG 1.4.11 para elementos de interfaz. El manual ya habia resuelto el
+     caso del TEXTO con --bb-lime-ink, pero la correccion nunca se propago a lo
+     no textual: el anillo de foco era invisible en tema claro sobre todas las
+     superficies. --bb-lime-ink es la eleccion correcta porque cumple 3:1 sobre
+     --bg, --surface, --surface-2 y ademas sobre el propio lima (3.83:1), que es
+     el caso que rompe cualquier otra opcion cuando el anillo cae sobre un boton
+     primario. */
+  --accent-ui:var(--bb-lime-ink);
   --accent-soft:rgba(178,234,54,.24);
   --glass:rgba(255,255,255,.72);
   --glass-rail:rgba(255,255,255,.62);
@@ -88,9 +123,14 @@ html[data-theme="light"]{
   --shadow-rail:0 18px 50px -18px rgba(11,10,7,.28);
   --overlay:rgba(24,24,22,.5);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.1);
+  /* El rojo de marca sobre fondo claro da 3.39:1: no llega a 4.5:1 y el texto
+     de error de formulario es exactamente lo que no puede fallar contraste.
+     #C22A31 da 6.09:1 sobre blanco y 5.83 sobre --surface. --bb-red se queda
+     para bordes, fondos y puntos, que solo necesitan 3:1. */
+  --danger-text:#C22A31;
 }
 
-*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+*,*::before,*::after{ box-sizing:border-box; margin: 0; padding: 0; }
 html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; -webkit-tap-highlight-color:transparent; }
 body{
   background:var(--bg); color:var(--text);
@@ -100,11 +140,55 @@ body{
   min-height:100vh; min-height:100dvh; position:relative; overflow-x:hidden;
   transition:background-color 400ms var(--ease), color 400ms var(--ease);
 }
-a{ color:inherit; text-decoration:none; }
-button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
-svg{ display:block; }
-ul{ list-style:none; }
-:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:4px; }
+/* El reset de elementos vive en la capa `base`, por debajo de `primeng`.
+   Sin esto, `button{background:none;border:none}` —un selector de elemento sin
+   capa— le gana a `.p-button` (que sí está en capa) y deja todos los botones de
+   la librería sin fondo ni borde. El orden lo declara app.config:
+   theme, base, primeng; y lo que este archivo define fuera de capa gana sobre
+   los tres, que es como se imponen los ajustes de marca. */
+/* stylelint-disable selector-disallowed-list -- Estos cuatro SI son selectores
+   de elemento desnudos, y son seguros justamente porque estan DENTRO de
+   @layer base: la capa los pone por debajo de `primeng`, que es lo contrario
+   del incidente que la regla vigila. La regla no puede ver el contexto de
+   @layer, asi que la excepcion se declara acá. Cualquier reset que se agregue
+   tiene que entrar en este bloque, no fuera. */
+@layer base {
+  a{ color:inherit; text-decoration:none; }
+  button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+  svg{ display:block; }
+  ul{ list-style:none; }
+  :focus-visible{ outline:2px solid var(--accent-ui); outline-offset:3px; border-radius:4px; }
+}
+/* stylelint-enable selector-disallowed-list */
+
+/* ---------- Salto al contenido ----------
+   Escondido fuera de la pantalla hasta que recibe el foco, que es la unica
+   forma de que sirva sin ocupar lugar. Se mueve con transform y no con `top`
+   para que el navegador no recalcule layout, igual que el resto del sistema de
+   movimiento; el bloque de prefers-reduced-motion de mas abajo ya lo cubre. */
+.skip-link{
+  position:fixed; top:var(--sp-3); left:var(--sp-3); z-index:200;
+  padding:var(--sp-3) var(--sp-4);
+  border-radius:var(--r-full);
+  background:var(--surface); color:var(--text);
+  border:1px solid var(--line-strong);
+  box-shadow:var(--shadow);
+  font-size:var(--fs-sm); font-weight:600;
+  transform:translateY(-200%);
+  transition:transform var(--dur-fast) var(--ease);
+}
+/* `:focus` y no `:focus-visible`. A este enlace solo se llega con el teclado
+   —está fuera de la pantalla hasta que recibe el foco—, así que no hay ningún
+   caso de "foco por mouse" que evitar. Y `:focus-visible` depende de una
+   heurística del navegador que un focus() por código no dispara: con él, un
+   salto programático dejaba el enlace invisible mientras estaba enfocado. */
+.skip-link:focus{ transform:none; }
+
+/* El <main> se enfoca POR CODIGO al cambiar de ruta, no porque alguien haya
+   tabulado hasta el. Un anillo alrededor de toda la pagina en cada navegacion
+   seria ruido: la senal que hace falta es que el lector empiece a leer desde
+   ahi, y esa la da el foco, no el contorno. */
+#contenido:focus{ outline:none; }
 
 /* ---------- Fondo animado (orbes) ---------- */
 .bg{ position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none; }
@@ -122,75 +206,70 @@ ul{ list-style:none; }
 .mono{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
 .display{ font-family:var(--font-display); font-weight:700; letter-spacing:-.02em; line-height:var(--lh-tight); }
 .text-2{ color:var(--text-2); } .text-dim{ color:var(--text-dim); }
+
+/* Visible solo para lectores de pantalla. Ya se usaba en project-card antes de
+   existir, asi que el motivo de la alerta se renderizaba VISIBLE dentro de
+   .tarjeta__aviso —una caja absoluta de 14px en la esquina— y desbordaba sobre
+   la tarjeta. Es ademas la herramienta base para nombrar lo que solo se
+   comunica por forma o color, y para las regiones vivas que anuncian el
+   resultado de una accion.
+   clip-path en vez del viejo clip: rect(): el texto sigue siendo seleccionable
+   por el lector y no se rompe con transform en los ancestros. */
+.sr-only{
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- el margin -1px es parte del patron estandar de texto solo-para-lector */
+  position:absolute; width:1px; height:1px; padding: 0; margin: -1px;
+  overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0;
+}
 h1,h2,h3{ font-family:var(--font-display); font-weight:700; letter-spacing:-.015em; line-height:var(--lh-tight); text-wrap:balance; }
 h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(--fs-md); }
 
-/* ---------- Botones ---------- */
-.btn{
-  display:inline-flex; align-items:center; justify-content:center; gap:9px;
-  padding:11px var(--sp-5); min-height:44px; border:1px solid var(--line-strong); border-radius:var(--r-full);
-  color:var(--text); font-size:var(--fs-sm); font-weight:600; white-space:nowrap;
-  /* Explícito y no `all`: `all` incluye propiedades de layout y obliga al
-     navegador a medir en cada cuadro. */
-  transition:transform var(--dur-fast) var(--ease), background-color var(--dur) var(--ease),
-             border-color var(--dur) var(--ease), color var(--dur) var(--ease), filter var(--dur) var(--ease);
-}
-.btn svg{ width:16px; height:16px; }
-.btn:hover{ background:var(--surface-2); transform:translateY(-1px); }
-.btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
-.btn--primary{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); font-weight:600; }
-.btn--primary:hover{ background:var(--accent); filter:brightness(.94); }
-.btn--ghost{ border-color:var(--line); color:var(--text-2); }
-.btn--ghost:hover{ color:var(--text); border-color:var(--line-strong); }
-.btn--sm{ padding:7px 13px; min-height:36px; font-size:13px; }
-.btn--danger{ border-color:var(--line-strong); color:var(--text); background:var(--danger-bg); }
+/* Los botones son <p-button>; el bloque .btn se eliminó al migrarlos. */
 
 /* ---------- Superficies / tarjetas ---------- */
-.card{ border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:var(--sp-6); }
-.card--tight{ padding:var(--sp-5); }
+.card{ border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding: var(--sp-6); }
+.card--tight{ padding: var(--sp-5); }
+/* Columna de lectura para tarjetas con formulario. Estaba repetida como
+   `style="max-width:760px"` en tres plantillas: el ancho de una línea cómoda no
+   es una decisión de cada pantalla, es del sistema. */
+.card--forma{ max-width:760px; }
 .hairline{ border-top:1px solid var(--line); }
 
 /* ---------- Chips / badges / tags ---------- */
-.chip{ display:inline-flex; align-items:center; gap:8px; padding:7px 13px; border:1px solid var(--line); border-radius:999px; color:var(--text-2); font-size:13.5px; background:var(--surface); }
-.tag-mono{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); border:1px solid var(--line); border-radius:999px; padding:4px 10px; }
-.badge{ display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; padding:4px 10px; border-radius:999px; border:1px solid var(--line-strong); color:var(--text-2); }
+.chip{ display:inline-flex; align-items:center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); border:1px solid var(--line); border-radius:999px; color:var(--text-2); font-size:13.5px; background:var(--surface); }
+.tag-mono{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); border:1px solid var(--line); border-radius:999px; padding: var(--sp-1) var(--sp-3); }
+.badge{ display:inline-flex; align-items:center; gap: var(--sp-2); font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; padding: var(--sp-1) var(--sp-3); border-radius:999px; border:1px solid var(--line-strong); color:var(--text-2); }
 .badge--on{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
 .badge--muted{ color:var(--text-dim); }
 .badge--dot::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; }
 
 /* ---------- Formularios ---------- */
-.field{ display:flex; flex-direction:column; gap:7px; margin-bottom:16px; }
-.field > label{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); }
-.input,.select,.textarea{
-  width:100%; background:var(--surface-2); color:var(--text);
-  border:1px solid var(--line); border-radius:var(--r-md); padding:12px 14px; font-size:16px; font-family:var(--font-body);
-  transition:border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-.input:focus,.select:focus,.textarea:focus{ outline:none; border-color:var(--accent); }
-.input::placeholder{ color:var(--text-dim); }
-.select{ appearance:none; background-image:linear-gradient(45deg,transparent 50%,var(--text-2) 50%),linear-gradient(135deg,var(--text-2) 50%,transparent 50%); background-position:calc(100% - 18px) 20px,calc(100% - 12px) 20px; background-size:6px 6px,6px 6px; background-repeat:no-repeat; padding-right:38px; }
-.field__error{ color:var(--danger); font-size:var(--fs-sm); }
+.field{ display:flex; flex-direction:column; gap: var(--sp-2); margin-bottom: var(--sp-4); }
+/* Acepta <label> y .field__label. El span existe para los grupos de controles
+   —permisos, canales, foto— donde una <label> sin `for` y sin control envuelto
+   no se asocia a nada, asi que el grupo se anunciaba sin nombre. Ahi va
+   role="group" + aria-labelledby apuntando a este span. */
+.field > label,
+.field > .field__label{ display:block; font-family:var(--font-mono); font-size:var(--fs-2xs); letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); }
+/* Los campos nativos se fueron a PrimeNG; su CSS vivía acá y ahora estorbaba. */
+.field__error{ color:var(--danger-text); font-size:var(--fs-sm); }
 /* Texto de apoyo persistente bajo un campo (no reemplaza a la etiqueta). */
 .field__hint{ color:var(--text-dim); font-size:var(--fs-xs); line-height:var(--lh-snug); }
-.field-inline{ display:flex; gap:12px; flex-wrap:wrap; }
+/* Campo que no necesita todo el ancho: un select de estado con 10 opciones
+   cortas se lee peor estirado a 760px que acotado. */
+.field--corto{ max-width:280px; }
+.field-inline{ display:flex; gap: var(--sp-3); flex-wrap:wrap; }
 .field-inline > *{ flex:1 1 200px; }
 
 /* Switch */
-.switch{ position:relative; display:inline-flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
-.switch input{ position:absolute; opacity:0; width:0; height:0; }
-.switch__track{ width:40px; height:24px; border-radius:999px; background:var(--surface-2); border:1px solid var(--line-strong); transition:background-color var(--dur) var(--ease), border-color var(--dur) var(--ease); position:relative; flex:0 0 auto; }
-.switch__track::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--text-2); transition:transform var(--dur) var(--ease-spring), background-color var(--dur) var(--ease); }
-.switch input:checked + .switch__track{ background:var(--accent); border-color:var(--accent); }
-.switch input:checked + .switch__track::after{ transform:translateX(16px); background:var(--bg); }
+/* El interruptor es <p-toggleswitch>. */
 
 /* Checkbox (permisos) */
-.check{ display:flex; align-items:flex-start; gap:11px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer; transition:border-color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
+.check{ display:flex; align-items:center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-3); border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer; transition:border-color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
 .check:hover{ border-color:var(--line-strong); background:var(--surface-2); }
-.check input{ position:absolute; opacity:0; }
-.check__box{ width:20px; height:20px; border-radius:6px; border:1px solid var(--line-strong); flex:0 0 auto; display:grid; place-items:center; margin-top:1px; transition:transform var(--dur-fast) var(--ease-spring), background-color var(--dur) var(--ease), border-color var(--dur) var(--ease); }
-.check__box svg{ width:13px; height:13px; opacity:0; color:var(--bg); }
-.check input:checked + .check__box{ background:var(--accent); border-color:var(--accent); }
-.check input:checked + .check__box svg{ opacity:1; }
+/* Antes habia acá un `.check input:checked + .check input:checked + .check__meta`
+   que no puede matchear nada: dos `.check` hermanos consecutivos y un
+   `.check__meta` despues. Era regla muerta de antes del checkpoint. Lo que se
+   queria esta acotado y vivo en `.perm-grid .check__meta`. */
 .check__meta{ min-width:0; }
 .check__meta b{ font-weight:500; font-size:14.5px; }
 .check__meta span{ display:block; color:var(--text-dim); font-size:12.5px; }
@@ -202,6 +281,7 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .table-wrap{
   border:1px solid var(--line); border-radius:var(--r-lg);
   background:var(--surface); overflow:hidden;
+  padding: var(--sp-2) var(--sp-4);
 }
 /* El scroll es del contenedor, nunca de la pagina. Con 8 filas por pagina el
    vertical casi no aparece, pero el tope evita que una tabla empuje el resto. */
@@ -215,13 +295,13 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
   font-family:var(--font-display); font-weight:700;
   font-size:var(--fs-2xs); letter-spacing:.14em; text-transform:uppercase;
   color:var(--text-dim);
-  padding:var(--sp-4);
+  padding: var(--sp-4);
   background:var(--surface);
   border-bottom:1px solid var(--line-strong);
   white-space:nowrap;
 }
 .table td{
-  padding:var(--sp-4);
+  padding: var(--sp-4);
   border-bottom:1px solid var(--line);
   font-size:var(--fs-sm);
   line-height:var(--lh-snug);
@@ -235,20 +315,20 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .table tbody tr:hover td{ background:var(--surface-2); }
 
 /* Variantes */
-.table--compacta th{ padding:var(--sp-3) var(--sp-4); }
-.table--compacta td{ padding:var(--sp-3) var(--sp-4); }
+.table--compacta th{ padding: var(--sp-3) var(--sp-4); }
+.table--compacta td{ padding: var(--sp-3) var(--sp-4); }
 .table__num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .table__min{ width:1%; white-space:nowrap; }
-.table__actions{ display:flex; gap:var(--sp-2); justify-content:flex-end; flex-wrap:wrap; }
-.table__vacia{ padding:var(--sp-10) var(--sp-4); text-align:center; color:var(--text-dim); font-size:var(--fs-sm); }
-.table__vacia b{ display:block; color:var(--text); font-weight:600; margin-bottom:var(--sp-1); }
+.table__actions{ display:flex; align-items:center; gap: var(--sp-2); justify-content:flex-end; flex-wrap:nowrap; }
+.table__vacia{ background:var(--surface); padding: var(--sp-10) var(--sp-4); text-align:center; color:var(--text-dim); font-size:var(--fs-sm); }
+.table__vacia b{ display:block; color:var(--text); font-weight:600; margin-bottom: var(--sp-1); }
 
 /* Fila que llega resaltada desde un aviso: se apaga sola */
 .table tbody tr.destacada td{ background:var(--accent-soft); }
 .table tbody tr.destacada td:first-child{ box-shadow:inset 3px 0 0 var(--accent); }
 
 /* Celda con persona: iniciales + nombre, alineados sin romper el ritmo */
-.celda-persona{ display:inline-flex; align-items:center; gap:var(--sp-3); min-width:0; }
+.celda-persona{ display:inline-flex; align-items:center; gap: var(--sp-3); min-width:0; }
 .celda-ini{
   display:grid; place-items:center; width:28px; height:28px; flex:0 0 auto;
   border-radius:var(--r-full); background:var(--surface-2); border:1px solid var(--line);
@@ -257,49 +337,51 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .celda-sub{ display:block; font-size:var(--fs-2xs); color:var(--text-dim); }
 
 @media (max-width:640px){
-  .table th{ padding:var(--sp-3); }
-  .table td{ padding:var(--sp-3); font-size:var(--fs-xs); }
+  .table th{ padding: var(--sp-3); }
+  .table td{ padding: var(--sp-3); font-size:var(--fs-xs); }
 }
 
 /* Encabezado ordenable: lo usan las tablas de usuarios y proyectos */
-.th-sort{ display:inline-flex; align-items:center; gap:6px; font:inherit; color:inherit; letter-spacing:inherit; text-transform:inherit; cursor:pointer; }
+.th-sort{ display:inline-flex; align-items:center; gap: var(--sp-2); font:inherit; color:inherit; letter-spacing:inherit; text-transform:inherit; cursor:pointer; }
 .th-sort:hover{ color:var(--text); }
-.th-sort:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+.th-sort:focus-visible{ outline:2px solid var(--accent-ui); outline-offset:2px; border-radius:4px; }
 .th-sort__ind{ color:var(--accent-text); min-width:8px; font-variant-numeric:tabular-nums; }
 
 /* ---------- Modal ---------- */
-.modal{ position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:20px; }
+.modal{ position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding: var(--sp-5); }
 .modal__backdrop{ position:absolute; inset:0; background:var(--overlay); backdrop-filter:blur(4px); }
-.modal__panel{ position:relative; z-index:1; width:min(94vw,560px); max-height:90dvh; overflow-y:auto; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-lg); box-shadow:var(--shadow-lg); padding:26px; animation:pop var(--dur-slow) var(--ease) both; }
+/* El 94vw descuenta el carril del riel: si no, el dialogo se centra sobre el
+   VIEWPORT y no sobre el area de contenido, asi que queda corrido a la
+   izquierda y su borde puede meterse debajo del riel. */
+.modal__panel{ position:relative; z-index:1; width:min(calc(94vw - var(--rail-clear)),560px); max-height:90dvh; overflow-y:auto; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-lg); box-shadow:var(--shadow-lg); padding: var(--sp-6); animation:pop var(--dur-slow) var(--ease) both; }
 @keyframes pop{ from{opacity:0; transform:scale(.94) translateY(20px);} to{opacity:1; transform:none;} }
 /* El fondo entra con el panel: sin esto el desenfoque aparece de golpe. */
+/* stylelint-disable-next-line no-duplicate-selectors -- la animacion vive con las demas animaciones, no con la geometria del modal */
 .modal__backdrop{ animation:fundido var(--dur) var(--ease-out) both; }
 @keyframes fundido{ from{opacity:0;} to{opacity:1;} }
-.modal__head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.modal__head{ display:flex; align-items:flex-start; justify-content:space-between; gap: var(--sp-4); margin-bottom: var(--sp-5); }
 .modal__title{ font-family:var(--font-display); font-weight:600; font-size:22px; }
-.modal__foot{ display:flex; justify-content:flex-end; gap:12px; margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
+.modal__foot{ display:flex; justify-content:flex-end; gap: var(--sp-3); margin-top: var(--sp-6); padding-top: var(--sp-5); border-top:1px solid var(--line); }
 
 /* ---------- Theme toggle (igual que la SPA) ---------- */
 /* Botón de icono minimalista: sin borde ni caja, sólo un hover sutil */
-.theme-fab{ display:grid; place-items:center; width:38px; height:38px; border:none; border-radius:999px; background:transparent; color:var(--text-2); transition:color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
-.theme-fab svg{ width:18px; height:18px; }
-.theme-fab:hover{ color:var(--text); background:var(--surface-2); }
 
 /* ---------- Layout de la app ----------
    El dock de módulos flota fijo a la izquierda (app-nav-rail), así que el
    contenido reserva ese carril. En móvil el dock baja y reserva altura abajo. */
+/* stylelint-disable-next-line no-duplicate-selectors -- token derivado, declarado junto a su unico consumidor y no en el bloque de arriba */
 :root{ --rail-clear:calc(var(--rail-w) + var(--rail-gap) * 2); }
-body:has(app-nav-rail){ padding-left:var(--rail-clear); }
+body:has(app-nav-rail){ padding-left: var(--rail-clear); }
 @media (max-width:900px){
   :root{ --rail-clear:0px; }
   body:has(app-nav-rail){
-    padding-left:0;
-    padding-bottom:calc(var(--rail-w) + var(--rail-gap) * 2 + env(safe-area-inset-bottom,0px));
+    padding-left: 0;
+    padding-bottom: calc(var(--rail-w) + var(--rail-gap) * 2 + env(safe-area-inset-bottom,0px));
   }
 }
 
 /* Ya no hay barra superior: el riel lateral lleva marca, modulos y utilidades.
-   Se conservan .theme-fab y .avatar porque los usan el perfil y el login. */
+   Se conserva .avatar, que si se usa. */
 .avatar{
   display:grid; place-items:center; width:36px; height:36px; border-radius:var(--r-full);
   background:var(--surface-2); border:1px solid var(--line); overflow:hidden;
@@ -309,9 +391,9 @@ body:has(app-nav-rail){ padding-left:var(--rail-clear); }
 
 .page{
   position:relative; z-index:1;
-  max-width:var(--maxw); margin:0 auto;
+  max-width:var(--maxw); margin: 0 auto;
   /* Sin barra superior, el aire de arriba lo pone la propia pagina. */
-  padding:clamp(var(--sp-10),6vw,var(--sp-16)) clamp(var(--sp-4),4vw,var(--sp-8)) var(--sp-16);
+  padding: clamp(var(--sp-10),6vw,var(--sp-16)) clamp(var(--sp-4),4vw,var(--sp-8)) var(--sp-16);
 }
 /* Marca de agua del area: la variante de tema va aca porque una regla con
    prefijo html[data-theme] dentro de un componente Angular nunca matchea
@@ -369,30 +451,29 @@ html[data-theme="light"] .marca-fondo__txt{
 
 /* Para vistas de tablero, que necesitan mas ancho que una columna de lectura. */
 .page--ancha{ max-width:1440px; }
-.page__head{ margin-bottom:var(--sp-8); }
+.page__head{ margin-bottom: var(--sp-8); }
 .page__title{ font-family:var(--font-display); font-weight:700; font-size:clamp(var(--fs-xl),5vw,var(--fs-3xl)); letter-spacing:-.02em; line-height:var(--lh-tight); }
-.page__sub{ color:var(--text-2); margin-top:var(--sp-2); max-width:62ch; font-size:var(--fs-base); }
+.page__sub{ color:var(--text-2); margin-top: var(--sp-2); max-width:62ch; font-size:var(--fs-base); }
 
-.toolbar{ display:flex; align-items:center; gap:var(--sp-3); flex-wrap:wrap; margin-bottom:var(--sp-5); }
-.toolbar__spacer{ margin-left:auto; }
+.toolbar{ display:flex; align-items:center; gap: var(--sp-3); flex-wrap:wrap; margin-bottom: var(--sp-5); }
+/* Anidada dentro de una tarjeta: el aire de abajo lo pone el contenedor. */
+.toolbar--rasante{ margin:0; }
+.toolbar__spacer{ margin-left: auto; }
 
 
 /* Aviso "simulado" */
-.sim-note{ display:flex; align-items:center; gap:10px; padding:11px 14px; border:1px dashed var(--line-strong); border-radius:var(--r-md); color:var(--text-dim); font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; }
+.sim-note{ display:flex; align-items:center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4); border:1px dashed var(--line-strong); border-radius:var(--r-md); color:var(--text-dim); font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; }
 .sim-note svg{ width:15px; height:15px; flex:0 0 auto; }
 
 /* Grid de stats */
-.stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; }
-.stat{ border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:20px; }
+.stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap: var(--sp-4); }
+.stat{ border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding: var(--sp-5); }
 .stat__label{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); }
-.stat__value{ font-family:var(--font-display); font-weight:600; font-size:32px; margin-top:8px; }
+.stat__value{ font-family:var(--font-display); font-weight:600; font-size:32px; margin-top: var(--sp-2); }
 
 /* Animación de entrada */
 .enter{ animation:enter var(--dur-slow) var(--ease-out) both; }
 @keyframes enter{ from{opacity:0; transform:translateY(14px) scale(.99);} to{opacity:1; transform:none;} }
-@media (hover:none){
-  .btn:hover,.theme-fab:hover{ transform:none; }
-}
 @media (max-width:640px){
   .table th:nth-child(4),.table td:nth-child(4){ display:none; }
 }
@@ -400,11 +481,12 @@ html[data-theme="light"] .marca-fondo__txt{
 /* =============================================================
    15. PULIDO — transición de vista, prioridades, scrollbar
    ============================================================= */
+/* stylelint-disable-next-line no-duplicate-selectors -- la animacion de entrada vive en la seccion de movimiento, no en la de layout */
 .page{ animation:viewIn 380ms var(--ease) both; }
 @keyframes viewIn{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:none;} }
 
 /* Escala de prioridad (100% en grises) */
-.prio{ display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; padding:4px 11px; border-radius:999px; border:1px solid var(--line-strong); color:var(--text-2); white-space:nowrap; }
+.prio{ display:inline-flex; align-items:center; gap: var(--sp-2); font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; padding: var(--sp-1) var(--sp-3); border-radius:999px; border:1px solid var(--line-strong); color:var(--text-2); white-space:nowrap; }
 .prio::before{ content:""; width:6px; height:6px; border-radius:50%; background:currentColor; flex:0 0 auto; }
 .prio--urgente{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); font-weight:600; }
 .prio--alta{ color:var(--text); border-color:var(--text-2); }
@@ -412,7 +494,7 @@ html[data-theme="light"] .marca-fondo__txt{
 .prio--baja{ color:var(--text-dim); border-color:var(--line); }
 
 /* Estado con punto */
-.estado{ display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-2); }
+.estado{ display:inline-flex; align-items:center; gap: var(--sp-2); font-size:12.5px; color:var(--text-2); }
 .estado::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--text-dim); }
 .estado--aprobado::before,.estado--completada::before{ background:var(--accent); }
 .estado--descartado{ color:var(--text-dim); }
@@ -424,14 +506,7 @@ html[data-theme="light"] .marca-fondo__txt{
 *::-webkit-scrollbar-track{ background:transparent; }
 
 /* Búsqueda / filtros reutilizable */
-.filters{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
-.search{ display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:999px; padding:9px 15px; background:var(--surface); flex:1 1 240px; min-width:0; }
-.search svg{ width:16px; height:16px; color:var(--text-dim); flex:0 0 auto; }
-.search input{ flex:1 1 auto; min-width:0; background:none; border:none; outline:none; color:var(--text); font-size:14.5px; font-family:var(--font-body); }
-.search input::placeholder{ color:var(--text-dim); }
-.fchip{ padding:8px 14px; border:1px solid var(--line); border-radius:999px; color:var(--text-2); font-size:13px; white-space:nowrap; transition:transform var(--dur-fast) var(--ease), background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease); }
-.fchip:hover{ color:var(--text); border-color:var(--line-strong); }
-.fchip--on{ background:var(--accent); color:var(--bg); border-color:var(--accent); font-weight:500; }
+.filters{ display:flex; align-items:center; gap: var(--sp-3); flex-wrap:wrap; margin-bottom: var(--sp-5); }
 
 
 
@@ -504,6 +579,7 @@ html[data-theme="light"] .marca-fondo__txt{
 
 /* Las filas de una tabla entran igual, pero más rápido: son muchas y el ojo
    las recorre en bloque. */
+/* stylelint-disable-next-line no-duplicate-selectors -- idem: la animacion de fila vive con las animaciones */
 .table tbody tr { animation: enterFila var(--dur) var(--ease-out) both; }
 @keyframes enterFila { from { opacity: 0; transform: translateY(6px); } }
 .table tbody tr:nth-child(1) { animation-delay: 20ms; }
@@ -516,9 +592,6 @@ html[data-theme="light"] .marca-fondo__txt{
 /* ---------- Respuesta al toque ----------
    Hundir el control mientras se lo presiona es lo que hace que un botón se
    sienta físico. Baja rápido y vuelve con resorte. */
-.btn:active:not(:disabled),
-.fchip:active,
-.theme-fab:active,
 .tab:active,
 .segmento__b:active {
   transform: scale(.97);
@@ -563,7 +636,7 @@ html[data-theme="light"] .marca-fondo__txt{
     scroll-behavior: auto !important;
   }
   .bg__orb { animation: none !important; }
-  .btn:hover, .theme-fab:hover, .quick__card:hover, .card:hover { transform: none; }
+  .quick__card:hover, .card:hover { transform: none; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
 }
 
@@ -572,3 +645,434 @@ html[data-theme="light"] .marca-fondo__txt{
 @media (hover: none) {
   .quick__card:hover, .card:hover { transform: none; }
 }
+
+/* =============================================================
+   17. PRIMENG — el sistema de diseño aplicado a la librería
+   =============================================================
+
+   El preset (theme/blackbird-preset.ts) resuelve el color. Acá se resuelve lo
+   que un preset no puede expresar: el ritmo, la tipografía y el cristal.
+
+   Estas reglas van fuera de capa a propósito. El orden declarado en app.config
+   es `theme, base, primeng`, y lo que no está en ninguna capa gana sobre las
+   tres. Así los ajustes de marca se imponen sin un solo !important.
+   ============================================================= */
+
+/* ---------- Botones ---------- */
+/* La altura se DECLARA, no emerge del padding. Con padding vertical el alto
+   real salía de sumar 11+11+21.6 de contenido, o sea 43.6, y solo entonces
+   ganaba el min-height de 44. Tokenizar ese 11 a 12 lo llevaba a 45.6 y todos
+   los botones de la aplicación pasaban a 46px: se movía cada toolbar y cada pie
+   de modal. Con `0` en vertical el min-height es la unica fuente del alto, `0`
+   está en escala por definición, y el resultado es identico al de antes. */
+.p-button {
+  min-height: var(--ctl-md);
+  padding: 0 var(--sp-5);
+  border-radius: var(--r-full);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0;
+  gap: var(--sp-2);
+  white-space: nowrap;
+  transition: transform var(--dur-fast) var(--ease), background-color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease), color var(--dur) var(--ease), filter var(--dur) var(--ease);
+}
+.p-button .p-button-icon { font-size: 15px; }
+.p-button:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.04); }
+.p-button:not(:disabled):active { transform: scale(.97); transition-duration: var(--dur-fast); }
+.p-button-sm { min-height: var(--ctl-sm); padding: 0 var(--sp-3); font-size: 13px; }
+.p-button-sm .p-button-icon { font-size: 13px; }
+.p-button-icon-only { min-width: var(--ctl-md); padding: 0; }
+.p-button-icon-only.p-button-sm { min-width: var(--ctl-sm); }
+
+/* ---------- Campos: manda el ritmo de .field ---------- */
+.field .p-inputtext,
+.field .p-select,
+.field .p-multiselect,
+.field .p-textarea,
+.field .p-password,
+.field .p-datepicker,
+.field .p-iconfield,
+.field .p-inputnumber { width: 100%; }
+.field .p-password-input { width: 100%; }
+
+.p-inputtext,
+.p-select,
+.p-multiselect,
+.p-textarea,
+.p-datepicker-input {
+  font-family: var(--font-body);
+  font-size: 15px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+.p-inputtext, .p-textarea, .p-datepicker-input { padding: var(--sp-3) var(--sp-4); }
+.p-inputtext:enabled:hover,
+.p-select:not(.p-disabled):hover { border-color: var(--line-strong); }
+.p-inputtext:enabled:focus,
+.p-select:not(.p-disabled).p-focus { border-color: var(--accent); box-shadow: none; }
+.p-select-label { padding: var(--sp-3) var(--sp-4); font-size: 15px; }
+.p-select-dropdown { width: 38px; color: var(--text-dim); }
+.p-textarea { line-height: var(--lh-base); }
+
+/* ---------- Campos con icono ----------
+   PrimeNG deja lugar al icono sangrando el texto con
+   `padding-inline-start: calc((form.field.padding.x * 2) + icon.size)`.
+   Pero esa regla vive DENTRO de la capa `primeng`, y el `.p-inputtext {
+   padding: ... }` de arriba está FUERA de capa: lo no capado gana sobre lo
+   capado sin importar especificidad, asi que le borraba el sangrado y el texto
+   arrancaba justo encima del icono.
+
+   El proyecto lo devolvia a mano, pero solo bajo `.filters` y `.barra`. De los
+   cuatro buscadores de la aplicacion, uno solo cae ahi: el de usuarios usa
+   `.filters`, el maestro de proyectos usa `.mp__acciones`, el tablero usa
+   `.filtros` —en español— y los campos de perfil usan `.field`. Tres de cuatro
+   se veian con el texto pisando el icono.
+
+   Esta regla restituye la formula de PrimeNG para TODOS los contextos, con los
+   mismos valores que el preset ya declara: --sp-4 es el padding horizontal que
+   el preset le pasa a formField, y --p-icon-size es el iconSize del propio
+   preset, asi que si cambia el tamano del icono el sangrado lo sigue solo. Cualquier campo con icono que se
+   agregue en el futuro queda cubierto sin tener que acordarse de nada. */
+.p-iconfield .p-inputtext:not(:first-child),
+.p-iconfield .p-inputwrapper:not(:first-child) .p-inputtext {
+  padding-inline-start: calc((var(--sp-4) * 2) + var(--p-icon-size));
+}
+.p-iconfield .p-inputtext:not(:last-child) {
+  padding-inline-end: calc((var(--sp-4) * 2) + var(--p-icon-size));
+}
+
+/* Buscador de la barra de filtros: solo la forma, el sangrado ya está arriba. */
+.filters .p-iconfield,
+.filtros .p-iconfield,
+.barra .p-iconfield { flex: 1 1 240px; min-width: 0; }
+.filters .p-iconfield .p-inputtext,
+.filtros .p-iconfield .p-inputtext,
+.barra .p-iconfield .p-inputtext {
+  width: 100%;
+  border-radius: var(--r-full);
+  background: var(--surface);
+}
+.p-iconfield .p-inputicon { color: var(--text-dim); }
+
+/* ---------- Casillas dentro de .check ----------
+   El `align-items: center` que vivia acá se movio a la regla de .check de mas
+   arriba: eran dos reglas de la misma especificidad discutiendo la misma
+   propiedad, asi que el flex-start declarado alla era letra muerta y nadie lo
+   sabia al leerlo. */
+.check .p-checkbox { flex: 0 0 auto; }
+.perm-grid .check__meta { min-width: 0; }
+
+/* ---------- Interruptor con su leyenda ---------- */
+.interruptor { display: inline-flex; align-items: center; gap: var(--sp-3); font-size: 14px; color: var(--text-2); }
+
+/* ---------- Grupo segmentado ---------- */
+.p-selectbutton { border: 1px solid var(--line); border-radius: var(--r-full); background: var(--surface); padding: var(--sp-1); gap: 0; }
+.p-selectbutton .p-togglebutton {
+  border: none; border-radius: var(--r-full); background: transparent; color: var(--text-2);
+  /* 36 y no 34: se alinea con .p-button-sm, que es el control con el que
+     convive en las mismas barras. Altura declarada, padding solo horizontal. */
+  min-height: var(--ctl-sm); padding: 0 var(--sp-4); font-size: 13px; font-weight: 500; gap: var(--sp-2);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.p-selectbutton .p-togglebutton:active { transform: scale(.97); }
+.p-selectbutton .p-togglebutton.p-togglebutton-checked { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.p-selectbutton .p-togglebutton-content { background: none; box-shadow: none; padding: 0; }
+.p-selectbutton .p-togglebutton i { font-size: 14px; }
+
+/* ---------- Tabla: la misma que ya tenía la plataforma ---------- */
+.p-datatable { font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.p-datatable-table { width: 100%; }
+.p-datatable-thead > tr > th {
+  text-align: left;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-2xs);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: var(--sp-4);
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+.p-datatable-tbody > tr > td {
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2);
+  vertical-align: middle;
+}
+.p-datatable-tbody > tr > td:first-child { color: var(--text); font-weight: 600; }
+.p-datatable-tbody > tr:last-child > td { border-bottom: none; }
+.p-datatable-tbody > tr:hover > td { background: var(--surface-2); }
+.p-datatable-tbody > tr.destacada > td { background: var(--accent-soft); }
+.p-datatable-tbody > tr.destacada > td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.p-datatable-sm .p-datatable-thead > tr > th,
+.p-datatable-sm .p-datatable-tbody > tr > td { padding: var(--sp-3) var(--sp-4); }
+
+/* Celda de acciones: los botones no estiran la fila */
+/* .table__actions y .table__min vivian tambien acá, repetidas. La primera
+   contradecia en silencio a su gemela de mas arriba —flex-wrap wrap contra
+   nowrap— y la segunda era una copia identica declaracion por declaracion.
+   Las dos quedan definidas una sola vez, arriba. */
+
+/* ---------- Paginador ---------- */
+/* Envuelve, y al envolverse centra. Vive en dos anchos muy distintos: debajo de
+   una tabla a todo lo ancho, y dentro de la columna FIJA de 320px de las vistas
+   maestro-detalle.
+
+   Ahi el ancho depende de la cantidad de paginas, y por eso el defecto se veia
+   en proyectos y no en usuarios. Medido: el informe ocupa 106px, cada boton
+   mide --ctl-sm con 4px de gap.
+     usuarios  — 18 registros = 3 paginas -> prev + 3 + next = 5 botones = 196px
+                 106 + 196 = 302, entra en 320.
+     proyectos — 29 registros = 4 paginas -> prev + 4 + next = 6 botones = 236px
+                 106 + 236 = 342, NO entra.
+   (Los iconos de primera y ultima pagina solo aparecen con mas de 5 paginas,
+   asi que todavia no suman.)
+
+   Como la columna es de ancho fijo, el excedente no la ensancha: se derrama
+   sobre la columna del detalle, que es el recuadro cortado que se veia. Y con
+   el margin-right:auto del informe, los botones que bajaban quedaban tirados a
+   un extremo en vez de alineados.
+
+   Con wrap + center: en ancho sobrado el informe queda a la izquierda y los
+   botones a la derecha, igual que antes; cuando no entran, bajan centrados. */
+.p-paginator {
+  background: transparent;
+  border: none;
+  /* Con padding horizontal: los encabezados de las listas maestro-detalle usan
+     var(--sp-4) a los lados, y sin el los botones tocaban el borde de la caja y
+     se leian como si se salieran. */
+  padding: var(--sp-4) var(--sp-4) var(--sp-3);
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: var(--sp-2);
+}
+.p-paginator .p-paginator-page,
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next,
+/* --ctl-sm y no 34px: era uno de los tamanos de control sueltos que existian
+   antes de que la escala de control existiera. */
+.p-paginator .p-paginator-last { min-width: var(--ctl-sm); height: var(--ctl-sm); border-radius: var(--r-full); }
+.p-paginator .p-paginator-page.p-paginator-page-selected { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+
+/* ---------- Etiquetas de estado ---------- */
+.p-tag {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 500;
+  border-radius: var(--r-full);
+  padding: var(--sp-1) var(--sp-3);
+  gap: var(--sp-2);
+}
+.p-tag .p-tag-icon { font-size: 10px; }
+
+/* ---------- Diálogos: el respiro que tenía .modal__panel ---------- */
+.p-dialog { border-radius: var(--r-lg); }
+.p-dialog-header { padding: var(--sp-6) var(--sp-6) 0; border: none; }
+.p-dialog-content { padding: var(--sp-5) var(--sp-6); }
+.p-dialog-footer {
+  position: relative;
+  padding: var(--sp-5) var(--sp-6) var(--sp-6);
+  gap: var(--sp-3);
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 0 var(--sp-6) 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+.p-dialog-title,
+.p-dialog .modal__title { font-family: var(--font-display); font-weight: 600; font-size: 22px; }
+.p-confirmdialog .p-confirmdialog-message { font-size: 15px; line-height: var(--lh-base); color: var(--text-2); }
+
+/* ---------- Avisos ---------- */
+.p-toast { width: min(92vw, 380px); }
+.p-toast-message { border-left: 3px solid var(--accent); }
+.p-toast-message-error { border-left-color: var(--danger); }
+.p-toast-message-content { padding: var(--sp-4) var(--sp-4); gap: var(--sp-3); align-items: center; }
+.p-toast-detail { color: var(--text); font-size: 14px; margin: 0; }
+.p-toast-summary { display: none; }
+
+/* ---------- Knob ---------- */
+.p-knob-text { font-family: var(--font-display); font-weight: 600; fill: var(--text); }
+
+/* ---------- Cristal: todo lo que flota sobre la página ---------- */
+.p-dialog,
+.p-confirmdialog,
+.p-select-overlay,
+.p-multiselect-overlay,
+.p-autocomplete-overlay,
+.p-datepicker-panel,
+.p-popover,
+.p-menu,
+.p-toast-message {
+  background: var(--glass-rail);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--shadow-rail), inset 0 1px 0 var(--glass-hi), inset 0 -1px 0 rgba(0, 0, 0, .18);
+}
+.p-dialog-mask, .p-overlay-mask { backdrop-filter: blur(4px); }
+.p-tooltip-text { background: var(--surface); border: 1px solid var(--line-strong); color: var(--text); font-size: 12.5px; }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .p-dialog, .p-confirmdialog, .p-select-overlay, .p-popover, .p-toast-message, .p-menu {
+    background: var(--surface);
+  }
+}
+
+/* ---------- Correcciones sobre lo que se vio en pantalla ---------- */
+
+/* Los botones de texto tomaban un fondo claro al pasar el cursor: en un tema
+   oscuro eso es un disco blanco. Van a la superficie de la marca. */
+.p-button-text:not(:disabled):hover,
+.p-button-text:not(:disabled):active,
+.p-button-outlined:not(:disabled):hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.p-button-text.p-button-danger:not(:disabled):hover { background: var(--danger-bg); color: var(--danger-text); }
+/* Sin regla de :hover para el borde. Habia una que fijaba var(--line-strong),
+   el mismo valor que esta: era defensiva contra el hover de PrimeNG, pero no
+   hace falta. Esta regla esta FUERA de capa y la de PrimeNG dentro, y lo no
+   capado gana sobre lo capado sin importar la especificidad. */
+.p-button-outlined { border-color: var(--line-strong); color: var(--text-2); }
+
+/* Las etiquetas seguían la paleta de PrimeNG (verde, naranja, azul). La
+   plataforma nunca usó eso: sus estados son una pí­ldora con borde y un punto
+   de color, con lima reservada para lo positivo. */
+/* stylelint-disable-next-line no-duplicate-selectors -- la tipografia de .p-tag se define arriba; acá va solo el color, que es lo que este comentario explica */
+.p-tag {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--text-2);
+}
+.p-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex: 0 0 auto;
+}
+.p-tag-success { color: var(--text); }
+.p-tag-success::before { background: var(--accent); }
+.p-tag-warn::before { background: var(--bb-mint); }
+.p-tag-info::before { background: var(--bb-blue); }
+.p-tag-secondary { color: var(--text-dim); }
+.p-tag-danger {
+  color: var(--text);
+  background: var(--danger-bg);
+  border-color: rgba(242, 84, 91, .4);
+}
+.p-tag-danger::before { background: var(--danger); }
+/* Cuando la etiqueta ya trae icono, el punto sobra. */
+.p-tag:has(.p-tag-icon)::before { display: none; }
+
+/* El nombre de una persona no se parte en dos líneas. */
+/* stylelint-disable-next-line no-duplicate-selectors -- ajuste de tabla, junto a las demas reglas de tabla */
+.celda-persona { white-space: nowrap; }
+.p-datatable-tbody > tr > td .celda-persona { max-width: 100%; }
+
+/* El botón del calendario venía con fondo claro. */
+.p-datepicker-dropdown {
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--text-2);
+}
+.p-datepicker-dropdown:not(:disabled):hover { background: var(--surface); color: var(--text); }
+
+/* =============================================================
+   18. TABLAS — reglas transversales
+
+   Van acá y no en cada componente porque son decisiones del sistema: si cada
+   tabla resuelve la alineación por su cuenta, terminan alineadas distinto y
+   comparar entre módulos deja de ser posible.
+   ============================================================= */
+
+/* Columnas numéricas CUANTITATIVAS (importes, conteos, medidas, porcentajes):
+   a la derecha y con cifras de ancho fijo, para que los dígitos significativos
+   caigan en la misma vertical y comparar entre filas no cueste esfuerzo.
+
+   Los números CUALITATIVOS —fechas, códigos, teléfonos— NO llevan esta clase:
+   no son magnitudes, son etiquetas que resultaron ser dígitos. */
+.col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Se aplica al th y al td: solo en el td deja el encabezado desalineado
+   respecto de su columna, y ese hueco blanco se lee como error de maquetado. */
+.p-datatable-thead > tr > th.col-num,
+.p-datatable-tbody > tr > td.col-num { text-align: right; }
+
+/* La columna de plazo no parte su texto. Con table-layout auto el reparto se lo
+   lleva la columna del proyecto —nombre mas la nota de abajo— y a esta le queda
+   el ancho de su encabezado, que es corto: "Sin fecha limite" se rompia en tres
+   lineas. Al th Y al td, mismo patron que .col-num. */
+.p-datatable-thead > tr > th.col-plazo,
+.p-datatable-tbody > tr > td.col-plazo { white-space: nowrap; }
+
+/* La columna de acciones no crece: ocupa lo que ocupan sus iconos. */
+.col-acciones {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Las acciones se revelan al pasar el cursor. Una tabla es densa por
+   naturaleza, así que la meta no es llenarla de botones sino mostrar la acción
+   justa donde y cuando hace falta. Quedan visibles al enfocar con teclado y en
+   pantallas táctiles, donde no existe el hover. */
+.acciones {
+  display: inline-flex;
+  gap: var(--sp-1);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.p-datatable-tbody > tr:hover .acciones,
+.p-datatable-tbody > tr:focus-within .acciones { opacity: 1; }
+
+@media (hover: none) {
+  .acciones { opacity: 1; }
+}
+
+/* Dato principal y dato de apoyo dentro de la misma celda. Así una tabla de
+   seis columnas dice lo que otra necesitaría diez para decir, sin ensanchar. */
+.celda-principal { display: block; font-weight: 600; }
+.celda-apoyo {
+  display: block;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 2px de ajuste optico bajo el dato principal de la celda */
+  margin-top: 2px;
+}
+
+/* El encabezado se queda al hacer scroll: al bajar cien filas, el contexto de
+   qué columna se está mirando tiene que seguir ahí.
+
+   `position: sticky` va acá y no se hereda del tema: el preset de marca no trae
+   esa parte, y sin ella `[scrollable]` da scroll pero la cabecera se va con las
+   filas. El fondo opaco es imprescindible — sin él, las filas se transparentan
+   por debajo del encabezado al desplazarse. */
+/* UN SOLO nivel de sticky, y en el <thead>, que es donde PrimeNG ya lo pone.
+   PrimeNG 21 aplica `position: sticky` INLINE al thead y no le declara `top`.
+   Si ademas cada <th> era sticky, el th tenia como rectangulo de restriccion la
+   tabla COMPLETA, asi que podia deslizarse por encima del <tbody>: eso hacia
+   que "No tenes asignaciones" se leyera encima de los encabezados. El fondo
+   opaco se queda en el th, que es quien lo pinta. */
+.p-datatable-scrollable .p-datatable-thead { top: 0; z-index: 2; }
+.p-datatable-scrollable .p-datatable-thead > tr > th {
+  position: static;
+  background: var(--surface-2);
+}
+
+/* El icono de orden no debe empujar el texto del encabezado ni desalinearlo
+   respecto del contenido de su columna. */
+.p-datatable-thead > tr > th.col-num .p-datatable-sort-icon { margin-left: var(--sp-1); }

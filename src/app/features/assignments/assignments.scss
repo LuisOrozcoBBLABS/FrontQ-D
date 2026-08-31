@@ -38,7 +38,7 @@
   place-items: center;
   min-width: 24px;
   height: 22px;
-  padding: 0 7px;
+  padding: 0 var(--sp-2);
   border-radius: var(--r-full);
   background: var(--surface-2);
   border: 1px solid var(--line);
@@ -59,13 +59,13 @@
 .fila__link { color: inherit; font-weight: 600; }
 .fila__link:hover { color: var(--accent-text); }
 
-.plazo--alerta { color: var(--danger); font-weight: 600; }
-.plazo__icono { display: inline-block; width: 13px; height: 13px; vertical-align: -2px; margin-right: 4px; }
+.plazo--alerta { color: var(--danger-text); font-weight: 600; }
+.plazo__icono { display: inline-block; width: 13px; height: 13px; vertical-align: -2px; margin-right: var(--sp-1); }
 
 .cerrada {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--text-dim);
@@ -79,7 +79,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  padding: 3px 10px 3px 3px;
+  padding: var(--sp-1) var(--sp-3) var(--sp-1) var(--sp-1);
   border: 1px solid var(--line);
   border-radius: var(--r-full);
   background: var(--surface-2);
@@ -87,7 +87,7 @@
   white-space: nowrap;
 }
 .envio__canal {
-  padding: 3px 8px;
+  padding: var(--sp-1) var(--sp-2);
   border-radius: var(--r-full);
   background: var(--surface);
   border: 1px solid var(--line);
@@ -118,8 +118,11 @@
 
 .vista { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-4); flex-wrap: wrap; }
 
-.segmento { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: var(--r-full); background: var(--surface); flex: 0 0 auto; }
-.segmento__b { display: inline-flex; align-items: center; gap: 7px; padding: 6px 14px; border-radius: var(--r-full); font-size: 13px; color: var(--text-2); transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
+/* Mismos valores que .p-selectbutton en styles.scss: es el mismo control,
+   hecho a mano, y tenerlos distintos hacia que dos segmentados de la misma
+   pantalla no coincidieran de alto. */
+.segmento { display: inline-flex; gap: 0; padding: var(--sp-1); border: 1px solid var(--line); border-radius: var(--r-full); background: var(--surface); flex: 0 0 auto; }
+.segmento__b { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: var(--ctl-sm); padding: 0 var(--sp-4); border-radius: var(--r-full); font-size: 13px; color: var(--text-2); transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
 .segmento__b svg { width: 15px; height: 15px; }
 .segmento__b:hover { color: var(--text); }
 .segmento__b--on { background: var(--accent); color: var(--on-accent); font-weight: 600; }
@@ -127,7 +130,7 @@
 .kanban { display: grid; grid-template-columns: repeat(4, minmax(210px, 1fr)); gap: var(--sp-3); align-items: start; overflow-x: auto; padding-bottom: var(--sp-2); }
 
 .kcol { display: flex; flex-direction: column; min-height: 180px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease), opacity var(--dur) var(--ease); }
-.kcol__head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.kcol__head { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
 .kcol__punto { width: 8px; height: 8px; border-radius: var(--r-full); background: currentColor; flex: 0 0 auto; }
 .kcol__t { font-size: 13px; font-weight: 600; color: var(--text); }
 .kcol__n { margin-left: auto; font-size: 11.5px; color: var(--text-dim); }
@@ -139,22 +142,23 @@
 .kcol--sobre { background: var(--surface-2); border-style: solid; box-shadow: inset 0 0 0 1px var(--accent); }
 .kcol--vetada { opacity: 0.42; }
 
-.kard { display: flex; flex-direction: column; gap: 7px; padding: 12px; border: 1px solid var(--line); border-left: 3px solid var(--line-strong); border-radius: var(--r-md); background: var(--bg); cursor: grab; transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
+.kard { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--line); border-left: 3px solid var(--line-strong); border-radius: var(--r-md); background: var(--bg); cursor: grab; transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease); }
 .kard:hover { border-color: var(--line-strong); box-shadow: var(--shadow); transform: translateY(-1px); }
 .kard:active { cursor: grabbing; }
 .kard[draggable="false"] { cursor: default; }
 .kard--vencida { border-left-color: var(--danger); }
 .kard--moviendo { opacity: 0.55; pointer-events: none; }
 
-.kard__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.kard__top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
 .kard__alerta { width: 15px; height: 15px; color: var(--danger); }
 .kard__proyecto { font-size: 14px; font-weight: 600; color: var(--text); text-decoration: none; line-height: var(--lh-snug); }
 .kard__proyecto:hover { color: var(--accent-text); }
 .kard__nota { font-size: 12.5px; color: var(--text-2); line-height: var(--lh-snug); }
 .kard__plazo { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; color: var(--text-dim); }
-.kard__plazo--alerta { color: var(--danger); }
-.kard__pie { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
-.kard__acciones { display: flex; align-items: center; gap: 6px; }
+.kard__plazo--alerta { color: var(--danger-text); }
+/* stylelint-disable-next-line declaration-property-value-disallowed-list -- 1-2px de ajuste optico entre lineas de texto, por debajo del ritmo */
+.kard__pie { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin-top: 2px; }
+.kard__acciones { display: flex; align-items: center; gap: var(--sp-2); }
 .kard__b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: var(--r-sm); border: 1px solid var(--line); color: var(--text-dim); transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease); }
 .kard__b svg { width: 14px; height: 14px; }
 .kard__b:hover:not(:disabled) { color: var(--text); border-color: var(--line-strong); }
@@ -170,4 +174,4 @@
   .kard:hover { transform: none; }
 }
 
-.cerrada-fila { display: inline-flex; align-items: center; gap: 10px; }
+.cerrada-fila { display: inline-flex; align-items: center; gap: var(--sp-3); }
