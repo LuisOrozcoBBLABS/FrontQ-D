@@ -145,7 +145,7 @@ export class ProjectModal {
       // sin esto el proyecto nuevo no aparece hasta recargar.
       await this.projectsSvc.recargar();
       this.guardado.emit(p);
-      this.cerrar();
+      this.cerrarYa();
     } catch (e) {
       this.error.set(mensajeDeError(e, 'No se pudo guardar el proyecto.'));
     } finally {
@@ -158,8 +158,25 @@ export class ProjectModal {
     if (!abierto) this.cerrar();
   }
 
+  /**
+   * Cierre pedido por la persona: el botón Cancelar, Escape o el clic en el
+   * fondo. A mitad de un guardado no se atiende, para no dejar la pantalla sin
+   * saber si el proyecto quedó registrado.
+   */
   protected cerrar(): void {
-    if (this.guardando()) return; // no se cierra a mitad de un guardado
+    if (this.guardando()) return;
+    this.cerrarYa();
+  }
+
+  /**
+   * Cierre incondicional. Existe separado de `cerrar()` y no es un detalle:
+   * cuando los dos eran el mismo método, guardar dejaba el modal abierto. El
+   * cierre del final de `guardar()` ocurre DENTRO del try, con `guardando`
+   * todavía en true —se apaga en el `finally`, que corre después—, así que el
+   * guard de "no cerrar a mitad de un guardado" se comía el cierre del
+   * guardado que sí había terminado bien.
+   */
+  private cerrarYa(): void {
     this.abierto.set(false);
     this.error.set(null);
   }

@@ -142,6 +142,41 @@ describe('ProjectModal · crear', () => {
     expect(projects.recargas).toBe(1);
   });
 
+  it('se cierra al registrar', async () => {
+    // Regresión: `cerrar()` corría dentro del try, con `guardando` todavía en
+    // true, y su guard de "no cerrar a mitad de un guardado" se comía el cierre
+    // del guardado que sí había terminado. El proyecto quedaba creado y el
+    // modal abierto, como si no hubiera pasado nada.
+    const { fixture, projects } = await montar();
+
+    escribir('#pf-n', 'FreightAudit');
+    escribir('#pf-pr', 'Las facturas se auditan a mano.');
+    borradorDe(fixture).update(b => ({ ...b, sector: 'Logística' }));
+    await fixture.whenStable();
+
+    boton('Registrar el proyecto').click();
+    await fixture.whenStable();
+
+    expect(projects.creados.length).toBe(1);
+    expect(fixture.componentInstance.abierto()).toBe(false);
+  });
+
+  it('un guardado que falla NO cierra: el formulario queda para corregir', async () => {
+    const { fixture, projects } = await montar();
+    projects.create = () => Promise.reject(new Error('boom'));
+
+    escribir('#pf-n', 'FreightAudit');
+    escribir('#pf-pr', 'Las facturas se auditan a mano.');
+    borradorDe(fixture).update(b => ({ ...b, sector: 'Logística' }));
+    await fixture.whenStable();
+
+    boton('Registrar el proyecto').click();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.abierto()).toBe(true);
+    expect(document.querySelector('.pm__error')).not.toBeNull();
+  });
+
   it('no guarda si falta lo obligatorio, y dice qué falta', async () => {
     const { fixture, projects } = await montar();
 
@@ -163,6 +198,15 @@ describe('ProjectModal · editar', () => {
 
     expect(projects.editados.length).toBe(1);
     expect('estado' in projects.editados[0].patch).toBe(false);
+  });
+
+  it('se cierra al guardar los cambios', async () => {
+    const { fixture } = await montar('p1');
+
+    boton('Guardar cambios').click();
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.abierto()).toBe(false);
   });
 
   it('precarga el cliente y el tipo de prestación del proyecto', async () => {
