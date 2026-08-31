@@ -584,6 +584,31 @@ html[data-theme="light"] .marca-fondo__txt{
 .toolbar__spacer{ margin-left: auto; }
 
 
+/* Aviso de error de formulario. Estaba duplicado en onboarding.scss y en
+   project-form.scss; ahora lo usan tres pantallas y los estilos de componente
+   son scoped, asi que vive aca. */
+.login__error{ color:var(--text); font-size:13.5px; padding:11px 14px; border:1px solid var(--line-strong); border-left:3px solid var(--accent); border-radius:var(--r-md); background:var(--surface-2); }
+
+/* Solo para lectores de pantalla. Tecnica de clip y NO display:none/hidden: el
+   elemento tiene que seguir en el arbol de accesibilidad y en el orden de
+   tabulacion. `hidden` en un <input type="file"> lo saca del Tab, que es el
+   problema que tenia profile.html. */
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+
+/* Esqueleto/banda indeterminada. Promovido desde projects.scss con el mismo
+   nombre, para que projects.html no cambie y lo pueda usar el stepper de
+   /documentos. */
+.esq{
+  display:block; height:11px; width:70%; border-radius:var(--r-sm);
+  background:linear-gradient(90deg, var(--surface-2) 0%, var(--line) 50%, var(--surface-2) 100%);
+  background-size:200% 100%;
+  animation:brillo 1.4s ease-in-out infinite;
+}
+@keyframes brillo{ 0%{ background-position:200% 0; } 100%{ background-position:-200% 0; } }
+
 /* Aviso "simulado" */
 .sim-note{ display:flex; align-items:center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4); border:1px dashed var(--line-strong); border-radius:var(--r-md); color:var(--text-dim); font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; }
 .sim-note svg{ width:15px; height:15px; flex:0 0 auto; }
@@ -595,8 +620,19 @@ html[data-theme="light"] .marca-fondo__txt{
 .stat__value{ font-family:var(--font-display); font-weight:600; font-size:32px; margin-top: var(--sp-2); }
 
 /* Animación de entrada */
-.enter{ animation:enter var(--dur-slow) var(--ease-out) both; }
-@keyframes enter{ from{opacity:0; transform:translateY(14px) scale(.99);} to{opacity:1; transform:none;} }
+.enter{ animation:enter 420ms var(--ease) both; }
+@keyframes enter{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:none;} }
+
+@media (prefers-reduced-motion: reduce){
+  *{ scroll-behavior:auto !important; }
+  .bg__orb{ animation:none !important; }
+  .esq{ animation:none; }
+  .enter{ animation:none; }
+  .btn:hover,.theme-fab:hover{ transform:none; }
+}
+@media (hover:none){
+  .btn:hover,.theme-fab:hover{ transform:none; }
+}
 @media (max-width:640px){
   .table th:nth-child(4),.table td:nth-child(4){ display:none; }
 }

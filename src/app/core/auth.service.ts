@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { TokenStore } from './api/token.store';
+import { olvidarBorrador } from './documents.service';
 import { User } from './models';
 
 interface TokenPair {
@@ -77,6 +78,8 @@ export class AuthService {
     }
     this.tokens.limpiar();
     this._user.set(null);
+    // El borrador de /documentos es de esta persona: no lo hereda la siguiente.
+    olvidarBorrador();
   }
 
   /** Trae el perfil con los permisos efectivos. */

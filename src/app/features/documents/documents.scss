@@ -1,34 +1,49 @@
-.proximo {
+/* Antes esta pantalla era un "Coming soon" y el bloque se llamaba .proximo.
+   Ahora es una herramienta en uso, así que el bloque es .docs.
+
+   Se conservan los halos, la píldora y los tres pasos — la identidad del módulo
+   y, en el caso de los pasos, la pieza que se convirtió en el stepper real.
+
+   Se borraron .proximo__titulo y .proximo__brillo con su @keyframes barrido: un
+   clamp(3.4rem, 12vw, 8.5rem) y un degradado recortado sobre el texto son
+   recursos de página de lanzamiento. Una herramienta usa .page__title. */
+
+.docs {
   position: relative;
+  overflow: hidden;
+}
+
+/* El centrado vertical solo tiene sentido mientras la pantalla es un anuncio:
+   en revisión hay un formulario largo, y centrarlo lo dejaría cortado. */
+.docs--centrado {
   min-height: calc(100dvh - 6rem);
   display: grid;
   place-items: center;
-  overflow: hidden;
   text-align: center;
 }
 
 /* ---------- Halos ---------- */
-.proximo__aura {
+.docs__aura {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
 }
-.proximo__orbe {
+.docs__orbe {
   position: absolute;
   border-radius: var(--r-full);
   filter: blur(90px);
   opacity: 0.5;
   animation: flotar 14s var(--ease) infinite alternate;
 }
-.proximo__orbe--1 {
+.docs__orbe--1 {
   width: 460px;
   height: 460px;
   top: -12%;
   left: 8%;
   background: var(--orb-1);
 }
-.proximo__orbe--2 {
+.docs__orbe--2 {
   width: 380px;
   height: 380px;
   right: 6%;
@@ -41,7 +56,7 @@
   to { transform: translate3d(0, -28px, 0) scale(1.08); }
 }
 
-.proximo__centro {
+.docs__hero {
   position: relative;
   z-index: 1;
   max-width: 780px;
@@ -52,41 +67,21 @@
   gap: var(--sp-4);
 }
 
-/* ---------- Titular ---------- */
-.proximo__titulo {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(3.4rem, 12vw, 8.5rem);
-  line-height: 0.92;
-  letter-spacing: -0.045em;
-  margin: 0;
-}
-
-/* El degradado se recorta sobre el texto y un brillo lo cruza cada tanto. */
-.proximo__brillo {
+.docs__revision {
   position: relative;
-  display: inline-block;
-  background: linear-gradient(
-    100deg,
-    var(--text) 0%,
-    var(--text) 34%,
-    var(--accent-text) 50%,
-    var(--text) 66%,
-    var(--text) 100%
-  );
-  background-size: 220% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: barrido 5.5s var(--ease) infinite;
-}
-@keyframes barrido {
-  0%, 62% { background-position: 130% 0; }
-  100% { background-position: -30% 0; }
+  z-index: 1;
+  padding-top: var(--sp-4);
 }
 
-/* ---------- Píldora ---------- */
-.proximo__pill {
+.docs__bajada { text-align: center; }
+.docs__bajada b { color: var(--text); font-weight: 600; }
+
+.docs__aviso { text-align: left; }
+.docs__zona { width: 100%; }
+.docs__error { margin-top: 12px; text-align: left; }
+
+/* ---------- Píldora de fase ---------- */
+.docs__pill {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
@@ -102,7 +97,7 @@
   text-transform: uppercase;
   color: var(--text-2);
 }
-.proximo__punto {
+.docs__punto {
   width: 7px;
   height: 7px;
   border-radius: var(--r-full);
@@ -116,16 +111,16 @@
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 
-.proximo__bajada {
-  font-size: clamp(0.95rem, 1.6vw, 1.12rem);
-  line-height: var(--lh-base);
-  color: var(--text-2);
-  max-width: 60ch;
+.docs__espera {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
 }
-.proximo__bajada b { color: var(--text); font-weight: 600; }
 
-/* ---------- Pasos ---------- */
-.proximo__pasos {
+/* ---------- Stepper ---------- */
+.docs__pasos {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-3);
@@ -134,9 +129,8 @@
   list-style: none;
   padding: 0;
   text-align: left;
-  counter-reset: none;
 }
-.proximo__paso {
+.docs__paso {
   position: relative;
   padding: var(--sp-4);
   border: 1px solid var(--glass-line);
@@ -145,38 +139,85 @@
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   box-shadow: inset 0 1px 0 var(--glass-hi);
-  transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  transition: border-color var(--dur) var(--ease), opacity var(--dur) var(--ease);
 }
-.proximo__paso:hover {
-  transform: translateY(-3px);
-  border-color: var(--line-strong);
-}
-.proximo__n {
+
+/* Un indicador de estado no es interactivo: el hover:translateY que tenía
+   sugería que se podía hacer clic. */
+.docs__paso--pendiente { opacity: 0.55; }
+.docs__paso--activo { border-color: var(--accent); }
+.docs__paso--hecho .docs__n { color: var(--accent-text); }
+.docs__paso--hecho .docs__n::after { content: " ✓"; }
+
+.docs__n {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.18em;
   color: var(--accent-text);
 }
-.proximo__paso-t {
+.docs__paso-t {
   font-size: 14.5px;
   font-weight: 600;
   color: var(--text);
   margin: var(--sp-2) 0 var(--sp-2);
 }
-.proximo__paso-x {
+.docs__paso-x {
   font-size: 13px;
   line-height: var(--lh-snug);
   color: var(--text-dim);
 }
 
+/* Progreso determinado del paso 01: el único porcentaje real que hay. */
+.docs__barra {
+  margin-top: 10px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.docs__barra-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 180ms linear;
+}
+
+/* Banda indeterminada (.esq, de styles.scss) para 02 y 03. */
+.docs__banda {
+  margin-top: 10px;
+  width: 100%;
+  height: 6px;
+  border-radius: var(--r-full);
+}
+
+/* ---------- Avisos del saneamiento ---------- */
+.docs__avisos {
+  max-width: 760px;
+  margin-bottom: var(--sp-4);
+  text-align: left;
+}
+.docs__avisos-t {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.docs__avisos ul { margin: 0; padding-left: 18px; }
+.docs__avisos li {
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: var(--lh-snug);
+  margin-bottom: 4px;
+}
+
 @media (max-width: 760px) {
-  .proximo__pasos { grid-template-columns: 1fr; }
+  .docs__pasos { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .proximo__orbe,
-  .proximo__brillo,
-  .proximo__punto { animation: none; }
-  .proximo__paso:hover { transform: none; }
-  .proximo__brillo { color: var(--text); background: none; -webkit-background-clip: initial; background-clip: initial; }
+  .docs__orbe,
+  .docs__punto { animation: none; }
+  .docs__barra-fill { transition: none; }
 }

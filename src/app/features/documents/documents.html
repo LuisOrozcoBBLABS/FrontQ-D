@@ -1,36 +1,139 @@
-<div class="page proximo">
-  <!-- Halos de color detrás del titular. Decorativos: no reciben eventos. -->
-  <div class="proximo__aura" aria-hidden="true">
-    <span class="proximo__orbe proximo__orbe--1"></span>
-    <span class="proximo__orbe proximo__orbe--2"></span>
+<div class="page docs" [class.docs--centrado]="fase() !== 'revision'">
+  <!-- Halos de color. Decorativos: no reciben eventos. Son la identidad del módulo. -->
+  <div class="docs__aura" aria-hidden="true">
+    <span class="docs__orbe docs__orbe--1"></span>
+    <span class="docs__orbe docs__orbe--2"></span>
   </div>
 
-  <div class="proximo__centro enter">
-    <p class="eyebrow">Documentos</p>
+  @if (fase() !== 'revision') {
+    <div class="docs__hero enter">
+      <p class="eyebrow">Documentos</p>
+      <h1 class="page__title">Un documento, un borrador de proyecto</h1>
+      <p class="page__sub docs__bajada">
+        Subí un <b>PDF</b> o un <b>DOCX</b> — una convocatoria, un acta, un pliego — y la
+        plataforma lee su contenido para proponerte la ficha del proyecto. Vos corregís en vez
+        de redactar.
+      </p>
 
-    <h1 class="proximo__titulo">
-      <span class="proximo__brillo">Coming soon</span>
-    </h1>
+      <!-- Antes de elegir el archivo, no después: la persona decide informada. -->
+      <p class="sim-note docs__aviso">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+        </svg>
+        El contenido del documento se procesa con un servicio de IA externo. El archivo no queda
+        guardado en el servidor.
+      </p>
 
-    <span class="proximo__pill">
-      <span class="proximo__punto" aria-hidden="true"></span>
-      De muy pronto
-    </span>
-
-    <p class="proximo__bajada">
-      Se acaba cargar proyectos a mano. Si el proyecto ya está escrito en un <b>PDF</b> o un
-      <b>DOCX</b>, subís el archivo: la IA lo lee, reconoce cada campo del formulario y crea el
-      proyecto con los datos del documento. Vos solo revisás y confirmás.
-    </p>
-
-    <ol class="proximo__pasos">
-      @for (p of pasos; track p.n) {
-        <li class="proximo__paso">
-          <span class="proximo__n">{{ p.n }}</span>
-          <h2 class="proximo__paso-t">{{ p.titulo }}</h2>
-          <p class="proximo__paso-x">{{ p.texto }}</p>
-        </li>
+      @if (fase() === 'vacio') {
+        <div class="docs__zona">
+          <app-doc-dropzone (archivoElegido)="alElegirArchivo($event)" />
+          @if (error()) { <p class="login__error docs__error" role="alert">{{ error() }}</p> }
+        </div>
       }
-    </ol>
-  </div>
+
+      @if (esperando()) {
+        <div class="docs__espera" role="status" aria-live="polite">
+          <span class="docs__pill">
+            <span class="docs__punto" aria-hidden="true"></span>
+            {{ fase() === 'subiendo' ? 'Subiendo el documento' : 'Extrayendo el texto y armando el borrador' }}
+            · {{ segundos() }}s
+          </span>
+
+          @if (tardando()) {
+            <p class="sim-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              </svg>
+              Está tardando. La API puede estar despertando (Render, plan gratuito): la primera
+              consulta del día es la lenta.
+            </p>
+          }
+
+          <button class="btn btn--ghost btn--sm" type="button" (click)="cancelar()">Cancelar</button>
+        </div>
+      }
+
+      <!-- Los tres pasos que la pantalla ya anunciaba, ahora como stepper real. -->
+      <ol class="docs__pasos">
+        @for (p of pasos; track p.n) {
+          <li
+            class="docs__paso"
+            [class.docs__paso--hecho]="estadoPaso(p.n) === 'hecho'"
+            [class.docs__paso--activo]="estadoPaso(p.n) === 'activo'"
+            [class.docs__paso--pendiente]="estadoPaso(p.n) === 'pendiente'">
+            <span class="docs__n">{{ p.n }}</span>
+            <h2 class="docs__paso-t">{{ p.titulo }}</h2>
+            <p class="docs__paso-x">{{ p.texto }}</p>
+
+            @if (estadoPaso(p.n) === 'activo') {
+              @if (p.n === '01' && fase() === 'subiendo') {
+                <!-- Progreso determinado: es el único porcentaje real que tenemos. -->
+                <div class="docs__barra" role="progressbar" [attr.aria-valuenow]="progreso()" aria-valuemin="0" aria-valuemax="100">
+                  <span class="docs__barra-fill" [style.width.%]="progreso()"></span>
+                </div>
+                <p class="docs__paso-x">{{ progreso() }}%</p>
+              } @else {
+                <!-- Banda indeterminada: del servidor no sabemos en qué va. -->
+                <span class="esq docs__banda" aria-hidden="true"></span>
+              }
+            }
+          </li>
+        }
+      </ol>
+    </div>
+  }
+
+  @if (fase() === 'revision') {
+    <div class="docs__revision enter">
+      <div class="page__head">
+        <p class="eyebrow">Documentos · revisión</p>
+        <h1 class="page__title">Revisá el borrador</h1>
+        <p class="page__sub">
+          Esto lo propuso la IA a partir de <b>{{ archivo() }}</b>. Corregí lo que haga falta:
+          nada se guardó todavía. Las etiquetas «Propuesto por IA» desaparecen cuando editás
+          ese campo.
+        </p>
+      </div>
+
+      @if (recuperado()) {
+        <p class="sim-note docs__aviso">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.36 2.64L3 8"/><path d="M3 3v5h5"/>
+          </svg>
+          Recuperamos el borrador de {{ archivo() }} de esta pestaña. Nada se guardó en el servidor.
+        </p>
+      }
+
+      @if (avisos().length) {
+        <div class="card card--tight docs__avisos">
+          <p class="docs__avisos-t">Qué tuvimos que corregir de la propuesta</p>
+          <ul>
+            @for (a of avisos(); track a) { <li>{{ a }}</li> }
+          </ul>
+        </div>
+      }
+
+      <div class="card" style="max-width:760px">
+        <app-project-fields
+          [(valor)]="borrador"
+          [camposIA]="camposIA()"
+          [deshabilitado]="guardando()" />
+
+        @if (error()) { <p class="login__error" style="margin-bottom:16px">{{ error() }}</p> }
+
+        <div class="modal__foot" style="border-top:none;padding-top:0;margin-top:8px">
+          @if (!puedeCrear()) {
+            <p class="field__hint" style="margin-right:auto">
+              No tenés el permiso para crear proyectos. Pedile a un administrador el permiso
+              <b>projects.create</b>.
+            </p>
+          }
+          <button class="btn btn--ghost" type="button" (click)="descartar()">Descartar</button>
+          <button class="btn btn--primary" type="button" [disabled]="!puedeGuardar()" (click)="guardar()">
+            {{ guardando() ? 'Guardando…' : 'Guardar proyecto' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>
