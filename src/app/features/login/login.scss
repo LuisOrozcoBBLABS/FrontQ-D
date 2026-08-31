@@ -44,14 +44,11 @@
   to { opacity: 1; transform: none; }
 }
 
-/* El isotipo oficial viene sobre su cuadro obsidiana: baldosa, no icono suelto. */
-.acceso__marca {
-  width: 46px;
-  height: 46px;
-  object-fit: cover;
-  border-radius: var(--r-md);
-  margin-bottom: var(--sp-6);
-}
+/* El logotipo lo resuelve .logo-bb en styles.scss. Antes habia acá una baldosa
+   con el isotipo recortado; el logotipo completo dice el nombre de la empresa y
+   ademas trae el "powered by </Riwi>" del asset oficial. La regla NO puede vivir
+   en este archivo: necesita html[data-theme="..."] para el intercambio de tema, y
+   dentro de un estilo de componente ese selector nunca matchea. */
 
 .acceso__t {
   font-family: var(--font-display);

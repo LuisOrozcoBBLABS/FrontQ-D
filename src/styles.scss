@@ -464,24 +464,44 @@ body:has(app-nav-rail){ padding-left: var(--rail-clear); }
 }
 
 .tira__logo{ display:inline-flex; align-items:center; border-radius:var(--r-md); }
-/* Alto fijo, ancho automatico: los atributos width/height del <img> mantienen la
-   proporcion 1585x540 y evitan el salto de layout mientras carga el PNG. */
-.tira__logo-img{
-  height: clamp(30px, 3.2vw, 40px);
-  width: auto;
-  /* Al 92% la marca esta presente sin competir con el titulo de la pantalla, que
-     es el elemento que tiene que ganar la primera mirada. */
-  opacity: .92;
-  transition: opacity var(--dur) var(--ease);
-}
-.tira__logo:hover .tira__logo-img{ opacity:1; }
 
-/* Un archivo por tema. display:none saca la variante que no corresponde del
-   flujo Y del arbol de accesibilidad, asi que el lector de pantalla anuncia
-   "Blackbird Labs" una sola vez y no dos. */
-.tira__logo-img--claro{ display:none; }
-html[data-theme="light"] .tira__logo-img--oscuro{ display:none; }
-html[data-theme="light"] .tira__logo-img--claro{ display:block; }
+/* -------------------------------------------------------------
+   Logotipo de Blackbird Labs, con su variante por tema.
+
+   Vive en el sistema y no en cada componente por una razon concreta y no
+   obvia: una regla html[data-theme="..."] escrita DENTRO de un estilo de
+   componente de Angular nunca matchea, porque la encapsulacion le agrega el
+   atributo de scope tambien al <html>. Las cuatro pantallas de acceso
+   comparten login.scss, que es un estilo de componente — ahi el intercambio de
+   tema no funcionaria nunca.
+
+   Son dos <img>, uno por tema, y el que no corresponde sale con display:none.
+   Asi el cambio de tema es instantaneo (no hay un cuadro en blanco mientras el
+   navegador pide el PNG) y el lector de pantalla anuncia "Blackbird Labs" una
+   sola vez, porque display:none tambien lo saca del arbol de accesibilidad.
+
+   Alto fijo y ancho automatico: los atributos width/height del <img> mantienen
+   la proporcion 1585x540 y evitan el salto de layout mientras carga.
+   ------------------------------------------------------------- */
+/* align-self:start no es decorativo, evita que el logotipo salga aplastado.
+   Un flex en columna estira sus hijos al ancho (align-items:stretch es el
+   valor por defecto), asi que en .acceso__col el width:auto no gana: la
+   imagen se iba a 372px de ancho con la altura fija en 44 y el logotipo
+   quedaba deformado. Medido: 372x44 en vez de 129x44. En la tira no se
+   notaba porque ese contenedor abraza el contenido. */
+.logo-bb{ display:block; width:auto; align-self:start; }
+.logo-bb--claro{ display:none; }
+html[data-theme="light"] .logo-bb--oscuro{ display:none; }
+html[data-theme="light"] .logo-bb--claro{ display:block; }
+
+/* Tamaños por contexto, que es lo unico que cambia entre los dos usos.
+   En la tira: de 40 a 56px de alto. A 40 el logotipo pasaba desapercibido —
+   118px de ancho en una tira de 1500 es una marca de agua, no una firma. A 56
+   mide 165px y se lee como lo que es. Se fue tambien la opacidad del 92% que
+   tenia: estaba para que la marca no compitiera con el titulo, pero atenuar lo
+   que se quiere que se note es trabajar en contra. */
+.logo-bb--tira{ height: clamp(38px, 4.2vw, 56px); }
+.logo-bb--acceso{ height: 44px; margin-bottom: var(--sp-6); }
 
 .pie{
   position:relative; z-index:2;
@@ -506,7 +526,7 @@ html[data-theme="light"] .tira__logo-img--claro{ display:block; }
   /* El riel se acuesta abajo en este ancho, asi que la tira queda sola arriba y
      puede achicarse sin dejar hueco. */
   .tira{ padding-top: var(--sp-5); }
-  .tira__logo-img{ height:28px; }
+  .logo-bb--tira{ height:34px; }
   .pie{ margin-top: var(--sp-8); padding-bottom: var(--sp-6); }
 }
 
