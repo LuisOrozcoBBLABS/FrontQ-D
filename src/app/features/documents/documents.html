@@ -27,7 +27,7 @@
       @if (fase() === 'vacio') {
         <div class="docs__zona">
           <app-doc-dropzone (archivoElegido)="alElegirArchivo($event)" />
-          @if (error()) { <p class="login__error docs__error" role="alert">{{ error() }}</p> }
+          @if (error()) { <p class="docs__error" role="alert">{{ error() }}</p> }
         </div>
       }
 
@@ -49,7 +49,8 @@
             </p>
           }
 
-          <button class="btn btn--ghost btn--sm" type="button" (click)="cancelar()">Cancelar</button>
+          <p-button label="Cancelar" size="small" [text]="true" severity="secondary"
+                  (onClick)="cancelar()" />
         </div>
       }
 
@@ -74,7 +75,7 @@
                 <p class="docs__paso-x">{{ progreso() }}%</p>
               } @else {
                 <!-- Banda indeterminada: del servidor no sabemos en qué va. -->
-                <span class="esq docs__banda" aria-hidden="true"></span>
+                <span class="docs__banda" aria-hidden="true"></span>
               }
             }
           </li>
@@ -113,25 +114,24 @@
         </div>
       }
 
-      <div class="card" style="max-width:760px">
+      <div class="card card--forma">
         <app-project-fields
           [(valor)]="borrador"
           [camposIA]="camposIA()"
           [deshabilitado]="guardando()" />
 
-        @if (error()) { <p class="login__error" style="margin-bottom:16px">{{ error() }}</p> }
+        @if (error()) { <p class="docs__error" role="alert">{{ error() }}</p> }
 
-        <div class="modal__foot" style="border-top:none;padding-top:0;margin-top:8px">
+        <div class="modal__foot docs__foot">
           @if (!puedeCrear()) {
-            <p class="field__hint" style="margin-right:auto">
+            <p class="field__hint docs__foot-nota">
               No tenés el permiso para crear proyectos. Pedile a un administrador el permiso
               <b>projects.create</b>.
             </p>
           }
-          <button class="btn btn--ghost" type="button" (click)="descartar()">Descartar</button>
-          <button class="btn btn--primary" type="button" [disabled]="!puedeGuardar()" (click)="guardar()">
-            {{ guardando() ? 'Guardando…' : 'Guardar proyecto' }}
-          </button>
+          <p-button label="Descartar" [text]="true" severity="secondary" (onClick)="descartar()" />
+          <p-button label="Guardar proyecto" icon="pi pi-check"
+                    [loading]="guardando()" [disabled]="!puedeGuardar()" (onClick)="guardar()" />
         </div>
       </div>
     </div>

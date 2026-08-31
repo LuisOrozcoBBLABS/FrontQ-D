@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; font-family: Montserrat, "Segoe UI", system-ui, sans-serif; }
+    a { color: #B2EA36; } a:hover { color: #C7FFDF; }
+  </style>
+</helmet>
+
+<div style="width: 820px; box-sizing: border-box; padding: 26px; background: #0B0A07; color: #F7F7F5;">
+
+  <p style="margin: 0 0 2px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: .14em; color: #B9C9E9;">OPCIÓN F</p>
+  <h2 style="margin: 0 0 6px; font-size: 22px; font-weight: 700; letter-spacing: -.02em;">Desde la tabla de personas</h2>
+  <p style="margin: 0 0 20px; font-size: 12px; line-height: 1.5; color: #6F6C65;">Se deja de armar el equipo desde el grupo: el grupo es una columna que se cambia en la propia fila. Para repartir gente nueva es lo más rápido, y con selección múltiple se mueven varias de una vez.</p>
+
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 14px; border: 1px solid rgba(178,234,54,.45); border-radius: 14px; background: rgba(178,234,54,.14);">
+    <span style="width: 18px; height: 18px; border-radius: 5px; background: #B2EA36; display: grid; place-items: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0B0A07" stroke-width="3.4" stroke-linecap="round"><path d="m5 13 4 4L19 7"/></svg></span>
+    <span style="font-size: 13.5px; font-weight: 600; color: #B2EA36;">3 personas seleccionadas</span>
+    <span style="flex: 1;"></span>
+    <span style="display: flex; align-items: center; gap: 7px; padding: 6px 13px; border-radius: 999px; background: #B2EA36; color: #0B0A07; font-size: 12.5px; font-weight: 700;">
+      Mover a
+      <span style="display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; background: rgba(11,10,7,.16);">Manglar
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0B0A07" stroke-width="3" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+      </span>
+    </span>
+  </div>
+
+  <div style="border: 1px solid #262421; border-radius: 20px; overflow: hidden; background: #131210;">
+
+    <div style="display: grid; grid-template-columns: 34px 2.2fr 1.4fr 1.5fr 80px; align-items: center; gap: 14px; padding: 0 16px; height: 40px; background: #1B1A17; border-bottom: 1px solid #262421;">
+      <span style="width: 18px; height: 18px; border-radius: 5px; border: 1px solid #38352F;"></span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #A8A6A0; display: flex; align-items: center; gap: 5px;">Persona
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#B2EA36" stroke-width="3" stroke-linecap="round"><path d="m6 15 6-6 6 6"/></svg>
+      </span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6F6C65;">Cargo</span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6F6C65;">Grupo</span>
+      <span style="font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #6F6C65; text-align: right;">Permisos</span>
+    </div>
+
+    <sc-for list="{{filas}}" as="f" hint-placeholder-count="6">
+      <div style="display: grid; grid-template-columns: 34px 2.2fr 1.4fr 1.5fr 80px; align-items: center; gap: 14px; padding: 0 16px; height: 52px; border-bottom: 1px solid #262421; background: {{f.fondo}};">
+        <span style="width: 18px; height: 18px; border-radius: 5px; border: 1px solid {{f.chkBorde}}; background: {{f.chkFondo}}; display: grid; place-items: center;">
+          <sc-if value="{{f.sel}}" hint-placeholder-val="{{ true }}">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0B0A07" stroke-width="3.4" stroke-linecap="round"><path d="m5 13 4 4L19 7"/></svg>
+          </sc-if>
+        </span>
+
+        <span style="display: flex; align-items: center; gap: 9px; min-width: 0;">
+          <span style="flex: none; width: 28px; height: 28px; border-radius: 999px; border: 1px solid #262421; background: #1B1A17; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: #A8A6A0;">{{f.ini}}</span>
+          <span style="min-width: 0;">
+            <span style="display: block; font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.nombre}}</span>
+            <span style="display: block; font-size: 11px; color: #6F6C65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.mail}}</span>
+          </span>
+        </span>
+
+        <span style="font-size: 12.5px; color: #A8A6A0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{f.cargo}}</span>
+
+        <span>
+          <span style="display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border: 1px solid {{f.selBorde}}; border-radius: 999px; background: {{f.selFondo}}; font-size: 12.5px; font-weight: 500; color: {{f.selColor}};">
+            {{f.grupo}}
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="{{f.selColor}}" stroke-width="2.8" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+          </span>
+        </span>
+
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-variant-numeric: tabular-nums; text-align: right; color: #A8A6A0;">{{f.permisos}}</span>
+      </div>
+    </sc-for>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; font-size: 12px; color: #6F6C65;">
+      <span>1–6 de 17 personas</span>
+      <span style="display: flex; gap: 4px; align-items: center;">
+        <span style="min-width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; background: #B2EA36; color: #0B0A07; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;">1</span>
+        <span style="min-width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">2</span>
+        <span style="min-width: 24px; height: 24px; display: grid; place-items: center; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">3</span>
+      </span>
+    </div>
+  </div>
+
+  <p style="margin: 14px 0 0; font-size: 12px; line-height: 1.5; color: #6F6C65;">El desplegable de grupo abierto muestra las cuatro opciones más <span style="color: #A8A6A0;">Sin grupo</span>, y avisa si la persona sale de otro equipo.</p>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{}'>
+class Component extends DCLogic {
+  renderVals() {
+    const filas = [
+      { nombre: 'Ana Gómez', mail: 'ana@bblabs.io', cargo: 'AI Engineer', ini: 'AG', grupo: 'Manglar', permisos: '2', sel: false, actual: true },
+      { nombre: 'Carla Ruiz', mail: 'carla@bblabs.io', cargo: 'ML Engineer', ini: 'CR', grupo: 'Delta', permisos: '2', sel: true },
+      { nombre: 'Diego Peña', mail: 'diego@bblabs.io', cargo: 'Data Analyst', ini: 'DP', grupo: 'Sin grupo', permisos: '2', sel: true, vacio: true },
+      { nombre: 'Elena Soto', mail: 'elena@bblabs.io', cargo: 'Product Designer', ini: 'ES', grupo: 'Bravo', permisos: '3', sel: true },
+      { nombre: 'Fabián Ortiz', mail: 'fabian@bblabs.io', cargo: 'Backend', ini: 'FO', grupo: 'Sin grupo', permisos: '2', sel: false, vacio: true },
+      { nombre: 'Luis Orozco', mail: 'luis.orozco@bblabs.io', cargo: 'AI & Automation', ini: 'LO', grupo: 'Manglar', permisos: '8', sel: false, actual: true },
+    ].map(f => ({
+      ...f,
+      fondo: f.sel ? 'rgba(178,234,54,.06)' : 'transparent',
+      chkBorde: f.sel ? '#B2EA36' : '#38352F',
+      chkFondo: f.sel ? '#B2EA36' : 'transparent',
+      selBorde: f.vacio ? '#38352F' : '#262421',
+      selFondo: f.vacio ? 'transparent' : '#1B1A17',
+      selColor: f.vacio ? '#6F6C65' : '#F7F7F5',
+    }));
+    return { filas };
+  }
+}
+</script>
+</body>
+</html>

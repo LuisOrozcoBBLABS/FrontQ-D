@@ -1,19 +1,129 @@
 <div class="page">
+  <!-- Encabezado. El rol y el grupo son identidad, no metricas: van acá como
+       contexto y no ocupan una tarjeta de KPI. -->
   <div class="page__head">
     <p class="eyebrow">Inicio</p>
     <h1 class="page__title">Hola, {{ nombre() }}</h1>
-    <p class="page__sub">Panel del área de Innovación y Desarrollo.</p>
+    <p class="page__sub">
+      {{ auth.isAdmin() ? 'Administración' : 'Colaborador' }}
+      @if (auth.currentUser()?.grupo) { · Grupo {{ auth.currentUser()?.grupo }} }
+      @if (actualizado(); as hora) { <span class="page__dato">· datos al {{ hora }}</span> }
+    </p>
   </div>
 
-  <div class="stat-grid">
-    <a class="stat" routerLink="/proyectos"><div class="stat__label">Proyectos</div><div class="stat__value">{{ projects.count() }}</div></a>
-    <a class="stat" routerLink="/grupos"><div class="stat__label">Grupos</div><div class="stat__value">{{ groups.count() }}</div></a>
-    @if (auth.can('users.manage')) {
-      <a class="stat" routerLink="/usuarios"><div class="stat__label">Usuarios</div><div class="stat__value">{{ users.count() }}</div></a>
+  <!-- ================= LO TUYO: para qué existe esta pantalla =================
+       Se entra acá para saber qué hacer, no para enterarse de cuántas cosas hay.
+       Por eso lo primero es una frase, no una cifra. -->
+  <section class="tuyo enter" [class]="'tuyo tuyo--' + tonoConsigna()">
+    <div class="tuyo__aro">
+      <p-knob
+        [ngModel]="avance()"
+        [readonly]="true"
+        [size]="118"
+        [strokeWidth]="8"
+        [valueColor]="colorAvance()"
+        rangeColor="var(--line)"
+        valueTemplate="{value}%"
+        [ariaLabel]="'Avance de tu trabajo asignado: ' + avance() + ' por ciento'"
+      />
+    </div>
+
+    <div class="tuyo__texto">
+      <p class="tuyo__consigna">{{ consigna() }}</p>
+
+      @if (totalAsignado() > 0) {
+        <ul class="tuyo__cifras">
+          <li>
+            <span class="mini__n mono">{{ abiertas() }}</span>
+            <span class="mini__q">abiertas</span>
+          </li>
+          @if (vencidas() > 0) {
+            <li class="mini--mal">
+              <span class="mini__n mono">{{ vencidas() }}</span>
+              <span class="mini__q">vencidas</span>
+            </li>
+          }
+          @if (urgentes() > 0) {
+            <li class="mini--atencion">
+              <span class="mini__n mono">{{ urgentes() }}</span>
+              <span class="mini__q">urgentes</span>
+            </li>
+          }
+          <li>
+            <span class="mini__n mono">{{ completadas() }}</span>
+            <span class="mini__q">de {{ totalAsignado() }} cerradas</span>
+          </li>
+        </ul>
+      }
+
+      <p-button
+        [label]="abiertas() > 0 ? 'Ir a lo que falta' : 'Ver mis asignaciones'"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        [text]="true"
+        routerLink="/asignaciones"
+      />
+    </div>
+  </section>
+
+  <!-- ================= EL ÁREA =================
+       Cada cifra con algo con qué compararse: un delta, un total o un umbral.
+       Una cifra sin comparación no es información. -->
+  <div class="kpis enter">
+    @if (resumen(); as r) {
+      <a class="kpi" routerLink="/proyectos">
+        <p class="kpi__etiqueta">Proyectos</p>
+        <p class="kpi__valor mono">{{ r.total }}</p>
+        <p class="kpi__delta" [class.kpi__delta--bien]="r.nuevos7 > 0">
+          <span aria-hidden="true">{{ r.nuevos7 > 0 ? '↑' : '→' }}</span>
+          {{ r.nuevos7 > 0 ? '+' : '' }}{{ r.nuevos7 }}
+          <span class="kpi__ref">en 7 días</span>
+        </p>
+        <app-sparkline class="kpi__spark" [valores]="r.serie" [etiqueta]="tendenciaProyectos()" />
+      </a>
+
+      @if (auth.can('assignments.create')) {
+        <a class="kpi" routerLink="/proyectos">
+          <p class="kpi__etiqueta">Sin asignar</p>
+          <p class="kpi__valor mono">{{ r.sinAsignar }}</p>
+          <p class="kpi__delta" [class.kpi__delta--atencion]="r.sinAsignar > 0">
+            @if (r.sinAsignar > 0) {
+              esperando responsable
+            } @else {
+              todo repartido
+            }
+          </p>
+        </a>
+      }
+
+      <a class="kpi" routerLink="/asignaciones">
+        <p class="kpi__etiqueta">Mi trabajo</p>
+        <p class="kpi__valor mono">{{ abiertas() }}</p>
+        <p class="kpi__delta">
+          <span class="kpi__ref">de {{ totalAsignado() }} asignadas</span>
+        </p>
+      </a>
+
+      @if (auth.can('users.manage')) {
+        <a class="kpi" routerLink="/usuarios">
+          <p class="kpi__etiqueta">Personas</p>
+          <p class="kpi__valor mono">{{ users.count() }}</p>
+          <p class="kpi__delta">
+            <span class="kpi__ref">en {{ groups.count() }} grupos</span>
+          </p>
+        </a>
+      }
     } @else {
-      <div class="stat"><div class="stat__label">Tu grupo</div><div class="stat__value" style="font-size:20px">{{ auth.currentUser()?.grupo ?? '—' }}</div></div>
+      <!-- Esqueletos con la forma final: mantienen el layout y evitan el salto
+           cuando llegan los datos. -->
+      @for (i of [1, 2, 3]; track i) {
+        <div class="kpi kpi--esq">
+          <p-skeleton width="7rem" height=".7rem" />
+          <p-skeleton width="4rem" height="2rem" styleClass="mt-2" />
+          <p-skeleton width="9rem" height=".7rem" />
+        </div>
+      }
     }
-    <div class="stat"><div class="stat__label">Tu rol</div><div class="stat__value" style="font-size:20px">{{ auth.isAdmin() ? 'Admin' : 'Colaborador' }}</div></div>
   </div>
 
   <div class="home-cols">
@@ -26,7 +136,7 @@
             <b>{{ projectName(a.projectId) }}</b>
             <span class="row__sub">{{ estadoLabel(a.estado) }}</span>
           </div>
-          <span [class]="'prio prio--' + a.prioridad">{{ prioridadLabel(a.prioridad) }}</span>
+          <p-tag [value]="prioridadLabel(a.prioridad)" [severity]="severidadPrioridad(a.prioridad)" [rounded]="true" />
         </a>
       } @empty {
         <div class="row row--empty">Sin asignaciones por ahora.</div>

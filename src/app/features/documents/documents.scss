@@ -78,14 +78,24 @@
 
 .docs__aviso { text-align: left; }
 .docs__zona { width: 100%; }
-.docs__error { margin-top: 12px; text-align: left; }
+.docs__error {
+  margin-top: var(--sp-3);
+  text-align: left;
+  color: var(--text);
+  font-size: var(--fs-sm);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
 
 /* ---------- Píldora de fase ---------- */
 .docs__pill {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 7px 16px;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
   border: 1px solid var(--glass-line);
   border-radius: var(--r-full);
   background: var(--glass);
@@ -159,7 +169,7 @@
   font-size: 14.5px;
   font-weight: 600;
   color: var(--text);
-  margin: 8px 0 6px;
+  margin: var(--sp-2) 0 var(--sp-2);
 }
 .docs__paso-x {
   font-size: 13px;
@@ -169,7 +179,7 @@
 
 /* Progreso determinado del paso 01: el único porcentaje real que hay. */
 .docs__barra {
-  margin-top: 10px;
+  margin-top: var(--sp-3);
   height: 6px;
   border-radius: var(--r-full);
   background: var(--surface-2);
@@ -182,9 +192,15 @@
   transition: width 180ms linear;
 }
 
-/* Banda indeterminada (.esq, de styles.scss) para 02 y 03. */
+/* Banda indeterminada para 02 y 03. Es el mismo recurso que el esqueleto de
+   assignments.scss, repetido acá porque los estilos de componente son scoped y
+   ese archivo no lo exporta. */
 .docs__banda {
-  margin-top: 10px;
+  display: block;
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--line) 50%, var(--surface-2) 100%);
+  background-size: 200% 100%;
+  animation: docs-banda 1.4s ease-in-out infinite;
+  margin-top: var(--sp-3);
   width: 100%;
   height: 6px;
   border-radius: var(--r-full);
@@ -202,15 +218,25 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-dim);
-  margin-bottom: 8px;
+  margin-bottom: var(--sp-2);
 }
-.docs__avisos ul { margin: 0; padding-left: 18px; }
+.docs__avisos ul { margin: 0; padding-left: var(--sp-5); }
 .docs__avisos li {
   color: var(--text-2);
   font-size: 13.5px;
   line-height: var(--lh-snug);
-  margin-bottom: 4px;
+  margin-bottom: var(--sp-1);
 }
+
+@keyframes docs-banda {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* El pie de este formulario no lleva la línea del modal: no separa nada, está
+   al final de la tarjeta. Mismo criterio que .modal__foot--liso en el otro. */
+.docs__foot { border-top: none; padding-top: 0; margin-top: var(--sp-2); }
+.docs__foot-nota { margin-right: auto; }
 
 @media (max-width: 760px) {
   .docs__pasos { grid-template-columns: 1fr; }
@@ -219,5 +245,6 @@
 @media (prefers-reduced-motion: reduce) {
   .docs__orbe,
   .docs__punto { animation: none; }
+  .docs__banda { animation: none; }
   .docs__barra-fill { transition: none; }
 }

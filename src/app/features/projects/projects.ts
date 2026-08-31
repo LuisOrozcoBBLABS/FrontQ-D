@@ -1,149 +1,42 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { ProjectsService } from '../../core/projects.service';
+import { Component, computed, inject } from '@angular/core';
 import { AuthService } from '../../core/auth.service';
-import { ESTADOS_PROYECTO, Project, ProjectStatus, SECTORES } from '../../core/models';
-import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
+import { ProjectsBoard } from './projects-board';
+import { ProjectsMaestro } from './projects-maestro';
 
-/** Filtro activo, para poder mostrarlo y quitarlo con un clic. */
-interface FiltroActivo {
-  clave: 'sector' | 'estado' | 'query';
-  etiqueta: string;
-}
-
+/**
+ * `/proyectos` no muestra lo mismo a todos, porque no es el mismo trabajo:
+ *
+ * - Quien **ejecuta** ve el tablero de punta a punta con lo que tiene a cargo,
+ *   y mueve sus tarjetas de etapa.
+ * - Quien **asigna** (jefatura de innovación) y la **administración** ven la
+ *   tabla del área: a esas cuentas no se les asignan proyectos, así que un
+ *   tablero de "lo mío" les saldría vacío. Necesitan listar, filtrar y paginar
+ *   todo el conjunto.
+ *
+ * El criterio es el permiso `assignments.create`: quien puede asignar, asigna.
+ * El rol admin queda fuera del tablero de forma explícita.
+ *
+ * La plantilla va en línea a propósito: es solo la bifurcación, y separarla en
+ * un archivo esconde la única decisión que toma este componente.
+ */
 @Component({
   selector: 'app-projects',
-  imports: [RouterLink, FormsModule, Paginador],
-  templateUrl: './projects.html',
-  styleUrl: './projects.scss',
+  imports: [ProjectsBoard, ProjectsMaestro],
+  template: `
+    @if (verTablero()) {
+      <app-projects-board />
+    } @else {
+      <app-projects-maestro />
+    }
+  `,
 })
 export class Projects {
-  private projectsSvc = inject(ProjectsService);
-  protected auth = inject(AuthService);
-  private router = inject(Router);
+  private auth = inject(AuthService);
 
-  protected cargando = this.projectsSvc.cargando;
-  protected errorCarga = this.projectsSvc.error;
-  /** Total en el servidor, no lo que hay en la página. */
-  protected total = this.projectsSvc.total;
-  protected conteoPorEstado = this.projectsSvc.porEstado;
-  protected lista = this.projectsSvc.projects;
-  protected readonly porPagina = FILAS_POR_PAGINA;
-
-  protected sectores = SECTORES;
-  protected estados = ESTADOS_PROYECTO;
-
-  protected query = signal('');
-  protected sectorF = signal<string>('all');
-  protected estadoF = signal<string>('all');
-  protected pagina = signal(1);
-
-  /** Texto ya reposado: evita una consulta por cada tecla. */
-  private queryDebounce = signal('');
-  private temporizador?: ReturnType<typeof setTimeout>;
-
-  constructor() {
-    // Cualquier cambio de filtro o de pagina vuelve a pedir esa pagina al
-    // servidor: con volumen alto, filtrar en el cliente mostraria datos falsos.
-    effect(() => {
-      const filtro = {
-        q: this.queryDebounce(),
-        sector: this.sectorF(),
-        estado: this.estadoF(),
-        pagina: this.pagina(),
-      };
-      void this.projectsSvc.load(filtro);
-      void this.projectsSvc.loadPorEstado(filtro);
-    });
-  }
-
-  /** Escribir reinicia a la primera pagina, con 300ms de espera. */
-  escribir(valor: string): void {
-    this.query.set(valor);
-    clearTimeout(this.temporizador);
-    this.temporizador = setTimeout(() => {
-      this.pagina.set(1);
-      this.queryDebounce.set(valor.trim());
-    }, 300);
-  }
-
-  filtrarSector(valor: string): void {
-    this.pagina.set(1);
-    this.sectorF.set(valor);
-  }
-
-  filtrarEstado(valor: string): void {
-    this.pagina.set(1);
-    this.estadoF.set(valor);
-  }
-
-  irAPagina(p: number): void {
-    this.pagina.set(p);
-  }
-
-  protected filtrosActivos = computed<FiltroActivo[]>(() => {
-    const activos: FiltroActivo[] = [];
-    if (this.queryDebounce()) activos.push({ clave: 'query', etiqueta: `“${this.queryDebounce()}”` });
-    if (this.sectorF() !== 'all') activos.push({ clave: 'sector', etiqueta: this.sectorF() });
-    if (this.estadoF() !== 'all') {
-      activos.push({ clave: 'estado', etiqueta: this.estadoLabel(this.estadoF() as ProjectStatus) });
-    }
-    return activos;
+  protected verTablero = computed(() => {
+    const u = this.auth.currentUser();
+    if (!u) return false;
+    if (u.rol === 'admin') return false;
+    return !this.auth.can('assignments.create');
   });
-
-  /** Distingue "no hay nada" de "no hay nada que coincida". */
-  protected sinFiltros = computed(() => this.filtrosActivos().length === 0);
-
-  quitarFiltro(clave: FiltroActivo['clave']): void {
-    this.pagina.set(1);
-    if (clave === 'query') {
-      this.query.set('');
-      this.queryDebounce.set('');
-    }
-    if (clave === 'sector') this.sectorF.set('all');
-    if (clave === 'estado') this.estadoF.set('all');
-  }
-
-  limpiarTodo(): void {
-    this.pagina.set(1);
-    this.query.set('');
-    this.queryDebounce.set('');
-    this.sectorF.set('all');
-    this.estadoF.set('all');
-  }
-
-  estadoLabel(e: ProjectStatus): string {
-    return ESTADOS_PROYECTO.find(x => x.value === e)?.label ?? e;
-  }
-
-  /** La API ya resuelve el autor: un colaborador no puede listar usuarios. */
-  autorNombre(p: Project): string {
-    return p.autorNombre ?? '—';
-  }
-
-  iniciales(nombre: string): string {
-    return nombre.split(/\s+/).map(n => n[0]).slice(0, 2).join('').toUpperCase();
-  }
-
-  /** Toda la fila lleva al detalle, no solo el nombre. */
-  abrir(p: Project): void {
-    void this.router.navigate(['/proyectos', p.id]);
-  }
-
-  /** El problema como subtitulo: da contexto sin romper la altura de la fila. */
-  recorte(texto: string, max = 76): string {
-    const limpio = texto.trim();
-    return limpio.length > max ? limpio.slice(0, max).trimEnd() + '…' : limpio;
-  }
-
-  /** Fecha en lenguaje humano: "hace 3 días" dice más que un 2026-08-19. */
-  hace(iso: string): string {
-    const dias = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
-    if (dias <= 0) return 'hoy';
-    if (dias === 1) return 'ayer';
-    if (dias < 30) return `hace ${dias} días`;
-    const meses = Math.floor(dias / 30);
-    return meses === 1 ? 'hace un mes' : `hace ${meses} meses`;
-  }
 }

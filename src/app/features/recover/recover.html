@@ -27,6 +27,7 @@
         <div class="campo">
           <label class="campo__l" for="email">Tu correo corporativo</label>
           <input
+            pInputText
             class="campo__i"
             id="email"
             type="email"
@@ -44,6 +45,7 @@
         <div class="campo">
           <label class="campo__l" for="nota">Algo que quieras agregar (opcional)</label>
           <input
+            pInputText
             class="campo__i"
             id="nota"
             type="text"
@@ -60,9 +62,8 @@
           <p class="acceso__error" role="alert">{{ error() }}</p>
         }
 
-        <button class="btn btn--primary acceso__enviar" type="submit" [disabled]="loading() || !valido()">
-          {{ loading() ? 'Enviando…' : 'Pedir una contraseña nueva' }}
-        </button>
+        <p-button label="Pedir una contraseña nueva" type="submit" styleClass="acceso__enviar"
+                  [loading]="loading()" [disabled]="!valido()" [fluid]="true" />
 
         <a class="acceso__link" routerLink="/login">Volver al ingreso</a>
       </form>
@@ -92,7 +93,8 @@
           decimos qué cuentas existen.
         </p>
 
-        <a class="btn btn--ghost acceso__enviar" routerLink="/login">Volver al ingreso</a>
+        <p-button label="Volver al ingreso" icon="pi pi-arrow-left" [text]="true"
+                  styleClass="acceso__enviar" routerLink="/login" [fluid]="true" />
       </div>
     }
   </main>

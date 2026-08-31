@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { MessageService } from 'primeng/api';
 import { AnalisisListo, DocumentsService, olvidarBorrador } from '../../core/documents.service';
 import { borradorVacio } from '../../core/borrador-proyecto';
 import { Documents } from './documents';
@@ -45,6 +46,9 @@ async function montar() {
       provideHttpClient(),
       provideHttpClientTesting(),
       provideRouter([]),
+      // ToastService envuelve al MessageService de PrimeNG, que la aplicación
+      // provee en app.config. Acá hay que darlo a mano.
+      MessageService,
       { provide: DocumentsService, useValue: docs },
     ],
   }).compileComponents();

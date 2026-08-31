@@ -1,5 +1,6 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
 import {
   BorradorProyecto,
@@ -47,7 +48,7 @@ type Fase = 'vacio' | 'subiendo' | 'procesando' | 'revision';
 
 @Component({
   selector: 'app-documents',
-  imports: [DocDropzone, ProjectFields],
+  imports: [DocDropzone, ProjectFields, ButtonModule],
   templateUrl: './documents.html',
   styleUrl: './documents.scss',
 })
@@ -81,7 +82,7 @@ export class Documents {
     {
       n: '01',
       titulo: 'Subís el documento',
-      texto: 'PDF o DOCX: una convocatoria, un acta, un informe, un pliego.',
+      texto: 'El PDF o el DOCX donde ya está escrito el proyecto.',
     },
     {
       n: '02',
@@ -91,7 +92,7 @@ export class Documents {
     {
       n: '03',
       titulo: 'La IA propone el borrador',
-      texto: 'Sale una ficha con problema, solución y diferencial, para corregir.',
+      texto: 'Reconoce nombre, sector, problema, dolores, solución y diferencial.',
     },
   ];
 

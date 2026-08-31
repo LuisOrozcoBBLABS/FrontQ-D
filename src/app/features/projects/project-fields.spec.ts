@@ -55,7 +55,9 @@ describe('ProjectFields', () => {
       expect(el.querySelector<HTMLTextAreaElement>(id)!.maxLength).toBe(LIMITES.texto);
     }
 
-    const [nombre, url] = Array.from(el.querySelectorAll<HTMLInputElement>('.similar-row .input'));
+    // pInputText es una directiva sobre un <input> nativo, así que el maxlength
+    // sigue siendo el del elemento real y no algo que dependa de PrimeNG.
+    const [nombre, url] = Array.from(el.querySelectorAll<HTMLInputElement>('.similar-row input'));
     expect(nombre.maxLength).toBe(LIMITES.similarNombre);
     expect(url.maxLength).toBe(LIMITES.similarUrl);
     expect(url.type).toBe('url');
@@ -129,8 +131,11 @@ describe('ProjectFields', () => {
     fixture.componentRef.setInput('deshabilitado', true);
     await fixture.whenStable();
 
+    // Se verifican los controles nativos, que son los que este componente ata.
+    // El estado del p-select lo pinta PrimeNG con sus propias clases: afirmarlo
+    // sería testear la librería, no este código.
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector<HTMLInputElement>('#pf-n')!.disabled).toBe(true);
-    expect(el.querySelector<HTMLSelectElement>('#pf-s')!.disabled).toBe(true);
+    expect(el.querySelector<HTMLTextAreaElement>('#pf-pr')!.disabled).toBe(true);
   });
 });

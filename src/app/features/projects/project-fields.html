@@ -4,8 +4,8 @@
     @if (propuesto('nombre')) { <span class="badge badge--muted">Propuesto por IA</span> }
   </label>
   <input
+    pInputText
     id="pf-n"
-    class="input"
     [maxlength]="limites.nombre"
     [disabled]="deshabilitado()"
     [ngModel]="valor().nombre"
@@ -22,27 +22,30 @@
       Sector
       @if (propuesto('sector')) { <span class="badge badge--muted">Propuesto por IA</span> }
     </label>
-    <select
-      id="pf-s"
-      class="select"
-      [disabled]="deshabilitado()"
+    <p-select
+      inputId="pf-s"
+      [options]="opcionesSector"
       [ngModel]="valor().sector"
-      (ngModelChange)="patch('sector', $event)">
-      <option value="" disabled>Selecciona…</option>
-      @for (sec of sectores; track sec) { <option [value]="sec">{{ sec }}</option> }
-    </select>
+      (ngModelChange)="patch('sector', $event)"
+      optionLabel="label"
+      optionValue="value"
+      [filter]="true"
+      filterPlaceholder="Buscar sector"
+      placeholder="Selecciona…"
+      [disabled]="deshabilitado()"
+      [fluid]="true" />
   </div>
   <div class="field">
     <label for="pf-g">Grupo</label>
-    <select
-      id="pf-g"
-      class="select"
-      [disabled]="deshabilitado()"
+    <p-select
+      inputId="pf-g"
+      [options]="opcionesGrupo()"
       [ngModel]="valor().groupId"
-      (ngModelChange)="patch('groupId', $event)">
-      <option [ngValue]="null">Sin grupo</option>
-      @for (gr of grupos(); track gr.id) { <option [ngValue]="gr.id">Grupo {{ gr.nombre }}</option> }
-    </select>
+      (ngModelChange)="patch('groupId', $event)"
+      optionLabel="label"
+      optionValue="value"
+      [disabled]="deshabilitado()"
+      [fluid]="true" />
   </div>
 </div>
 
@@ -52,9 +55,10 @@
     @if (propuesto('problema')) { <span class="badge badge--muted">Propuesto por IA</span> }
   </label>
   <textarea
+    pTextarea
     id="pf-pr"
-    class="textarea"
     rows="3"
+    [autoResize]="true"
     [maxlength]="limites.texto"
     [disabled]="deshabilitado()"
     [ngModel]="valor().problema"
@@ -71,9 +75,10 @@
     @if (propuesto('dolores')) { <span class="badge badge--muted">Propuesto por IA</span> }
   </label>
   <textarea
+    pTextarea
     id="pf-do"
-    class="textarea"
     rows="3"
+    [autoResize]="true"
     [maxlength]="limites.texto"
     [disabled]="deshabilitado()"
     [ngModel]="valor().dolores"
@@ -90,9 +95,10 @@
     @if (propuesto('solucion')) { <span class="badge badge--muted">Propuesto por IA</span> }
   </label>
   <textarea
+    pTextarea
     id="pf-so"
-    class="textarea"
     rows="3"
+    [autoResize]="true"
     [maxlength]="limites.texto"
     [disabled]="deshabilitado()"
     [ngModel]="valor().solucion"
@@ -111,7 +117,7 @@
   @for (s of valor().similares; track $index) {
     <div class="similar-row">
       <input
-        class="input"
+        pInputText
         [maxlength]="limites.similarNombre"
         [disabled]="deshabilitado()"
         [ngModel]="s.name"
@@ -119,7 +125,7 @@
         placeholder="Nombre"
         [attr.aria-label]="'Nombre de la app parecida ' + ($index + 1)" />
       <input
-        class="input"
+        pInputText
         type="url"
         [maxlength]="limites.similarUrl"
         [disabled]="deshabilitado()"
@@ -127,23 +133,27 @@
         (ngModelChange)="patchSimilar($index, 'url', $event)"
         placeholder="https://…"
         [attr.aria-label]="'URL de la app parecida ' + ($index + 1)" />
-      <button
-        class="btn btn--ghost btn--sm"
-        type="button"
+      <p-button
+        icon="pi pi-times"
+        size="small"
+        [text]="true"
+        severity="secondary"
+        ariaLabel="Quitar"
+        pTooltip="Quitar"
+        tooltipPosition="top"
         [disabled]="deshabilitado()"
-        (click)="removeSimilar($index)"
-        aria-label="Quitar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-      </button>
+        (onClick)="removeSimilar($index)" />
     </div>
   }
   <p class="field__hint">Van las dos cosas: sin URL, el servidor no guarda la app parecida.</p>
-  <button
-    class="btn btn--ghost btn--sm"
-    type="button"
+  <p-button
+    label="Agregar otra"
+    icon="pi pi-plus"
+    size="small"
+    [text]="true"
+    styleClass="similar-add"
     [disabled]="deshabilitado()"
-    (click)="addSimilar()"
-    style="margin-top:8px">+ Agregar otra</button>
+    (onClick)="addSimilar()" />
 </div>
 
 <div class="field">
@@ -152,9 +162,10 @@
     @if (propuesto('plusIA')) { <span class="badge badge--muted">Propuesto por IA</span> }
   </label>
   <textarea
+    pTextarea
     id="pf-pl"
-    class="textarea"
     rows="3"
+    [autoResize]="true"
     [maxlength]="limites.texto"
     [disabled]="deshabilitado()"
     [ngModel]="valor().plusIA"

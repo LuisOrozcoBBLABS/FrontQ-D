@@ -6,63 +6,124 @@
   </div>
 
   <div class="toolbar enter">
-    <button class="btn btn--primary" type="button" (click)="openCreate()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-      Nuevo grupo
-    </button>
-    <span class="chip">{{ groups().length }} grupos</span>
+    <p-button label="Nuevo grupo" icon="pi pi-plus" (onClick)="openCreate()" />
+    <span class="chip">{{ groups().length }} {{ groups().length === 1 ? 'grupo' : 'grupos' }}</span>
+    <span class="toolbar__spacer"></span>
+    <!-- El orden ya no vive en una cabecera de tabla, pero sigue resolviendose
+         sobre el conjunto COMPLETO en `ordenados()` y recien despues se corta la
+         pagina. Este boton empuja el mismo handler que empujaba p-table. -->
+    <p-button
+      [label]="orden()?.dir === 'desc' ? 'Z → A' : 'A → Z'"
+      [icon]="orden()?.dir === 'desc' ? 'pi pi-sort-alpha-up-alt' : 'pi pi-sort-alpha-down'"
+      size="small" [text]="true" severity="secondary"
+      [ariaLabel]="orden()?.dir === 'desc' ? 'Ordenado de Z a A por nombre. Cambiar a A-Z.' : 'Ordenado de A a Z por nombre. Cambiar a Z-A.'"
+      (onClick)="ordenar({ field: 'nombre', order: orden()?.dir === 'desc' ? 1 : -1 })"
+    />
   </div>
 
-  <div class="table-wrap enter">
-    <div class="table-scroll">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Grupo</th>
-            <th>Lema</th>
-            <th>Integrantes</th>
-            <th class="table__min">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (g of pagados(); track g.id) {
-            <tr>
-              <td>{{ g.nombre }}</td>
-              <td>{{ g.lema || '—' }}</td>
-              <td>
-                <div class="integrantes">
-                  @for (m of members(g); track m.id) {
-                    <span class="celda-ini" [title]="m.nombre">
-                      @if (m.avatarUrl) { <img [src]="m.avatarUrl" alt="" /> } @else { {{ initials(m.nombre) }} }
-                    </span>
-                  } @empty {
-                    <span class="text-dim">Sin integrantes</span>
-                  }
-                  @if (memberCount(g)) {
-                    <span class="integrantes__n mono">{{ memberCount(g) }}</span>
-                  }
-                </div>
-              </td>
-              <td class="table__min">
-                <div class="table__actions">
-                  <button class="btn btn--ghost btn--sm" type="button" (click)="openMembers(g)">Integrantes</button>
-                  <button class="btn btn--ghost btn--sm" type="button" (click)="openEdit(g)">Editar</button>
-                  <button class="btn btn--danger btn--sm" type="button" (click)="removeGroup(g)">Archivar</button>
-                </div>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="4" class="table__vacia">
-                <b>Todavía no hay grupos</b>
-                Creá el primero y asignale integrantes.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+  <!-- Tarjetas y no tabla: cuatro grupos con nombre, lema, integrantes y tres
+       acciones no son datos tabulares. No se escanean columnas ni se comparan
+       filas, y la grilla de la tabla penalizaba al unico grupo con gente: los
+       17 avatares de Bravo se partian en dos lineas y su fila media el doble
+       que las otras tres. -->
+  <section class="equipos enter" aria-label="Equipos del area">
+    @for (g of pagados(); track g.id) {
+      <article class="equipo" [attr.aria-labelledby]="'grupo-' + g.id">
 
+        <h2 class="equipo__nombre" [id]="'grupo-' + g.id">{{ g.nombre }}</h2>
+
+        <!-- El lema es el protagonista: es lo que le da caracter al equipo y en
+             la tabla quedaba enterrado en una celda de 13.5px. -->
+        @if (g.lema) {
+          <blockquote class="equipo__lema">{{ g.lema }}</blockquote>
+        } @else {
+          <p class="equipo__lema equipo__lema--falta">
+            Sin lema todavia.
+            <button
+              type="button"
+              class="enlace-lema"
+              [attr.aria-label]="'Escribir el lema del grupo ' + g.nombre"
+              (click)="openEdit(g)"
+            >Escribir uno</button>
+          </p>
+        }
+
+        <div class="equipo__gente">
+          @if (memberCount(g)) {
+            <!-- El total va rotulado y ANTES de los avatares. Suelto al final
+                 del apilado no se entendia si era una persona mas o la cuenta. -->
+            <p class="equipo__rotulo">
+              Integrantes <span class="equipo__n">{{ memberCount(g) }}</span>
+            </p>
+
+            <div class="pila">
+              @for (m of avataresVisibles(g); track m.id) {
+                <span class="celda-ini pila__a" [pTooltip]="m.nombre" tooltipPosition="top">
+                  @if (m.avatarUrl) {
+                    <img [src]="m.avatarUrl" alt="" />
+                  } @else {
+                    <span aria-hidden="true">{{ initials(m.nombre) }}</span>
+                  }
+                  <span class="sr-only">{{ m.nombre }}</span>
+                </span>
+              }
+              @if (avataresRestantes(g); as resto) {
+                <span class="celda-ini pila__a pila__mas">
+                  <span aria-hidden="true">+{{ resto }}</span>
+                  <span class="sr-only">y {{ resto }} integrantes mas</span>
+                </span>
+              }
+            </div>
+          } @else {
+            <!-- 3 de 4 grupos estan asi: el estado vacio es la accion principal
+                 de la tarjeta, no un texto gris. Va al mismo dialogo. -->
+            <button
+              type="button"
+              class="sumar"
+              [attr.aria-label]="'Sumar integrantes al grupo ' + g.nombre"
+              (click)="openMembers(g)"
+            >
+              <i class="pi pi-user-plus" aria-hidden="true"></i>
+              <span class="sumar__txt">
+                <span class="sumar__t">Sumar integrantes</span>
+                <span class="sumar__s">Este equipo todavia no tiene a nadie</span>
+              </span>
+            </button>
+          }
+        </div>
+
+        <footer class="equipo__acciones">
+          @if (memberCount(g)) {
+            <p-button
+              label="Integrantes" icon="pi pi-users" size="small" [text]="true" severity="secondary"
+              [ariaLabel]="'Ver los integrantes del grupo ' + g.nombre"
+              (onClick)="openMembers(g)"
+            />
+          }
+          <p-button
+            label="Editar" icon="pi pi-pencil" size="small" [text]="true" severity="secondary"
+            [ariaLabel]="'Editar el grupo ' + g.nombre"
+            (onClick)="openEdit(g)"
+          />
+          <p-button
+            styleClass="equipo__archivar"
+            label="Archivar" icon="pi pi-inbox" size="small" [text]="true" severity="danger"
+            [ariaLabel]="'Archivar el grupo ' + g.nombre"
+            (onClick)="removeGroup(g)"
+          />
+        </footer>
+
+      </article>
+    } @empty {
+      <div class="equipos__vacio">
+        <b>Todavia no hay grupos</b>
+        <p>Cre&aacute; el primero, ponele un lema y asignale integrantes del &aacute;rea.</p>
+        <p-button label="Nuevo grupo" icon="pi pi-plus" (onClick)="openCreate()" />
+      </div>
+    }
+  </section>
+
+  <div class="equipos__pie">
     <app-paginador
       [pagina]="pagina()"
       [total]="groups().length"
@@ -71,63 +132,188 @@
       (cambia)="pagina.set($event)"
     />
   </div>
+
 </div>
 
-<!-- Modal crear/editar -->
-@if (formOpen()) {
-  <div class="modal" role="dialog" aria-modal="true">
-    <div class="modal__backdrop" (click)="formOpen.set(false)"></div>
-    <div class="modal__panel" appTrapFocus (dismiss)="formOpen.set(false)">
-      <div class="modal__head">
-        <div><p class="eyebrow">{{ editId() ? 'Editar' : 'Nuevo' }} grupo</p><h2 class="modal__title">{{ editId() ? nombre() : 'Crear grupo' }}</h2></div>
-        <button class="theme-fab" type="button" (click)="formOpen.set(false)" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-      </div>
-      <div class="field">
-        <label for="gn">Nombre del grupo</label>
-        <input id="gn" class="input" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" placeholder="Ej. Manglar" />
-      </div>
-      <div class="field">
-        <label for="gl">Lema</label>
-        <input id="gl" class="input" [ngModel]="lema()" (ngModelChange)="lema.set($event)" placeholder="Frase corta del equipo" />
-      </div>
-      <div class="modal__foot">
-        <button class="btn btn--ghost" type="button" (click)="formOpen.set(false)">Cancelar</button>
-        <button class="btn btn--primary" type="button" (click)="saveGroup()" [disabled]="!nombre().trim()">{{ editId() ? 'Guardar' : 'Crear grupo' }}</button>
-      </div>
+<!-- Alta y edición -->
+<p-dialog
+  [visible]="formOpen()"
+  (visibleChange)="formOpen.set($event)"
+  [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="true"
+  [style]="{ width: 'min(calc(94vw - var(--rail-clear)), 520px)' }"
+>
+  <ng-template #header>
+    <div>
+      <p class="eyebrow">{{ editId() ? 'Editar' : 'Nuevo' }} grupo</p>
+      <h2 class="modal__title">{{ editId() ? nombre() : 'Crear grupo' }}</h2>
     </div>
-  </div>
-}
+  </ng-template>
 
-<!-- Modal integrantes -->
-@if (membersFor(); as g) {
-  <div class="modal" role="dialog" aria-modal="true">
-    <div class="modal__backdrop" (click)="closeMembers()"></div>
-    <div class="modal__panel" appTrapFocus (dismiss)="closeMembers()">
-      <div class="modal__head">
-        <div><p class="eyebrow">Integrantes</p><h2 class="modal__title">Grupo {{ g.nombre }}</h2></div>
-        <button class="theme-fab" type="button" (click)="closeMembers()" aria-label="Cerrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
-      </div>
-      <p class="text-dim" style="font-size:12.5px;margin:-8px 0 14px">Cada persona pertenece a un solo grupo. Al activarla aquí, se mueve a este grupo.</p>
-      <div class="member-list">
-        @for (u of allUsers(); track u.id) {
-          <label class="member-row">
-            <span class="user-cell">
-              <span class="avatar">@if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }</span>
-              <span>
-                <span class="user-cell__name">{{ u.nombre }}</span>
-                <span class="user-cell__mail">{{ u.grupo ? 'Grupo ' + u.grupo : 'Sin grupo' }}</span>
-              </span>
-            </span>
-            <span class="switch">
-              <input type="checkbox" [checked]="esMiembro(u, g)" (change)="toggleMember(u, g)" />
-              <span class="switch__track"></span>
-            </span>
-          </label>
-        }
-      </div>
-      <div class="modal__foot">
-        <button class="btn btn--primary" type="button" (click)="closeMembers()">Listo</button>
-      </div>
-    </div>
+  <div class="field">
+    <label for="gn">Nombre del grupo</label>
+    <input pInputText id="gn" [ngModel]="nombre()" (ngModelChange)="nombre.set($event)" placeholder="Ej. Manglar" />
   </div>
-}
+  <div class="field">
+    <label for="gl">Lema</label>
+    <input pInputText id="gl" [ngModel]="lema()" (ngModelChange)="lema.set($event)" placeholder="Frase corta del equipo" />
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" [text]="true" severity="secondary" (onClick)="formOpen.set(false)" />
+    <p-button [label]="editId() ? 'Guardar' : 'Crear grupo'" [disabled]="!nombre().trim()" (onClick)="saveGroup()" />
+  </ng-template>
+</p-dialog>
+
+<!-- ================= Integrantes: dos paneles =================
+     Los cambios se juntan y se guardan de una vez. El panel de la izquierda
+     dice de qué grupo saldría cada persona, así la consecuencia está a la
+     vista ANTES de aplicarla y no después. -->
+<p-dialog
+  [visible]="!!membersFor()"
+  (visibleChange)="alCerrarIntegrantes($event)"
+  [modal]="true" [draggable]="false" [resizable]="false" [dismissableMask]="!cambios().total"
+  [style]="{ width: 'min(calc(96vw - var(--rail-clear)), 860px)' }"
+>
+  <ng-template #header>
+    <div>
+      <p class="eyebrow">Integrantes</p>
+      <h2 class="modal__title">Grupo {{ membersFor()?.nombre }}</h2>
+    </div>
+  </ng-template>
+
+  @if (membersFor(); as g) {
+    <div class="paneles">
+
+      <!-- Disponibles -->
+      <section class="panel-sel">
+        <header class="panel-sel__head">
+          <h3 class="panel-sel__t">
+            Disponibles <span class="panel-sel__n mono">{{ disponibles().length }}</span>
+          </h3>
+          <p-iconfield>
+            <p-inputicon styleClass="pi pi-search" />
+            <input
+              pInputText
+              type="text"
+              [ngModel]="filtroDisponibles()"
+              (ngModelChange)="filtroDisponibles.set($event)"
+              placeholder="Buscar persona"
+              aria-label="Buscar entre las personas disponibles"
+            />
+          </p-iconfield>
+        </header>
+
+        <div class="panel-sel__lista">
+          @for (u of disponibles(); track u.id) {
+            <label class="persona-fila" [class.persona-fila--marcada]="estaMarcada(u)" [for]="'disp-' + u.id">
+              <p-checkbox
+                [inputId]="'disp-' + u.id"
+                [binary]="true"
+                [ngModel]="estaMarcada(u)"
+                (ngModelChange)="marcar(u)"
+              />
+              <span class="avatar">@if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }</span>
+              <span class="persona-fila__txt">
+                <span class="persona-fila__n">{{ u.nombre }}</span>
+                <span class="persona-fila__g" [class.persona-fila__g--mueve]="saleDeOtro(u)">{{ grupoDe(u) }}</span>
+              </span>
+            </label>
+          } @empty {
+            <p class="panel-sel__vacio">
+              @if (filtroDisponibles()) { Nadie coincide con “{{ filtroDisponibles() }}”. }
+              @else { Todas las personas del área ya están en este grupo. }
+            </p>
+          }
+        </div>
+      </section>
+
+      <!-- Transferir -->
+      <div class="transferir">
+        <p-button
+          icon="pi pi-arrow-right"
+          [rounded]="true"
+          [disabled]="!marcadas().length"
+          (onClick)="pasarAlGrupo()"
+          [ariaLabel]="'Pasar ' + marcadas().length + ' al grupo'"
+        />
+        <span class="transferir__n mono" [class.transferir__n--hay]="marcadas().length > 0">
+          {{ marcadas().length }}
+        </span>
+      </div>
+
+      <!-- En el grupo -->
+      <section class="panel-sel panel-sel--equipo">
+        <header class="panel-sel__head">
+          <h3 class="panel-sel__t">
+            En {{ g.nombre }} <span class="panel-sel__n mono">{{ enGrupo().length }}</span>
+          </h3>
+          <p-iconfield>
+            <p-inputicon styleClass="pi pi-search" />
+            <input
+              pInputText
+              type="text"
+              [ngModel]="filtroEquipo()"
+              (ngModelChange)="filtroEquipo.set($event)"
+              placeholder="Filtrar el equipo"
+              aria-label="Filtrar los integrantes del grupo"
+            />
+          </p-iconfield>
+        </header>
+
+        <div class="panel-sel__lista">
+          @for (u of equipo(); track u.id) {
+            <div class="persona-fila persona-fila--equipo">
+              <span class="avatar avatar--equipo">@if (u.avatarUrl) { <img [src]="u.avatarUrl" alt="" /> } @else { {{ initials(u.nombre) }} }</span>
+              <span class="persona-fila__txt">
+                <span class="persona-fila__n">{{ u.nombre }}</span>
+                <span class="persona-fila__g">{{ u.cargo || '—' }}</span>
+              </span>
+              <p-button
+                icon="pi pi-times"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                [ariaLabel]="'Sacar a ' + u.nombre + ' del grupo'"
+                (onClick)="sacarDelGrupo(u)"
+              />
+            </div>
+          } @empty {
+            <p class="panel-sel__vacio">
+              @if (filtroEquipo()) { Nadie del equipo coincide con “{{ filtroEquipo() }}”. }
+              @else { El grupo todavía no tiene integrantes. Marcá personas a la izquierda y pasalas. }
+            </p>
+          }
+        </div>
+      </section>
+    </div>
+
+    <!-- La consecuencia, antes de guardar -->
+    @if (consecuencias().length) {
+      <div class="aviso-mueve">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9.5"/></svg>
+        <span>
+          @for (c of consecuencias(); track c.nombre) {
+            <b>{{ c.nombre }}</b> sale de {{ c.desde }}@if (!$last) {, } @else {.}
+          }
+          Cada persona pertenece a un solo grupo, y los cambios se aplican al guardar.
+        </span>
+      </div>
+    }
+  }
+
+  <ng-template #footer>
+    @if (cambios().total) {
+      <span class="pie-cambios mono">{{ cambios().total }} {{ cambios().total === 1 ? 'cambio' : 'cambios' }}</span>
+      <p-button label="Descartar" [text]="true" severity="secondary" (onClick)="descartarCambios()" />
+      <p-button
+        [label]="'Guardar ' + cambios().total + (cambios().total === 1 ? ' cambio' : ' cambios')"
+        icon="pi pi-check"
+        [loading]="guardando()"
+        (onClick)="guardarIntegrantes()"
+      />
+    } @else {
+      <p-button label="Cerrar" [text]="true" severity="secondary" (onClick)="closeMembers()" />
+    }
+  </ng-template>
+</p-dialog>

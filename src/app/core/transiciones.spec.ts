@@ -1,5 +1,5 @@
 import { AssignmentStatus } from './models';
-import { SECUENCIA, SIGUIENTE, esFinal, puedeIr, retrocesoDe } from './transiciones';
+import { SECUENCIA, SIGUIENTE, puedeIr, retrocesoDe } from './transiciones';
 
 describe('máquina de estados de una asignación', () => {
   it('avanza un paso por vez', () => {
@@ -22,15 +22,29 @@ describe('máquina de estados de una asignación', () => {
     expect(retrocesoDe('pendiente')).toBeNull();
   });
 
-  it('deja reabrir lo completado, devolviéndolo a en curso', () => {
+  it('deja reabrir lo completado, devolviendolo a en curso', () => {
+    // Esto se rompio una vez al revés: se "corrigio" el front a
+    // `completada: []` contra una copia local del backend que estaba
+    // atrasada, y estas afirmaciones se dieron vuelta para acompañar el error.
+    // El servidor SI permite reabrir (BackQ-D, commit 84831a2), asi que la
+    // version correcta es esta.
     expect(puedeIr('completada', 'en-curso')).toBe(true);
     expect(retrocesoDe('completada')).toBe('en-curso');
-    expect(esFinal('completada')).toBe(false);
   });
 
-  it('reabrir no salta más atrás que en curso', () => {
+  it('reabrir no salta mas atras que en curso', () => {
     expect(puedeIr('completada', 'aceptada')).toBe(false);
     expect(puedeIr('completada', 'pendiente')).toBe(false);
+  });
+
+  it('todos los estados tienen salida: ninguno es final', () => {
+    // Es el invariante que hace innecesaria una funcion `esFinal`. Si algun dia
+    // el servidor cierra un estado, este test falla y avisa que hay que
+    // reflejarlo acá.
+    for (const estado of SECUENCIA) {
+      const salidas = SECUENCIA.filter(otro => otro !== estado && puedeIr(estado, otro));
+      expect(salidas.length).toBeGreaterThan(0);
+    }
   });
 
   it('acepta reenviar el mismo estado, igual que el servidor', () => {

@@ -1,21 +1,30 @@
 import { Component, computed, inject, input, linkedSignal, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { Select } from 'primeng/select';
+import { Textarea } from 'primeng/textarea';
+import { Tooltip } from 'primeng/tooltip';
 import { BorradorProyecto, LIMITES } from '../../core/borrador-proyecto';
 import { GroupsService } from '../../core/groups.service';
 import { AppSimilar, SECTORES } from '../../core/models';
 
 /**
- * Los campos de un proyecto, compartidos por las dos formas de crearlo:
- * escribirlos a mano en /proyectos/nuevo, o corregir lo que propuso la IA en
- * /documentos. Un solo lugar donde arreglar los `maxlength` que faltaban y donde
- * viven las etiquetas y los placeholders.
+ * Los campos de un proyecto, para que /documentos pueda mostrar el borrador que
+ * propuso la IA con el marcado de procedencia y los topes del servidor.
  *
- * El padre lo ata con `[(valor)]="borrador"`; este componente no guarda nada ni
- * conoce la API.
+ * OJO — duplicación conocida: `project-form` tiene su propia copia de estos
+ * campos. Se dejó así a propósito al integrar el módulo de IA, para no volver a
+ * reescribir un formulario que se acababa de rehacer sobre PrimeNG y que además
+ * maneja el modo edición. Si se toca un campo (una etiqueta, un placeholder, un
+ * tope), hay que tocarlo en los dos lados hasta que alguien los unifique.
+ *
+ * Los controles siguen los mismos patrones que `project-form.html`: pInputText,
+ * p-select con opciones, pTextarea con autoResize y p-button.
  */
 @Component({
   selector: 'app-project-fields',
-  imports: [FormsModule],
+  imports: [FormsModule, ButtonModule, InputText, Textarea, Select, Tooltip],
   templateUrl: './project-fields.html',
   styleUrl: './project-fields.scss',
 })
@@ -28,9 +37,15 @@ export class ProjectFields {
   camposIA = input<readonly string[]>([]);
   deshabilitado = input(false);
 
-  protected sectores = SECTORES;
   protected grupos = this.groupsSvc.groups;
   protected limites = LIMITES;
+
+  /** PrimeNG trabaja con listas de opciones, no con <option>. */
+  protected readonly opcionesSector = SECTORES.map(x => ({ label: x, value: x }));
+  protected opcionesGrupo = computed(() => [
+    { label: 'Sin grupo', value: null as string | null },
+    ...this.grupos().map(g => ({ label: `Grupo ${g.nombre}`, value: g.id as string | null })),
+  ]);
 
   constructor() {
     void this.groupsSvc.load();

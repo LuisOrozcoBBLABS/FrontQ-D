@@ -1,0 +1,25 @@
+.similar-row {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr auto;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.similar-row .input { margin: 0; }
+@media (max-width: 560px) {
+  .similar-row { grid-template-columns: 1fr auto; }
+  .similar-row .input:nth-child(2) { grid-column: 1 / -1; }
+}
+.pf__error {
+  color: var(--text);
+  font-size: var(--fs-sm);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  margin-bottom: var(--sp-4);
+}
+
+/* El pie de este formulario no lleva la línea del modal: no separa nada, está
+   al final de la tarjeta. */
+.modal__foot--liso { border-top: none; padding-top: 0; margin-top: var(--sp-2); }

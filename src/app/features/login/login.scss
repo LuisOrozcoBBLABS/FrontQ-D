@@ -127,6 +127,8 @@
   color: var(--text-dim);
   line-height: var(--lh-snug);
 }
+/* Separada del bloque de arriba cuando no sigue a un campo. */
+.campo__ayuda--aire { margin-top: var(--sp-4); }
 
 /* ---------- Mensajes ---------- */
 .acceso__error {
@@ -154,7 +156,7 @@
   transition: color var(--dur) var(--ease), text-decoration-color var(--dur) var(--ease);
 }
 .acceso__link:hover { color: var(--text); text-decoration-color: var(--accent); }
-.acceso__link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.acceso__link:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 3px; border-radius: 4px; }
 
 .acceso__pie {
   position: relative;
@@ -206,3 +208,38 @@
   .acceso { padding: var(--sp-10) var(--sp-5) var(--sp-5); }
   .acceso__form { margin-top: var(--sp-8); }
 }
+
+/* La contraseña es un p-password, pero en esta pantalla tiene que leerse igual
+   que el resto: línea inferior, sin caja. Se estiliza su input interno con el
+   mismo tratamiento que .campo__i. */
+:host ::ng-deep .campo__clave { width: 100%; display: block; }
+:host ::ng-deep .campo__clave .p-password-input {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--line-strong);
+  border-radius: 0;
+  padding: var(--sp-2) var(--sp-8) var(--sp-2) 0;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 500;
+  box-shadow: none;
+  transition: border-color var(--dur) var(--ease);
+}
+:host ::ng-deep .campo__clave .p-password-input::placeholder { color: var(--text-dim); font-weight: 500; }
+:host ::ng-deep .campo__clave .p-password-input:hover { border-bottom-color: var(--text-dim); }
+:host ::ng-deep .campo__clave .p-password-input:focus,
+:host ::ng-deep .campo__clave .p-password-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-bottom-color: var(--accent);
+}
+/* El ojo se alinea con la línea, no con una caja que ya no existe. */
+:host ::ng-deep .campo__clave .p-password-toggle-mask-icon,
+:host ::ng-deep .campo__clave .p-password-toggle-icon {
+  right: 0;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+:host ::ng-deep .campo__clave .p-password-toggle-mask-icon:hover { color: var(--text); }

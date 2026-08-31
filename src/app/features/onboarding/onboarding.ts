@@ -1,19 +1,30 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { GENEROS, Genero } from '../../core/models';
-import { ThemeToggle } from '../../ui/theme-toggle';
+import { ThemeService } from '../../core/theme.service';
+import { DatePicker } from 'primeng/datepicker';
+import { SelectButton } from 'primeng/selectbutton';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-onboarding',
-  imports: [FormsModule, ThemeToggle],
+  imports: [FormsModule, DatePicker, SelectButton, ButtonModule],
   templateUrl: './onboarding.html',
-  styleUrl: './onboarding.scss',
+  // La hoja de las pantallas de acceso, mas lo especifico de esta.
+  styleUrls: ['../login/login.scss', './onboarding.scss'],
 })
 export class Onboarding {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private tema = inject(ThemeService);
+
+  protected esOscuro = computed(() => this.tema.mode() === 'dark');
+
+  toggleTema(): void {
+    this.tema.toggle();
+  }
 
   protected generos = GENEROS;
   protected nombre = this.auth.currentUser()?.nombre?.split(/\s+/)[0] ?? '';
@@ -21,6 +32,19 @@ export class Onboarding {
   fechaNacimiento = signal<string>('');
   genero = signal<Genero>(null);
   error = signal<string | null>(null);
+
+  /** Tope del calendario: no se puede nacer mañana. */
+  protected readonly hoy = new Date();
+
+  /** El modelo guarda ISO (aaaa-mm-dd); el calendario trabaja con Date. */
+  protected fechaComoDato = computed(() => {
+    const v = this.fechaNacimiento();
+    return v ? new Date(v + 'T00:00:00') : null;
+  });
+
+  protected fijarFecha(d: Date | null): void {
+    this.fechaNacimiento.set(d ? d.toISOString().slice(0, 10) : '');
+  }
 
   async finish(): Promise<void> {
     this.error.set(null);

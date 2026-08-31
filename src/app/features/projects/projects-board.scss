@@ -1,0 +1,466 @@
+/* =============================================================
+   Tablero de proyectos. Diez columnas: las tres del embudo de innovación, las
+   seis del ciclo de desarrollo y la de descartados al final.
+
+   El tablero scrollea en horizontal y cada columna en vertical. El encabezado
+   de la página no scrollea con él: si se fuera, se perdería la referencia.
+   ============================================================= */
+
+.page--tablero {
+  /* Ancho de columna en un solo lugar: la banda de fases y el tablero usan la
+     misma rejilla, y si difieren los rotulos dejan de coincidir. */
+  --col-w: 268px;
+
+  /* El tablero necesita el ancho completo, no la caja de lectura de --maxw. */
+  max-width: none;
+  display: grid;
+  gap: var(--sp-5);
+  /* Alto fijo para que el scroll viva dentro de las columnas. */
+  height: 100dvh;
+  /* Tres renglones y siempre tres hijos: encabezado, filtros y despues el
+     tablero O el estado vacio. Un hijo suelto de mas crea un renglon implicito
+     que se sale de la pantalla y queda cortado. */
+  grid-template-rows: auto auto minmax(0, 1fr);
+  padding: var(--sp-6) 0 var(--sp-4) 0;
+  overflow: hidden;
+}
+
+.tab__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  padding: 0 var(--pad);
+}
+
+.tab__enc { display: grid; gap: var(--sp-1); }
+
+.tab__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  letter-spacing: -.03em;
+}
+
+/* ---------- Resumen ---------- */
+.resumen {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-2);
+}
+
+.res {
+  display: grid;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 1px entre cifra y etiqueta: ajuste tipografico */
+  gap: 1px;
+  min-width: 76px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.res__n {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+}
+
+.res__q {
+  font-size: var(--fs-2xs);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* Solo se tiñe cuando hay algo que mirar: un cero en rojo es ruido. */
+.res--mal { border-color: var(--danger); }
+.res--mal .res__n { color: var(--danger-text); }
+
+/* ---------- Barra de filtros ---------- */
+.filtros {
+  display: grid;
+  gap: var(--sp-3);
+  padding: 0 var(--pad);
+}
+
+.filtros__linea {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 36px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.chip-btn svg { width: 15px; height: 15px; }
+.chip-btn:hover { border-color: var(--line-strong); color: var(--text); }
+.chip-btn:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 2px; }
+
+/* Activo por forma y por color: el borde de acento más el relleno suave. */
+.chip-btn--on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.chip-btn__n {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--sp-1);
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.filtros__panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  animation: panel-baja var(--dur) var(--ease);
+}
+
+@keyframes panel-baja { from { opacity: 0; transform: translateY(-4px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .filtros__panel { animation: none; }
+}
+
+.campo { display: grid; gap: var(--sp-1); }
+
+.campo__t {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ---------- Pastillas de filtro puesto ---------- */
+.pastillas { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+.pastilla {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-full);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+.pastilla svg { width: 11px; height: 11px; }
+.pastilla:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 2px; }
+
+.pastilla--limpiar {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--text-2);
+}
+
+/* ---------- Banda de fases sobre las columnas ---------- */
+.pista {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--sp-2);
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 var(--pad) var(--sp-2);
+}
+
+.fases {
+  display: grid;
+  /* Misma rejilla que el tablero: --n lo pone la plantilla desde ETAPAS. Cada
+     fase abarca tantas columnas como etapas tenga, así los rótulos quedan
+     alineados con las columnas de abajo sin calcular anchos a mano. */
+  grid-template-columns: repeat(var(--n), var(--col-w));
+  gap: var(--sp-3);
+  min-width: max-content;
+}
+
+.fase {
+  --cols: 1;
+  grid-column: span var(--cols);
+  padding: 0 var(--sp-1) var(--sp-1);
+  border-bottom: 2px solid var(--line);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.fase--embudo { border-bottom-color: var(--bb-purple); }
+.fase--desarrollo { border-bottom-color: var(--accent); }
+.fase--cierre { border-bottom-color: var(--bb-mint); }
+.fase--fuera { border-bottom-color: var(--line-strong); }
+
+@media (max-width: 720px) {
+  /* En angosto la banda estorba: la columna ya dice en qué etapa está. */
+  .fases { display: none; }
+}
+
+/* ---------- Buscador ----------
+   El campo es `p-iconfield` + `pInputText`: el estilo lo pone la capa de
+   PrimeNG. Aca solo queda cuanto ocupa dentro de la barra de filtros. */
+.filtro-buscar { flex: 0 1 320px; }
+.filtro-buscar input { width: 100%; }
+
+@media (max-width: 720px) {
+  .filtro-buscar { flex: 1 1 100%; }
+}
+
+/* ---------- Estados de página ---------- */
+.tab__vacio {
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: start;
+  align-content: start;
+  margin: 0 var(--pad);
+  padding: var(--sp-6);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.tab__vacio b { font-family: var(--font-display); font-size: var(--fs-md); color: var(--text); }
+
+/* ---------- La pista de columnas ---------- */
+.tablero {
+  display: grid;
+  /* Ancho fijo por columna: si se estiran, las tarjetas dejan de ser legibles. */
+  grid-template-columns: repeat(var(--n), var(--col-w));
+  gap: var(--sp-3);
+  min-width: max-content;
+  min-height: 0;
+}
+
+@media (max-width: 720px) {
+  .page--tablero { --col-w: 84vw; }
+  .pista { scroll-snap-type: x proximity; }
+  .col { scroll-snap-align: start; }
+}
+
+.col {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  scroll-snap-align: start;
+}
+
+.col__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+
+.col__t {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.col__n {
+  flex: none;
+  min-width: 22px;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- contador diminuto con min-width propio */
+  padding: 1px var(--sp-2);
+  border-radius: var(--r-full);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--text-2);
+}
+
+/* La fase se lee en el filo superior de la columna: un solo trazo de color,
+   sin cajas de colores que compitan con las tarjetas.
+
+   Va posicionada, NO como celda del grid: puesta en el flujo ocupaba el primer
+   renglón y empujaba el encabezado al renglón `1fr`, que lo estiraba y hacía
+   ver la columna partida en dos pisos. */
+.col::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 3px;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  pointer-events: none;
+}
+.col.fase-embudo::before { background: var(--bb-purple); }
+.col.fase-desarrollo::before { background: var(--accent); }
+.col.fase-cierre::before { background: var(--bb-mint); }
+.col.fase-fuera::before { background: var(--line-strong); }
+.col.fase-fuera { opacity: .82; }
+
+.col__lista {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  min-height: 90px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.col__vacia {
+  /* Una columna vacia no es un hueco: es un destino de arrastre disponible.
+     Antes era un guion centrado en una superficie de ~600px, y con el embudo
+     vacio eso son tres columnas de espacio muerto ocupando medio ancho de
+     pantalla.
+
+     La columna sigue estirandose a la altura completa a proposito, y no es
+     descuido: es el area donde se suelta una tarjeta. Encogerla a su contenido
+     dejaria un blanco de 90px casi imposible de acertar arrastrando. Lo que
+     cambia es que ahora se LEE como destino — trazo punteado, como el de
+     .sumar en equipos — en vez de leerse como nada. */
+  margin: 0;
+  display: grid;
+  place-content: center;
+  gap: var(--sp-1);
+  height: 100%;
+  min-height: 0;
+  padding: var(--sp-4) var(--sp-3);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+  text-align: center;
+  font-size: var(--fs-2xs);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+/* La lista empaqueta al inicio (align-content: start), asi que un hijo con
+   height:100% resolveria contra una fila dimensionada por su contenido y el
+   marco quedaria chico arriba. Cuando la columna esta vacia —y solo entonces—
+   la fila se estira, para que el destino de arrastre ocupe la columna entera. */
+.col__lista:has(.col__vacia) { align-content: stretch; }
+
+/* Mientras se arrastra, el destino se enciende: el trazo se vuelve solido y
+   toma el acento, asi la columna vacia deja de ser la menos evidente. */
+.col__lista.cdk-drop-list-receiving .col__vacia,
+.col__lista.cdk-drop-list-dragging .col__vacia {
+  border-style: solid;
+  border-color: var(--accent-ui);
+  color: var(--text-2);
+}
+
+.col__mas {
+  margin: 0 var(--sp-3) var(--sp-3);
+  padding: var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.col__mas:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-text); }
+.col__mas:disabled { opacity: .6; cursor: default; }
+
+/* ---------- Arrastre ---------- */
+.arrastrable { display: block; }
+
+.arrastrable--guardando { opacity: .55; pointer-events: none; }
+
+/* La tarjeta en vuelo: se levanta y se inclina apenas. */
+.cdk-drag-preview {
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  transform: rotate(1.5deg);
+}
+
+/* Hueco que queda en el origen: una silueta, no un bloque de color. */
+.hueco {
+  height: 76px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+}
+
+.cdk-drag-animating { transition: transform var(--dur) var(--ease); }
+.col__lista.cdk-drop-list-dragging .arrastrable:not(.cdk-drag-placeholder) {
+  transition: transform var(--dur) var(--ease);
+}
+
+/* Columna que recibe: se ilumina el borde mientras el puntero está encima. */
+.col__lista.cdk-drop-list-receiving,
+.col__lista.cdk-drop-list-dragging {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-radius: var(--r-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cdk-drag-preview { transform: none; }
+  .cdk-drag-animating,
+  .col__lista.cdk-drop-list-dragging .arrastrable:not(.cdk-drag-placeholder) { transition: none; }
+}
+
+/* ---------- Esqueleto de carga ---------- */
+.esq-tarjeta {
+  height: 76px;
+  border-radius: var(--r-md);
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: esq 1.4s var(--ease) infinite;
+}
+
+@keyframes esq { to { background-position: -200% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .esq-tarjeta { animation: none; }
+}

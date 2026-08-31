@@ -1,6 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Password } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../core/auth.service';
 
 const MINIMO = 10;
@@ -11,7 +13,7 @@ const MINIMO = 10;
  */
 @Component({
   selector: 'app-change-password',
-  imports: [FormsModule],
+  imports: [FormsModule, Password, ButtonModule],
   templateUrl: './change-password.html',
   styleUrl: '../login/login.scss',
 })

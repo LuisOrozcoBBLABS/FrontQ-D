@@ -30,10 +30,23 @@ Para que la aplicación tenga datos, la API de BackQ-D debe estar corriendo en
 ## Testing
 
 ```bash
-npm test
+npm test          # Vitest, 41 tests
+npm run lint:css  # stylelint sobre los .scss
 ```
 
-Los tests usan **Vitest** y cubren componentes, servicios y modelos.
+Los tests usan **Vitest**. Qué cubren, con precisión: `core/tiempos.ts` (22),
+`core/transiciones.ts` (8, incluido que `completada` es final igual que en el
+servidor), `core/models.ts` con la etapa vecina del tablero (5), el interceptor
+de autenticación (4, incluido el caso en que la renovación falla) y dos de humo
+sobre `App`. **No hay** tests de componentes de pantalla ni de guards.
+
+`npm run lint:css` no es cosmético: rechaza px crudos en `padding`/`margin`/`gap`
+fuera de la escala de 4pt, selectores de elemento fuera de capa y selectores
+duplicados. Las tres reglas existen porque las tres causaron defectos reales.
+
+Los tres comandos —tipos, estilos, compilación y tests— corren solos en cada
+pull request desde `.github/workflows/ci.yml`. Ese workflow **no despliega**: el
+despliegue vive en `deploy-pages.yml` y solo dispara con push a `main`.
 
 ## Variables de entorno
 
@@ -124,6 +137,84 @@ elipsis cuando son muchas (1 … 4 5 6 … 20) y el rango a la izquierda
 - **Grupos y asignaciones** paginan en el cliente: son listas cortas por
   naturaleza y la API de asignaciones no pagina.
 
+## Tablero de proyectos
+
+`/proyectos` **no muestra lo mismo a todos**, porque no es el mismo trabajo:
+
+- Quien **ejecuta** ve un tablero tipo kanban con lo que tiene a cargo
+  (`asignadoAMi`) y arrastra sus tarjetas entre etapas.
+- Quien **asigna** (jefatura de innovación) y la **administración** ven la tabla
+  del área. A esas cuentas no se les asignan proyectos: un tablero de "lo mío"
+  les saldría vacío. Necesitan listar, filtrar y paginar todo el conjunto.
+
+La bifurcación vive en `features/projects/projects.ts` y el criterio es el
+permiso `assignments.create`, más el rol admin excluido de forma explícita.
+
+**Diez columnas**, agrupadas por fase con una banda superior: las tres del
+embudo, las cinco del desarrollo, producción y descartado. `descartado` sigue
+siendo una columna y no un estado escondido: si desapareciera, esos proyectos no
+tendrían dónde verse.
+
+**Carga por columna.** Cada una pide su tanda de 10 y trae más por su cuenta,
+con el total real en el encabezado (de `/projects/stats`). Un tablero que trae
+"todo" deja de servir en cuanto hay volumen.
+
+**Arrastre con `@angular/cdk/drag-drop`.** Al soltar, la tarjeta se mueve en
+pantalla primero y se guarda después; si el servidor rechaza, el tablero vuelve
+exactamente a como estaba y el aviso dice por qué. Las tarjetas que el servidor
+no dejaría mover (no sos el autor ni admin) no se pueden arrastrar y muestran un
+candado: es más honesto impedir el gesto que dejarlo hacer y deshacerlo.
+
+**Detalle en panel lateral**, no en página: el tablero sigue detrás y cerrar no
+reconstruye las columnas ni pierde el scroll. Muestra los tiempos, el historial
+de etapas con la fecha de entrada a cada una, los responsables y el fin
+estimado. `/proyectos/:id` sigue existiendo para enlaces directos.
+
+### Tiempos
+
+`core/tiempos.ts` son funciones puras, con tests en `core/tiempos.spec.ts`. La
+regla es que **cuando falta un dato se devuelve `null`, nunca 0**: un cero diría
+"lleva cero días acá", que es distinto de "no sé cuánto lleva". Cubre historial
+vacío, fechas inválidas, fechas futuras y reprocesos (si un proyecto vuelve a
+una etapa salen dos tramos separados, porque agruparlos escondería el reproceso).
+
+El semáforo de retraso usa umbrales **por etapa**: dos semanas en code review es
+tarde, dos semanas en desarrollo no.
+
+### Editar y eliminar
+
+Las dos acciones son **del autor** (o de un administrador), y aparecen en tres
+lugares: el panel del tablero, la ficha del proyecto y una columna de acciones en
+la tabla. Fuera de eso la fila muestra un guion.
+
+El permiso vive en un solo lugar, `AuthService.esAutorOAdmin()`, que espeja
+`soloAutorOAdmin` del servidor. Antes la ficha usaba `projects.viewAll` —un
+permiso de **lectura**— así que la jefatura veía el botón de eliminar y la API le
+devolvía 403.
+
+`/proyectos/:id/editar` reusa el mismo formulario que registrar: los campos son
+idénticos y duplicarlo garantizaría que las dos versiones se separen. En edición
+**no se manda la etapa**: eso se mueve en el tablero, y mandarla desde el
+formulario pisaría el estado y ensuciaría el historial con una entrada falsa. Si
+alguien entra por URL a editar algo que no registró, se lo devuelve a la ficha
+con el motivo.
+
+**Eliminar archiva.** La API no tiene borrado destructivo: el proyecto sale de
+las listas y del tablero, queda con `archivado`, y se puede recuperar. La
+confirmación lo dice con esas palabras en lugar de prometer un borrado que no
+ocurre.
+
+### Filtrado avanzado
+
+Texto, sector, prioridad de la asignación, estado de la asignación, quién la
+asignó, rango de fechas de registro y plazo vencido — todos **contra el
+servidor**, porque filtrar en el cliente solo miraría las tarjetas ya cargadas.
+El único que se resuelve en el cliente es "demorados en su etapa", que depende
+de los tiempos calculados acá.
+
+El selector de "me lo asignó" se arma con las asignaciones propias, no con
+`/users`: un colaborador recibe 403 al listar usuarios.
+
 ## Avisos que llevan a la acción
 
 El clic en un aviso de la campana no solo lo marca leído: lleva a donde se
@@ -178,6 +269,13 @@ MVP: sus resultados eran deterministas y simulados, y no hay modelo detrás.
 
 | Rama | Qué cambió |
 |---|---|
+| `feat/tablero-proyectos` | **Auditoría visual y de accesibilidad, aplicada.** Tres tokens de contraste que faltaban (`--text-dim` no llegaba a 4.5:1 en ninguno de los dos temas; `--accent-ui` porque el lima daba 1.26:1 sobre fondo claro y el anillo de foco era invisible; `--danger-text`). Alternativa por teclado para mover tarjetas en el tablero, que `@angular/cdk` no trae. Landmark `<main>`, enlace de salto, títulos en las 14 rutas y foco al navegar. Espaciado de 162 valores crudos a 0, con la escala de control `--ctl-*` y stylelint para congelarlo. Onboarding y perfil reconstruidos sobre el sistema (onboarding vivía sobre `.login`, una clase que ya no existía). Grupos pasa de tabla a tarjetas. Y los defectos de las capturas: los iconos de campo pisaban el texto en 3 de 4 pantallas, el panel de avisos se transparentaba porque su blur no tenía nada que desenfocar, el paginador se derramaba fuera de la columna, la barra de filtros se trepaba sobre el título, y el encabezado de tabla quedaba pisado por el estado vacío. |
+| `feat/tablero-proyectos` | **CI en cada pull request** (`ci.yml`): tipos con `strictTemplates`, stylelint, compilación y los 41 tests. No despliega. |
+| `feat/tablero-proyectos` | Cuatro bugs funcionales: el botón de alta de usuario no hacía nada (dos validaciones que no coincidían), el KPI de usuarios del inicio cambiaba según por dónde hubieras navegado, la tabla de grupos ordenaba solo las 8 filas visibles, y `ng serve` levantaba en 4200 mientras el CORS espera 4300. Más el interceptor, que dejaba peticiones colgadas para siempre si fallaba la renovación. |
+| `feat/tablero-proyectos` | Vistas maestro-detalle en Proyectos y Usuarios (lista + ficha siempre visible, con navegación por flechas), selector de integrantes en dos paneles con cambios en lote y la consecuencia a la vista, y el dashboard con deltas reales y sparkline. |
+| `feat/tablero-proyectos` | PrimeNG 21.1.9 como libreria de componentes, tematizado con los tokens de marca; integrado con los 11 commits de `origin/main` y con el tablero de proyectos, cuyos selects, calendarios, buscador y botones pasan a componentes de PrimeNG. El proxy del dev server apunta al BackQ-D local. |
+| `main` | Editar y eliminar proyectos, solo para quien los registró: formulario de edición reusado en `/proyectos/:id/editar`, acciones en el panel del tablero, en la ficha y por fila en la tabla, y el permiso unificado en `esAutorOAdmin()` (la ficha usaba un permiso de lectura). |
+| `main` | Tablero kanban de proyectos a cargo: 10 columnas por etapa, arrastre con `@angular/cdk` y guardado optimista, panel lateral con historial y tiempos por etapa, y filtrado avanzado contra el servidor. La tabla queda para quien asigna y para administración. |
 | `main` | Nomenclatura del área: **I+D** pasa a **R&D** en el título de la pestaña, la marca de agua de las cuatro pantallas, el riel y los textos de Grupos y Usuarios. La del login decía `Q&D` y queda alineada. |
 | `main` | Tarjetas fuera: proyectos, usuarios, grupos, asignaciones y pedidos pasan a tablas con paginación de 8 filas (`ui/paginador`). Proyectos y usuarios paginan y filtran contra el servidor. Los avisos de la campana llevan a la acción concreta. |
 | `main` | Login rediseñado en clave minimalista (sin tarjeta, campos de línea, ver/ocultar contraseña) y pantalla de recuperación; el módulo de usuarios atiende los pedidos y asigna la clave temporal. |

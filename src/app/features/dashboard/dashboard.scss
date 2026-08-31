@@ -1,16 +1,13 @@
-.stat { text-decoration: none; transition: border-color var(--dur) var(--ease); }
-.stat:hover { border-color: var(--line-strong); }
-
-.home-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 24px; }
+.home-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); margin-top: var(--sp-6); }
 @media (max-width: 720px) { .home-cols { grid-template-columns: 1fr; } }
 
-.home-col { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); padding: 18px; }
-.home-col__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.home-col { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); padding: var(--sp-5); }
+.home-col__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-2); }
 .home-col__head h3 { font-size: 16px; }
 .home-col__more { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; }
 .home-col__more:hover { color: var(--text); }
 
-.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 10px; border-radius: var(--r-md); text-decoration: none; transition: background-color var(--dur) var(--ease); border-top: 1px solid var(--line); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-3) var(--sp-3); border-radius: var(--r-md); text-decoration: none; transition: background-color var(--dur) var(--ease); border-top: 1px solid var(--line); }
 .row:first-of-type { border-top: none; }
 .row:hover { background: var(--surface-2); }
 .row__main { min-width: 0; }
@@ -18,9 +15,149 @@
 .row__sub { font-size: 12px; color: var(--text-dim); }
 .row--empty { color: var(--text-dim); font-size: 13.5px; justify-content: flex-start; }
 
-.quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 24px; }
+.quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-4); margin-top: var(--sp-6); }
 .quick__card { text-decoration: none; transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease); }
 .quick__card:hover { border-color: var(--line-strong); transform: translateY(-2px); }
-.quick__card h3 { font-size: 16px; margin-bottom: 6px; }
+.quick__card h3 { font-size: 16px; margin-bottom: var(--sp-2); }
 .quick__card p { font-size: 13.5px; }
 @media (hover: none) { .quick__card:hover { transform: none; } }
+
+/* =============================================================
+   LO TUYO — el bloque que contesta "qué hago", con el aro a la izquierda y la
+   consigna a la derecha. El borde toma el tono del estado: rojo solo cuando hay
+   algo vencido, nunca para decir "cero vencidas".
+   ============================================================= */
+.tuyo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-5) var(--sp-6);
+  margin-bottom: var(--sp-6);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+  position: relative;
+  top: 0.8rem;
+}
+
+/* El color no es la unica señal: la consigna ya dice en palabras que pasa. */
+.tuyo--mal { border-color: color-mix(in srgb, var(--danger) 45%, var(--glass-line)); }
+.tuyo--atencion { border-color: color-mix(in srgb, var(--bb-blue) 45%, var(--glass-line)); }
+
+.tuyo__aro { flex: 0 0 auto; display: grid; place-items: center; }
+
+.tuyo__texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.tuyo__consigna {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: var(--lh-snug);
+  letter-spacing: -.01em;
+}
+
+.tuyo__cifras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tuyo__cifras li { display: flex; align-items: baseline; gap: var(--sp-1); }
+
+.mini__n {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mini__q { font-size: var(--fs-xs); color: var(--text-dim); }
+.mini--mal .mini__n { color: var(--danger-text); }
+.mini--atencion .mini__n { color: var(--bb-blue); }
+
+@media (max-width: 640px) {
+  .tuyo { flex-direction: column; text-align: center; align-items: center; }
+  .tuyo__texto { align-items: center; }
+  .tuyo__cifras { justify-content: center; }
+}
+
+/* =============================================================
+   KPIs DEL ÁREA — cifra, etiqueta, comparación y forma histórica.
+
+   La grilla se define por ancho minimo y no por cantidad de columnas: asi la
+   fila se reacomoda sola y agregar una quinta tarjeta no rompe el diseño.
+   ============================================================= */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+}
+
+.kpi {
+  display: grid;
+  gap: var(--sp-1);
+  align-content: start;
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.kpi:hover { border-color: var(--line-strong); }
+.kpi:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 2px; }
+
+.kpi__etiqueta {
+  margin: 0;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* La cifra no lleva color: si todas las cifras son de color, ninguna destaca.
+   El color vive en el delta, y solo cuando hay algo que mirar. */
+.kpi__valor {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.03em;
+  line-height: 1.05;
+}
+
+.kpi__delta {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+}
+.kpi__ref { color: var(--text-dim); }
+.kpi__delta--bien { color: var(--accent-text); }
+.kpi__delta--atencion { color: var(--bb-blue); }
+
+/* --accent-ui y no --accent: el sparkline transmite informacion (la tendencia),
+   no es decoracion, asi que le aplica el minimo de 3:1 de WCAG 1.4.11. El lima
+   puro daba 1.37:1 sobre la superficie clara — literalmente invisible. */
+.kpi__spark { margin-top: var(--sp-2); color: var(--accent-ui); }
+
+.kpi--esq { gap: var(--sp-2); }
+

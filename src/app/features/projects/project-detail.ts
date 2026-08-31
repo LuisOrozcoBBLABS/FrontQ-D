@@ -6,14 +6,32 @@ import { UsersService } from '../../core/users.service';
 import { AuthService } from '../../core/auth.service';
 import { AssignmentsService } from '../../core/assignments.service';
 import { CANALES, Canal, CanalEnvio, ESTADOS_PROYECTO, PRIORIDADES, Prioridad, Project, ProjectStatus, User } from '../../core/models';
-import { TrapFocus } from '../../ui/trap-focus';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { mensajeDeError } from '../../core/auth.service';
+import { ButtonModule } from 'primeng/button';
+import { Select } from 'primeng/select';
+import { SelectButton } from 'primeng/selectbutton';
+import { DatePicker } from 'primeng/datepicker';
+import { Textarea } from 'primeng/textarea';
+import { Checkbox } from 'primeng/checkbox';
+import { Dialog } from 'primeng/dialog';
+import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-project-detail',
-  imports: [RouterLink, FormsModule, TrapFocus],
+  imports: [
+    RouterLink,
+    FormsModule,
+    ButtonModule,
+    Select,
+    SelectButton,
+    DatePicker,
+    Textarea,
+    Checkbox,
+    Dialog,
+    Tag,
+  ],
   templateUrl: './project-detail.html',
   styleUrl: './project-detail.scss',
 })
@@ -37,6 +55,42 @@ export class ProjectDetail {
   protected auth = inject(AuthService);
 
   protected estados = ESTADOS_PROYECTO;
+
+  /** Tope inferior del calendario: una fecha límite en el pasado no sirve. */
+  protected readonly hoy = new Date();
+
+  /** Las pestañas dependen de los permisos, por eso se calculan. */
+  protected opcionesTab = computed<{ label: string; value: 'resumen' | 'gestion' }[]>(() => {
+    const tabs: { label: string; value: 'resumen' | 'gestion' }[] = [{ label: 'Resumen', value: 'resumen' }];
+    if (this.canAssign() || this.canManage()) tabs.push({ label: 'Gestión', value: 'gestion' });
+    return tabs;
+  });
+
+  /** PrimeNG trabaja con listas de opciones, no con <option>. */
+  protected opcionesColaborador = computed(() =>
+    this.assignableUsers().map(u => ({
+      label: u.nombre + (u.grupo ? ` · ${u.grupo}` : ''),
+      value: u.id,
+    })),
+  );
+
+  protected opcionesEtapa = computed(() =>
+    ESTADOS_PROYECTO.map(e => ({ label: e.label, value: e.value })),
+  );
+
+  /** El modelo guarda ISO (aaaa-mm-dd); el calendario trabaja con Date. */
+  protected limiteComoDato = computed(() => {
+    const v = this.fechaLimite();
+    return v ? new Date(v + 'T00:00:00') : null;
+  });
+  protected fijarLimite(d: Date | null): void {
+    this.fechaLimite.set(d ? d.toISOString().slice(0, 10) : '');
+  }
+
+  /** p-dialog avisa el cierre por Escape o por clic en el fondo. */
+  protected alCerrarAsignacion(abierto: boolean): void {
+    if (!abierto) this.closeAssign();
+  }
   protected prioridades = PRIORIDADES;
   protected canales = CANALES;
 
@@ -63,9 +117,13 @@ export class ProjectDetail {
   assignableUsers(): User[] { return this.usersSvc.users().filter(u => u.activo); }
   userName(id: string): string { return this.usersSvc.byId(id)?.nombre ?? '—'; }
 
+  /**
+   * Espeja `soloAutorOAdmin` del servidor. Antes usaba `projects.viewAll`, que
+   * es un permiso de LECTURA: la jefatura veía los botones de editar y eliminar
+   * y la API le devolvía 403.
+   */
   canManage(): boolean {
-    const p = this.project();
-    return this.auth.can('projects.viewAll') || (!!p && p.autorId === this.auth.currentUser()?.id);
+    return this.auth.esAutorOAdmin(this.project()?.autorId);
   }
   canAssign(): boolean { return this.auth.can('assignments.create'); }
 
@@ -74,18 +132,27 @@ export class ProjectDetail {
     await this.projectsSvc.update(this.id, { estado: e });
     this.toast.success('Estado actualizado');
   }
+  async editar(): Promise<void> {
+    await this.router.navigate(['/proyectos', this.id, 'editar']);
+  }
+
   async remove(): Promise<void> {
-    if (!this.project()) return;
+    const p = this.project();
+    if (!p) return;
     const ok = await this.confirm.ask({
-      title: 'Archivar proyecto',
-      message: `¿Archivar “${this.project()!.nombre}”? Sale de las listas pero no se pierde: un administrador puede restaurarlo.`,
+      title: 'Eliminar proyecto',
+      message: `¿Eliminar “${p.nombre}”? Desaparece de las listas y del tablero. Queda archivado, así que un administrador puede recuperarlo.`,
       danger: true,
-      confirmText: 'Archivar',
+      confirmText: 'Eliminar',
     });
     if (!ok) return;
-    await this.projectsSvc.archivar(this.id);
-    this.toast.success('Proyecto archivado');
-    await this.router.navigateByUrl('/proyectos');
+    try {
+      await this.projectsSvc.archivar(this.id);
+      this.toast.success('Proyecto eliminado');
+      await this.router.navigateByUrl('/proyectos');
+    } catch (e) {
+      this.toast.error(mensajeDeError(e, 'No se pudo eliminar el proyecto.'));
+    }
   }
 
   openAssign(): void {

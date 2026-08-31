@@ -5,9 +5,15 @@
    ============================================================= */
 
 :host {
-  --item: 46px; // área táctil mínima
-  --gap: 6px;
-  --pad: 7px;
+  /* 48 y no 46, por dos razones que apuntan al mismo número.
+     La primera: styles.scss declara --rail-w:64px y lo describe como "diámetro
+     del dock", pero el diámetro real era --item + --pad*2 = 46 + 14 = 60. El
+     token mentía por 4px, y --rail-clear y el padding móvil se calculan sobre
+     él. Con 48 + 8*2 = 64 el token pasa a decir la verdad.
+     La segunda: 46 quedaba por debajo del objetivo táctil de 48px. */
+  --item: var(--ctl-lg); // 48px: objetivo táctil, y hace honesto a --rail-w
+  --gap: var(--sp-2);
+  --pad: var(--sp-2);
 }
 
 .rail {
@@ -25,11 +31,11 @@
 }
 .rail > * { pointer-events: auto; }
 
-/* ---------- Cristal compartido ---------- */
+/* ---------- Cristal compartido ----------
+   Sin .avisos: ver el comentario largo en su propia regla. */
 .rail__marca,
 .rail__dock,
-.rail__tip,
-.avisos {
+.rail__tip {
   background: var(--glass-rail);
   backdrop-filter: blur(22px) saturate(180%);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
@@ -135,7 +141,7 @@
 .rail__item:hover { color: var(--text); }
 .rail__item:hover svg { transform: scale(1.12); }
 .rail__item:active { transform: scale(0.94); }
-.rail__item:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.rail__item:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 3px; }
 
 /* Sobre el lime, el icono va en obsidiana: 11:1 de contraste */
 .rail__item.on,
@@ -143,7 +149,7 @@
 
 /* Las utilidades no tienen indicador deslizante: marcan su estado al pasar */
 .rail__item--btn:hover { background: var(--surface-2); }
-.rail__item--salir:hover { color: var(--danger); }
+.rail__item--salir:hover { color: var(--danger-text); }
 
 /* Perfil: el avatar es el propio botón */
 .rail__perfil { overflow: hidden; }
@@ -173,7 +179,7 @@
   right: 3px;
   min-width: 17px;
   height: 17px;
-  padding: 0 4px;
+  padding: 0 var(--sp-1);
   display: grid;
   place-items: center;
   border-radius: var(--r-full);
@@ -191,7 +197,7 @@
   position: absolute;
   left: calc(100% + 12px);
   top: 50%;
-  padding: 7px 13px;
+  padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-full);
   color: var(--text);
   font-family: var(--font-display);
@@ -211,10 +217,18 @@
   opacity: 1;
   transform: translate(0, -50%) scale(1);
 }
+/* Con el panel de avisos abierto, el foco se queda en la campana, :focus-visible
+   sigue activo y su etiqueta quedaba encendida por detras del panel. Un boton
+   expandido ya se explica con el panel que abrio; la etiqueta sobra.
+   El unico item del riel con aria-expanded es ese, asi que la regla no toca a
+   los demas tooltips. Solo opacity: el transform lo resuelve la regla base, que
+   ademas cambia de origen en el breakpoint movil. */
+.rail__item[aria-expanded="true"] .rail__tip { opacity: 0; }
 /* La del perfil lleva nombre y rol en dos líneas */
 .rail__tip--doble {
   display: flex;
   flex-direction: column;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 1px entre nombre y rol del tooltip: ajuste tipografico */
   gap: 1px;
   border-radius: var(--r-md);
   text-align: left;
@@ -232,6 +246,25 @@
   width: min(330px, calc(100vw - var(--rail-w) - var(--rail-gap) * 4));
   border-radius: var(--r-lg);
   overflow: hidden;
+  /* OPACO, y por dos razones distintas.
+
+     La primera es que el cristal acá nunca funcionó. Este panel esta dentro de
+     .rail__dock--util, que tambien lleva backdrop-filter, y todo elemento con
+     backdrop-filter establece un Backdrop Root para sus descendientes: lo que
+     .avisos podia muestrear quedaba recortado a la caja de 64px del dock. Y el
+     panel se dibuja en left: calc(100% + 14px), entero fuera de esa caja. El
+     blur desenfocaba la nada y solo quedaba el color plano al 50% de alfa, con
+     la lista de atras leyendose atraves del texto.
+
+     La segunda es que aunque funcionara, no corresponde. Sobre fondo
+     semitransparente el contraste del texto no es un numero sino un rango:
+     depende de la pantalla que haya detras. El cristal es material para
+     superficies chicas y macizas —el dock, una etiqueta de una palabra—, no
+     para un panel con parrafos sobre una tabla densa. Mismo tratamiento que
+     .modal__panel, que ya resolvia este caso en el sistema. */
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-lg);
   animation: avisosIn var(--dur) var(--ease-spring) both;
 }
 @keyframes avisosIn {
@@ -253,11 +286,18 @@
   color: var(--text-2);
 }
 .avisos__marcar:hover { color: var(--text); }
-.avisos__lista { max-height: 56vh; overflow-y: auto; padding: var(--sp-2); }
+/* 44vh y no 56. El panel crece HACIA ARRIBA desde la campana, asi que su
+   techo no es el viewport sino la distancia que hay hasta ella — y eso depende
+   de donde caiga el dock, que el CSS no puede calcular. Con 56vh, en una
+   ventana de ~900px el panel llegaba pegado al borde superior sin un pixel de
+   aire, y como .avisos tiene overflow:hidden el ultimo aviso se leia rebanado
+   en vez de desplazable. El tope conservador deja el margen visible que dice
+   "esto sigue". */
+.avisos__lista { max-height: 44vh; overflow-y: auto; padding: var(--sp-2); }
 .avisos__item {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--sp-1);
   width: 100%;
   text-align: left;
   padding: var(--sp-3);
@@ -268,13 +308,17 @@
 .avisos__item:hover { background: var(--surface-2); }
 .avisos__item b { color: var(--text); font-size: var(--fs-sm); font-weight: 600; }
 .avisos__item span { font-size: var(--fs-xs); line-height: var(--lh-snug); }
-.avisos__item--nuevo { border-left: 2px solid var(--accent); }
+/* El filo del acento va como sombra interior y no como borde: un border-left
+   ocupa lugar en el layout y desplazaba 2px el texto de los avisos sin leer
+   respecto de los leidos. Una sombra pinta en el mismo sitio sin empujar nada,
+   asi que las dos variantes quedan alineadas y no hay padding que compensar. */
+.avisos__item--nuevo { box-shadow: inset 2px 0 0 var(--accent); }
 
 /* Que va a pasar al hacer clic: el aviso lleva a resolverlo */
 .avisos__accion {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-1);
   margin-top: var(--sp-2);
   font-family: var(--font-display);
   font-size: var(--fs-2xs);
@@ -289,7 +333,10 @@
 
 /* ---------- Ventanas bajas: apretar un poco ---------- */
 @media (max-height: 780px) {
-  :host { --item: 40px; --gap: 4px; --pad: 6px; }
+  /* --item se queda en 40px: es un tamano de control, no ritmo, y achicar el
+     objetivo tactil justo en las pantallas chicas seria al reves. El aire
+     alrededor si baja al paso mas chico de la escala. */
+  :host { --item: 40px; --gap: var(--sp-1); --pad: var(--sp-1); }
   .rail__item svg { width: 18px; height: 18px; }
   .rail__ini { width: 28px; height: 28px; font-size: 10px; }
 }
@@ -336,7 +383,10 @@
 }
 
 @media (max-width: 480px) {
-  :host { --item: 40px; --gap: 3px; --pad: 5px; }
+  /* --item se queda en 40px: es un tamano de control, no ritmo, y achicar el
+     objetivo tactil justo en las pantallas chicas seria al reves. El aire
+     alrededor si baja al paso mas chico de la escala. */
+  :host { --item: 40px; --gap: var(--sp-1); --pad: var(--sp-1); }
   .rail { gap: var(--sp-1); }
   .rail__item svg { width: 18px; height: 18px; }
 }
@@ -358,8 +408,21 @@
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .rail__marca,
   .rail__dock,
-  .rail__tip,
-  .avisos {
+  .rail__tip {
     background: var(--surface);
   }
+}
+
+
+/* El riel no cambia entre rutas: si entra en la foto de la transición de vista,
+   se cruza consigo mismo y el indicador deja un fantasma en la posición
+   anterior. Con nombre propio queda fuera de ese cruce y solo se desliza. */
+/* stylelint-disable-next-line no-duplicate-selectors -- el nombre de view-transition va con su comentario, que explica el fantasma que evita */
+.rail {
+  view-transition-name: rail;
+}
+::view-transition-old(rail),
+::view-transition-new(rail) {
+  animation: none;
+  mix-blend-mode: normal;
 }

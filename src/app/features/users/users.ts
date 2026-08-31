@@ -5,11 +5,25 @@ import { UsersService } from '../../core/users.service';
 import { GroupsService } from '../../core/groups.service';
 import { SolicitudReset } from '../../core/users.service';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
+import { seleccionMaestro } from '../../ui/seleccion-maestro';
 import { mensajeDeError } from '../../core/auth.service';
 import { RoleId, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { Select } from 'primeng/select';
+import { SelectButton } from 'primeng/selectbutton';
+import { InputText } from 'primeng/inputtext';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import { Password } from 'primeng/password';
+import { Checkbox } from 'primeng/checkbox';
+import { ToggleSwitch } from 'primeng/toggleswitch';
+import { Dialog } from 'primeng/dialog';
+import { Tag } from 'primeng/tag';
+import { Skeleton } from 'primeng/skeleton';
 
 interface Draft {
   id?: string;
@@ -26,7 +40,9 @@ interface Draft {
 
 @Component({
   selector: 'app-users',
-  imports: [FormsModule, TrapFocus, Paginador],
+  imports: [
+    FormsModule, Paginador, TableModule, ButtonModule, Select, SelectButton, InputText, IconField, InputIcon, Password, Checkbox, ToggleSwitch, Dialog, Tag, Skeleton,
+  ],
   templateUrl: './users.html',
   styleUrl: './users.scss',
 })
@@ -56,11 +72,14 @@ export class Users {
     // Filtros y pagina se resuelven en el servidor: con volumen alto, filtrar
     // solo la pagina cargada mostraria resultados incompletos.
     effect(() => {
+      const o = this.orden();
       void this.usersSvc.load({
         q: this.queryDebounce(),
         rol: this.rolF(),
         estado: this.estadoF(),
         pagina: this.pagina(),
+        sort: o?.campo,
+        dir: o?.dir,
       });
     });
 
@@ -121,6 +140,59 @@ export class Users {
   /** La pagina que devolvio el servidor, ya filtrada y ordenada por nombre. */
   protected sorted = computed<User[]>(() => this.list());
 
+  /**
+   * Seleccion de la vista maestro-detalle. Misma mecanica que en proyectos,
+   * misma implementacion: `ui/seleccion-maestro`.
+   */
+  protected sel = seleccionMaestro<User>(this.sorted, 'mu');
+
+  /** Permisos que le da el rol a esa persona, para separarlos de los extras. */
+  permisosDelRol(u: User): string[] {
+    return this.roles().find(r => r.id === u.rol)?.permissions ?? [];
+  }
+
+  /** Etiqueta legible de un permiso; si no esta en el catalogo, su id. */
+  etiquetaPermiso(id: string): string {
+    return this.permisos().find(p => p.id === id)?.label ?? id;
+  }
+
+  /** Dias desde el ultimo ingreso. Null si nunca entro. */
+  diasSinEntrar(u: User): number | null {
+    if (!u.ultimoLoginAt) return null;
+    const t = Date.parse(u.ultimoLoginAt);
+    if (Number.isNaN(t)) return null;
+    return Math.max(0, Math.floor((Date.now() - t) / 86_400_000));
+  }
+
+  /** Texto del ultimo ingreso, que es el dato que dice si la cuenta se usa. */
+  ultimoIngreso(u: User): string {
+    const d = this.diasSinEntrar(u);
+    if (d === null) return 'Nunca entró';
+    if (d === 0) return 'Entró hoy';
+    if (d === 1) return 'Entró ayer';
+    if (d < 30) return `Hace ${d} días`;
+    const meses = Math.floor(d / 30);
+    return meses === 1 ? 'Hace un mes' : `Hace ${meses} meses`;
+  }
+
+  /**
+   * Orden. Va al servidor por la misma razon que los filtros: la tabla trae 8
+   * filas por pagina, asi que ordenar acá reordenaria solo esas 8 y el usuario
+   * creeria que ordeno las 17 personas. El defecto —alfabetico— lo pone el
+   * backend, que es como se busca en una lista de gente.
+   */
+  protected orden = signal<{ campo: string; dir: 'asc' | 'desc' } | null>(null);
+
+  /** PrimeNG entrega el orden como campo + 1/-1. */
+  ordenar(e: { field?: string; order?: number }): void {
+    if (!e.field) return;
+    const dir: 'asc' | 'desc' = e.order === -1 ? 'desc' : 'asc';
+    const actual = this.orden();
+    if (actual?.campo === e.field && actual.dir === dir) return;
+    this.pagina.set(1); // ordenar cambia que cae en la primera pagina
+    this.orden.set({ campo: e.field, dir });
+  }
+
   protected hayFiltros = computed(
     () => Boolean(this.queryDebounce()) || this.rolF() !== 'all' || this.estadoF() !== 'all',
   );
@@ -131,6 +203,31 @@ export class Users {
     this.queryDebounce.set('');
     this.rolF.set('all');
     this.estadoF.set('all');
+  }
+
+  /** Opciones de los filtros; PrimeNG trabaja con listas, no con <option>. */
+  protected readonly opcionesRol = [
+    { label: 'Todos los roles', value: 'all' },
+    { label: 'Administrador', value: 'admin' },
+    { label: 'Colaborador', value: 'colaborador' },
+  ];
+  protected readonly opcionesEstado = [
+    { label: 'Todos', value: 'all' },
+    { label: 'Activos', value: 'activo' },
+    { label: 'Inactivos', value: 'inactivo' },
+  ];
+  /** Los grupos llegan de la API; se antepone la opción de dejar a la persona sin grupo. */
+  protected opcionesGrupo = computed(() => [
+    { label: 'Sin grupo', value: null as string | null },
+    ...this.grupos().map(g => ({ label: `Grupo ${g.nombre}`, value: g.id as string | null })),
+  ]);
+
+  /** p-dialog avisa el cierre por Escape o por clic en el fondo. */
+  protected alCerrarDialogo(abierto: boolean): void {
+    if (!abierto) this.close();
+  }
+  protected alCerrarReset(abierto: boolean): void {
+    if (!abierto) this.cerrarReset();
   }
 
   protected modalOpen = signal(false);
