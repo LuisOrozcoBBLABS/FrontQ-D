@@ -30,10 +30,23 @@ Para que la aplicación tenga datos, la API de BackQ-D debe estar corriendo en
 ## Testing
 
 ```bash
-npm test
+npm test          # Vitest, 41 tests
+npm run lint:css  # stylelint sobre los .scss
 ```
 
-Los tests usan **Vitest** y cubren componentes, servicios y modelos.
+Los tests usan **Vitest**. Qué cubren, con precisión: `core/tiempos.ts` (22),
+`core/transiciones.ts` (8, incluido que `completada` es final igual que en el
+servidor), `core/models.ts` con la etapa vecina del tablero (5), el interceptor
+de autenticación (4, incluido el caso en que la renovación falla) y dos de humo
+sobre `App`. **No hay** tests de componentes de pantalla ni de guards.
+
+`npm run lint:css` no es cosmético: rechaza px crudos en `padding`/`margin`/`gap`
+fuera de la escala de 4pt, selectores de elemento fuera de capa y selectores
+duplicados. Las tres reglas existen porque las tres causaron defectos reales.
+
+Los tres comandos —tipos, estilos, compilación y tests— corren solos en cada
+pull request desde `.github/workflows/ci.yml`. Ese workflow **no despliega**: el
+despliegue vive en `deploy-pages.yml` y solo dispara con push a `main`.
 
 ## Variables de entorno
 
@@ -236,6 +249,9 @@ OpenAI en el backend.
 
 | Rama | Qué cambió |
 |---|---|
+| `feat/tablero-proyectos` | **Auditoría visual y de accesibilidad, aplicada.** Tres tokens de contraste que faltaban (`--text-dim` no llegaba a 4.5:1 en ninguno de los dos temas; `--accent-ui` porque el lima daba 1.26:1 sobre fondo claro y el anillo de foco era invisible; `--danger-text`). Alternativa por teclado para mover tarjetas en el tablero, que `@angular/cdk` no trae. Landmark `<main>`, enlace de salto, títulos en las 14 rutas y foco al navegar. Espaciado de 162 valores crudos a 0, con la escala de control `--ctl-*` y stylelint para congelarlo. Onboarding y perfil reconstruidos sobre el sistema (onboarding vivía sobre `.login`, una clase que ya no existía). Grupos pasa de tabla a tarjetas. Y los defectos de las capturas: los iconos de campo pisaban el texto en 3 de 4 pantallas, el panel de avisos se transparentaba porque su blur no tenía nada que desenfocar, el paginador se derramaba fuera de la columna, la barra de filtros se trepaba sobre el título, y el encabezado de tabla quedaba pisado por el estado vacío. |
+| `feat/tablero-proyectos` | **CI en cada pull request** (`ci.yml`): tipos con `strictTemplates`, stylelint, compilación y los 41 tests. No despliega. |
+| `feat/tablero-proyectos` | Cuatro bugs funcionales: el botón de alta de usuario no hacía nada (dos validaciones que no coincidían), el KPI de usuarios del inicio cambiaba según por dónde hubieras navegado, la tabla de grupos ordenaba solo las 8 filas visibles, y `ng serve` levantaba en 4200 mientras el CORS espera 4300. Más el interceptor, que dejaba peticiones colgadas para siempre si fallaba la renovación. |
 | `feat/tablero-proyectos` | Vistas maestro-detalle en Proyectos y Usuarios (lista + ficha siempre visible, con navegación por flechas), selector de integrantes en dos paneles con cambios en lote y la consecuencia a la vista, y el dashboard con deltas reales y sparkline. |
 | `feat/tablero-proyectos` | PrimeNG 21.1.9 como libreria de componentes, tematizado con los tokens de marca; integrado con los 11 commits de `origin/main` y con el tablero de proyectos, cuyos selects, calendarios, buscador y botones pasan a componentes de PrimeNG. El proxy del dev server apunta al BackQ-D local. |
 | `main` | Editar y eliminar proyectos, solo para quien los registró: formulario de edición reusado en `/proyectos/:id/editar`, acciones en el panel del tablero, en la ficha y por fila en la tabla, y el permiso unificado en `esAutorOAdmin()` (la ficha usaba un permiso de lectura). |

@@ -1,0 +1,56 @@
+# Verificación del front en cada pull request.
+#
+# NO despliega. El despliegue vive en deploy-pages.yml y dispara solo con push a
+# `main`; este workflow corre en los pull requests y no toca GitHub Pages.
+name: CI del front
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+# Si se empujan commits nuevos al PR, la corrida anterior se cancela: no tiene
+# sentido esperar el resultado de un código que ya quedó viejo.
+concurrency:
+  group: ci-front-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Tipos, estilos, compilación y tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # El proyecto corre en Node 22 en local. Se fija acá para que el CI no
+          # valide contra una versión distinta de la que usa el equipo.
+          node-version: '22'
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Va primero porque es el paso más rápido y el que más atrapa. Incluye las
+      # plantillas: el proyecto tiene strictTemplates activado, así que un
+      # binding mal tipado en un .html falla acá.
+      - name: Tipos
+        run: npx tsc -p tsconfig.app.json --noEmit
+
+      # Rechaza px crudos en padding/margin/gap, selectores de elemento fuera de
+      # capa y selectores duplicados. Las tres reglas existen porque las tres
+      # causaron defectos reales en este proyecto.
+      - name: Estilos
+        run: npm run lint:css
+
+      - name: Compilar
+        run: npm run build
+
+      # Vitest sobre jsdom: sin navegador, sin servidor. El --watch=false es
+      # explícito aunque fuera de TTY ya sea el defecto.
+      - name: Tests
+        run: npm test -- --watch=false
