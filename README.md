@@ -274,9 +274,29 @@ contraseña temporal la plataforma no deja operar hasta cambiarla.
 Para trabajar en local hacen falta las dos piezas: la API en `localhost:3000` y
 este front en `localhost:4300`.
 
-Las 7 funciones de IA quedan fuera del MVP: sus resultados son deterministas y
-simulados, no hay modelo detrás. Se reactivarán cuando exista el motor con
-OpenAI en el backend.
+**`/documentos` ya funciona.** Se sube un PDF o un DOCX, el backend extrae su
+texto, un modelo propone la ficha del proyecto y la pantalla la precarga en el
+formulario para corregirla. Los campos propuestos llevan una etiqueta
+«Propuesto por IA» que desaparece al editarlos, así marca lo que todavía no se
+revisó. El guardado es el `POST /projects` de siempre, así que el proyecto
+resultante es indistinguible de uno hecho a mano.
+
+Nada se guarda de más: el archivo no se persiste en el servidor, y el borrador
+vive en `sessionStorage` de la pestaña hasta que se guarda o se descarta —
+nunca en `localStorage`.
+
+El módulo pide el permiso `ai.use` (guard en la ruta y filtro en el riel), y
+guardar además pide `projects.create`: son dos permisos distintos y alguien
+puede tener uno sin el otro.
+
+**Aviso al usuario, y a quien despliegue:** el contenido del documento se
+procesa con un servicio de IA externo. La pantalla lo dice antes de que la
+persona elija el archivo. Habilitarlo en producción requiere el aval del
+gobierno de datos; el interruptor de apagado está en el backend
+(`AI_PROVIDER=ninguno`).
+
+Las otras funciones de IA (score, comité, búsqueda semántica) siguen fuera del
+MVP: sus resultados eran deterministas y simulados, y no hay modelo detrás.
 
 ## Scripts disponibles
 

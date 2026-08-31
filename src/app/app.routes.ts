@@ -49,7 +49,13 @@ export const routes: Routes = [
       },
       { path: 'proyectos', title: 'Proyectos · Plataforma R&D', loadComponent: () => import('./features/projects/projects').then(m => m.Projects) },
       { path: 'asignaciones', title: 'Asignaciones · Plataforma R&D', loadComponent: () => import('./features/assignments/assignments').then(m => m.Assignments) },
-      { path: 'documentos', title: 'Documentos · Plataforma R&D', loadComponent: () => import('./features/documents/documents').then(m => m.Documents) },
+      {
+        path: 'documentos', title: 'Documentos · Plataforma R&D',
+        // Cosmético: el servidor valida ai.use en cada request. Acá sirve para
+        // no dejar entrar a una pantalla donde todo va a devolver 403.
+        canActivate: [permissionGuard('ai.use')],
+        loadComponent: () => import('./features/documents/documents').then(m => m.Documents),
+      },
       {
         path: 'proyectos/nuevo', title: 'Nuevo proyecto · Plataforma R&D',
         canActivate: [permissionGuard('projects.create')],

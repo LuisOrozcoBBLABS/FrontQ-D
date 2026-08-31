@@ -1,0 +1,177 @@
+<div class="field">
+  <label for="pf-n">
+    Nombre de la solución
+    @if (propuesto('nombre')) { <span class="badge badge--muted">Propuesto por IA</span> }
+  </label>
+  <input
+    pInputText
+    id="pf-n"
+    [maxlength]="limites.nombre"
+    [disabled]="deshabilitado()"
+    [ngModel]="valor().nombre"
+    (ngModelChange)="patch('nombre', $event)"
+    placeholder="Ej. FreightAudit" />
+  @if (cerca(valor().nombre, limites.nombre)) {
+    <p class="field__hint">{{ contador(valor().nombre, limites.nombre) }}</p>
+  }
+</div>
+
+<div class="field-inline">
+  <div class="field">
+    <label for="pf-s">
+      Sector
+      @if (propuesto('sector')) { <span class="badge badge--muted">Propuesto por IA</span> }
+    </label>
+    <p-select
+      inputId="pf-s"
+      [options]="opcionesSector"
+      [ngModel]="valor().sector"
+      (ngModelChange)="patch('sector', $event)"
+      optionLabel="label"
+      optionValue="value"
+      [filter]="true"
+      filterPlaceholder="Buscar sector"
+      placeholder="Selecciona…"
+      [disabled]="deshabilitado()"
+      [fluid]="true" />
+  </div>
+  <div class="field">
+    <label for="pf-g">Grupo</label>
+    <p-select
+      inputId="pf-g"
+      [options]="opcionesGrupo()"
+      [ngModel]="valor().groupId"
+      (ngModelChange)="patch('groupId', $event)"
+      optionLabel="label"
+      optionValue="value"
+      [disabled]="deshabilitado()"
+      [fluid]="true" />
+  </div>
+</div>
+
+<div class="field">
+  <label for="pf-pr">
+    Problema identificado
+    @if (propuesto('problema')) { <span class="badge badge--muted">Propuesto por IA</span> }
+  </label>
+  <textarea
+    pTextarea
+    id="pf-pr"
+    rows="3"
+    [autoResize]="true"
+    [maxlength]="limites.texto"
+    [disabled]="deshabilitado()"
+    [ngModel]="valor().problema"
+    (ngModelChange)="patch('problema', $event)"
+    placeholder="¿Qué problema del sector estás atacando?"></textarea>
+  @if (cerca(valor().problema, limites.texto)) {
+    <p class="field__hint">{{ contador(valor().problema, limites.texto) }}</p>
+  }
+</div>
+
+<div class="field">
+  <label for="pf-do">
+    Dolores
+    @if (propuesto('dolores')) { <span class="badge badge--muted">Propuesto por IA</span> }
+  </label>
+  <textarea
+    pTextarea
+    id="pf-do"
+    rows="3"
+    [autoResize]="true"
+    [maxlength]="limites.texto"
+    [disabled]="deshabilitado()"
+    [ngModel]="valor().dolores"
+    (ngModelChange)="patch('dolores', $event)"
+    placeholder="Los dolores concretos dentro de ese problema"></textarea>
+  @if (cerca(valor().dolores, limites.texto)) {
+    <p class="field__hint">{{ contador(valor().dolores, limites.texto) }}</p>
+  }
+</div>
+
+<div class="field">
+  <label for="pf-so">
+    Nuestra solución
+    @if (propuesto('solucion')) { <span class="badge badge--muted">Propuesto por IA</span> }
+  </label>
+  <textarea
+    pTextarea
+    id="pf-so"
+    rows="3"
+    [autoResize]="true"
+    [maxlength]="limites.texto"
+    [disabled]="deshabilitado()"
+    [ngModel]="valor().solucion"
+    (ngModelChange)="patch('solucion', $event)"
+    placeholder="Qué hace la solución que planteas"></textarea>
+  @if (cerca(valor().solucion, limites.texto)) {
+    <p class="field__hint">{{ contador(valor().solucion, limites.texto) }}</p>
+  }
+</div>
+
+<div class="field">
+  <label>
+    Aplicaciones o programas parecidos (con URL)
+    @if (propuesto('similares')) { <span class="badge badge--muted">Propuesto por IA</span> }
+  </label>
+  @for (s of valor().similares; track $index) {
+    <div class="similar-row">
+      <input
+        pInputText
+        [maxlength]="limites.similarNombre"
+        [disabled]="deshabilitado()"
+        [ngModel]="s.name"
+        (ngModelChange)="patchSimilar($index, 'name', $event)"
+        placeholder="Nombre"
+        [attr.aria-label]="'Nombre de la app parecida ' + ($index + 1)" />
+      <input
+        pInputText
+        type="url"
+        [maxlength]="limites.similarUrl"
+        [disabled]="deshabilitado()"
+        [ngModel]="s.url"
+        (ngModelChange)="patchSimilar($index, 'url', $event)"
+        placeholder="https://…"
+        [attr.aria-label]="'URL de la app parecida ' + ($index + 1)" />
+      <p-button
+        icon="pi pi-times"
+        size="small"
+        [text]="true"
+        severity="secondary"
+        ariaLabel="Quitar"
+        pTooltip="Quitar"
+        tooltipPosition="top"
+        [disabled]="deshabilitado()"
+        (onClick)="removeSimilar($index)" />
+    </div>
+  }
+  <p class="field__hint">Van las dos cosas: sin URL, el servidor no guarda la app parecida.</p>
+  <p-button
+    label="Agregar otra"
+    icon="pi pi-plus"
+    size="small"
+    [text]="true"
+    styleClass="similar-add"
+    [disabled]="deshabilitado()"
+    (onClick)="addSimilar()" />
+</div>
+
+<div class="field">
+  <label for="pf-pl">
+    El PLUS con IA
+    @if (propuesto('plusIA')) { <span class="badge badge--muted">Propuesto por IA</span> }
+  </label>
+  <textarea
+    pTextarea
+    id="pf-pl"
+    rows="3"
+    [autoResize]="true"
+    [maxlength]="limites.texto"
+    [disabled]="deshabilitado()"
+    [ngModel]="valor().plusIA"
+    (ngModelChange)="patch('plusIA', $event)"
+    placeholder="¿Qué agregarías con IA para diferenciarte de esas apps que ya existen?"></textarea>
+  @if (cerca(valor().plusIA, limites.texto)) {
+    <p class="field__hint">{{ contador(valor().plusIA, limites.texto) }}</p>
+  }
+</div>

@@ -1,0 +1,89 @@
+/* Espeja el vocabulario visual de ui/empty (dashed --line-strong, --r-lg,
+   --surface) para que la dropzone y los vacíos se lean como un sistema. No se
+   usa <app-empty> acá: apilar dos cajas punteadas es ruido, y .empty no es un
+   control — esto sí lo es. */
+.dz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-2);
+  padding: var(--sp-12) var(--sp-6);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  cursor: pointer;
+  transition:
+    border-color var(--dur) var(--ease),
+    background var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.dz:hover { border-color: var(--text-dim); }
+
+/* El :focus-visible global apuntaría al input de 1px, que es invisible. */
+.dz:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+
+.dz--sobre {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  transform: scale(1.01);
+}
+
+.dz--error { border-color: var(--danger); background: var(--danger-bg); }
+
+.dz--off { cursor: not-allowed; opacity: 0.6; }
+
+.dz__icono {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  margin-bottom: var(--sp-2);
+}
+.dz__icono svg { width: 24px; height: 24px; }
+
+.dz__titulo {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 17px;
+  color: var(--text);
+}
+
+.dz__hint {
+  color: var(--text-2);
+  font-size: 14px;
+  max-width: 42ch;
+}
+
+/* Mismo aviso de error que usa la pantalla: .login__error dejó de existir al
+   migrar a PrimeNG, así que el bloque lo lleva puesto. */
+.dz__msg {
+  margin-top: var(--sp-3);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--danger);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+/* En táctil no existe arrastrar: prometerlo es mentirle a la persona. */
+@media (hover: none) {
+  .dz__arrastra { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Se apaga el único movimiento, pero el cambio de color se mantiene: no es
+     movimiento, y es lo que comunica que la zona acepta el archivo. */
+  .dz { transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease); }
+  .dz--sobre { transform: none; }
+}
