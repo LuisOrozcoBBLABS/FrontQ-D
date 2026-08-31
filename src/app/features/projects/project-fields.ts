@@ -7,20 +7,21 @@ import { Textarea } from 'primeng/textarea';
 import { Tooltip } from 'primeng/tooltip';
 import { BorradorProyecto, LIMITES } from '../../core/borrador-proyecto';
 import { GroupsService } from '../../core/groups.service';
-import { AppSimilar, SECTORES } from '../../core/models';
+import { AppSimilar, SECTORES, TIPOS_PRESTACION, TipoPrestacion } from '../../core/models';
 
 /**
  * Los campos de un proyecto, para que /documentos pueda mostrar el borrador que
  * propuso la IA con el marcado de procedencia y los topes del servidor.
  *
- * OJO — duplicación conocida: `project-form` tiene su propia copia de estos
- * campos. Se dejó así a propósito al integrar el módulo de IA, para no volver a
- * reescribir un formulario que se acababa de rehacer sobre PrimeNG y que además
- * maneja el modo edición. Si se toca un campo (una etiqueta, un placeholder, un
- * tope), hay que tocarlo en los dos lados hasta que alguien los unifique.
+ * Es la ÚNICA copia de los campos de un proyecto. Hubo una segunda en
+ * `project-form`, que se eliminó al pasar la creación a un modal: mientras
+ * existieron las dos, cada etiqueta, cada placeholder y cada tope había que
+ * tocarlos en los dos lados, y estaba escrito que iban a separarse. Si hace
+ * falta un campo nuevo, va acá y lo ven los dos usos: `/documentos` y el modal.
  *
- * Los controles siguen los mismos patrones que `project-form.html`: pInputText,
- * p-select con opciones, pTextarea con autoResize y p-button.
+ * Lo usan con propósitos distintos —revisar lo que propuso la IA, y escribir o
+ * editar a mano— y por eso el marcado de procedencia (`camposIA`) es una
+ * entrada opcional: sin ella, el componente es un formulario común.
  */
 @Component({
   selector: 'app-project-fields',
@@ -42,6 +43,15 @@ export class ProjectFields {
 
   /** PrimeNG trabaja con listas de opciones, no con <option>. */
   protected readonly opcionesSector = SECTORES.map(x => ({ label: x, value: x }));
+
+  /**
+   * "Sin definir" es una opción de verdad y vale null: un proyecto puede no
+   * estar clasificado todavía, y al editar tiene que poder volver a ese estado.
+   */
+  protected readonly opcionesPrestacion: { label: string; value: TipoPrestacion | null }[] = [
+    { label: 'Sin definir', value: null },
+    ...TIPOS_PRESTACION.map(t => ({ label: t.label, value: t.value })),
+  ];
   protected opcionesGrupo = computed(() => [
     { label: 'Sin grupo', value: null as string | null },
     ...this.grupos().map(g => ({ label: `Grupo ${g.nombre}`, value: g.id as string | null })),
@@ -78,6 +88,12 @@ export class ProjectFields {
         return copia;
       });
     }
+  }
+
+  /** Qué significa el tipo elegido, en una línea bajo el campo. */
+  protected notaPrestacion(): string {
+    const elegido = TIPOS_PRESTACION.find(t => t.value === this.valor().tipoPrestacion);
+    return elegido?.nota ?? 'Talento es prestar gente; solución, entregar el producto.';
   }
 
   // ------------------------------------------------------------ similares

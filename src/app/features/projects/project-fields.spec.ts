@@ -34,6 +34,8 @@ describe('ProjectFields', () => {
 
     expect(el.querySelector('#pf-n')).not.toBeNull();
     expect(el.querySelector('#pf-s')).not.toBeNull();
+    expect(el.querySelector('#pf-cl')).not.toBeNull();
+    expect(el.querySelector('#pf-tp')).not.toBeNull();
     expect(el.querySelector('#pf-pr')).not.toBeNull();
     expect(el.querySelector('#pf-do')).not.toBeNull();
     expect(el.querySelector('#pf-so')).not.toBeNull();
@@ -51,6 +53,7 @@ describe('ProjectFields', () => {
     const el = fixture.nativeElement as HTMLElement;
 
     expect(el.querySelector<HTMLInputElement>('#pf-n')!.maxLength).toBe(LIMITES.nombre);
+    expect(el.querySelector<HTMLInputElement>('#pf-cl')!.maxLength).toBe(LIMITES.cliente);
     for (const id of ['#pf-pr', '#pf-do', '#pf-so', '#pf-pl']) {
       expect(el.querySelector<HTMLTextAreaElement>(id)!.maxLength).toBe(LIMITES.texto);
     }
@@ -89,6 +92,31 @@ describe('ProjectFields', () => {
 
     expect(el.querySelectorAll('.badge').length).toBe(1);
     expect(fixture.componentInstance.borrador().nombre).toBe('Corregido a mano');
+  });
+
+  it('el cliente y el tipo de prestación no llevan badge: la IA no los propone', async () => {
+    // Son datos comerciales que el documento rara vez dice. Si algún día se le
+    // pidieran al modelo, este test es el que hay que cambiar a conciencia.
+    const fixture = await montar(['nombre', 'sector', 'problema', 'dolores', 'solucion', 'plusIA']);
+    const el = fixture.nativeElement as HTMLElement;
+
+    const etiquetas = Array.from(el.querySelectorAll('label'))
+      .filter(l => l.querySelector('.badge'))
+      .map(l => l.getAttribute('for'));
+    expect(etiquetas).not.toContain('pf-cl');
+    expect(etiquetas).not.toContain('pf-tp');
+  });
+
+  it('escribir el cliente lo sube al borrador del padre', async () => {
+    const fixture = await montar();
+    const el = fixture.nativeElement as HTMLElement;
+
+    const input = el.querySelector<HTMLInputElement>('#pf-cl')!;
+    input.value = 'Bancolombia';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+
+    expect(fixture.componentInstance.borrador().cliente).toBe('Bancolombia');
   });
 
   it('el contador aparece solo pasado el 80% del límite', async () => {

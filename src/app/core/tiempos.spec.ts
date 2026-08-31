@@ -21,6 +21,8 @@ function proyecto(estado: ProjectStatus, historial: CambioEstado[], createdAt = 
     id: 'p1',
     nombre: 'Proyecto',
     sector: 'Logística',
+    cliente: '',
+    tipoPrestacion: null,
     problema: '',
     dolores: '',
     solucion: '',
