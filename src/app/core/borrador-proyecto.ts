@@ -1,4 +1,4 @@
-import { AppSimilar, SECTORES } from './models';
+import { AppSimilar, SECTORES, TipoPrestacion } from './models';
 import { NuevoProyecto } from './projects.service';
 
 /**
@@ -17,6 +17,10 @@ import { NuevoProyecto } from './projects.service';
 export interface BorradorProyecto {
   nombre: string;
   sector: string;
+  /** A quién se le presta. Vacío = interno; el servidor lo acepta vacío. */
+  cliente: string;
+  /** Qué se presta. Null = sin clasificar, que es un valor válido. */
+  tipoPrestacion: TipoPrestacion | null;
   problema: string;
   dolores: string;
   solucion: string;
@@ -31,6 +35,7 @@ export interface BorradorProyecto {
  */
 export const LIMITES = {
   nombre: 140,
+  cliente: 140,
   texto: 4000,
   similarNombre: 120,
   similarUrl: 400,
@@ -40,6 +45,8 @@ export function borradorVacio(groupId: string | null = null): BorradorProyecto {
   return {
     nombre: '',
     sector: '',
+    cliente: '',
+    tipoPrestacion: null,
     problema: '',
     dolores: '',
     solucion: '',
@@ -178,6 +185,10 @@ export function aNuevoProyecto(b: BorradorProyecto): NuevoProyecto {
   return {
     nombre: recortar(b.nombre.trim(), LIMITES.nombre),
     sector: b.sector.trim(),
+    cliente: recortar(b.cliente.trim(), LIMITES.cliente),
+    // Null viaja tal cual: el servidor lo distingue de "no lo mandaron" y es
+    // como se devuelve un proyecto a "sin clasificar" al editarlo.
+    tipoPrestacion: b.tipoPrestacion,
     problema: recortar(b.problema.trim(), LIMITES.texto),
     dolores: recortar(b.dolores.trim(), LIMITES.texto),
     solucion: recortar(b.solucion.trim(), LIMITES.texto),

@@ -164,6 +164,7 @@ describe('aNuevoProyecto', () => {
     expect(body.estado).toBe('idea');
     expect(body.groupId).toBe('g-1');
     expect(Object.keys(body).sort()).toEqual([
+      'cliente',
       'dolores',
       'estado',
       'groupId',
@@ -173,7 +174,23 @@ describe('aNuevoProyecto', () => {
       'sector',
       'similares',
       'solucion',
+      'tipoPrestacion',
     ]);
+  });
+
+  it('manda tipoPrestacion en null y no lo omite', () => {
+    // Omitirlo y mandarlo null no son lo mismo para el servidor: null es lo que
+    // devuelve un proyecto a "sin clasificar" al editarlo. Si el campo
+    // desapareciera del body, editar nunca podría quitar el tipo.
+    const body = aNuevoProyecto(completo({ tipoPrestacion: null }));
+
+    expect('tipoPrestacion' in body).toBe(true);
+    expect(body.tipoPrestacion).toBeNull();
+  });
+
+  it('recorta el cliente al tope del servidor', () => {
+    const body = aNuevoProyecto(completo({ cliente: '  ' + 'C'.repeat(500) + '  ' }));
+    expect(body.cliente!.length).toBeLessThanOrEqual(LIMITES.cliente);
   });
 
   it('nunca emite un campo por encima de los LIMITES', () => {
@@ -182,6 +199,7 @@ describe('aNuevoProyecto', () => {
     const body = aNuevoProyecto(
       completo({
         nombre: 'N'.repeat(500),
+        cliente: 'C'.repeat(500),
         problema: 'p '.repeat(5000),
         dolores: 'd'.repeat(9000),
         solucion: 's '.repeat(5000),
@@ -190,6 +208,7 @@ describe('aNuevoProyecto', () => {
     );
 
     expect(body.nombre!.length).toBeLessThanOrEqual(LIMITES.nombre);
+    expect(body.cliente!.length).toBeLessThanOrEqual(LIMITES.cliente);
     expect(body.problema!.length).toBeLessThanOrEqual(LIMITES.texto);
     expect(body.dolores!.length).toBeLessThanOrEqual(LIMITES.texto);
     expect(body.solucion!.length).toBeLessThanOrEqual(LIMITES.texto);

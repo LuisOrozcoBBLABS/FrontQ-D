@@ -150,6 +150,31 @@ export interface CambioEstado {
   porNombre?: string | null;
 }
 
+/**
+ * Qué le presta la empresa al cliente en este proyecto: gente (talento) o el
+ * producto terminado (solución). Los valores son los mismos que el enum de
+ * Prisma, así que viajan sin conversión.
+ *
+ * OJO con el nombre: `Project.solucion` es otra cosa —el texto de la solución
+ * planteada— y son dos campos distintos que se llaman parecido. Por eso el tipo
+ * es `tipoPrestacion` y no `solucion` a secas.
+ */
+export type TipoPrestacion = 'talento' | 'solucion';
+
+export const TIPOS_PRESTACION: { value: TipoPrestacion; label: string; nota: string }[] = [
+  { value: 'talento', label: 'Talento', nota: 'Se prestan desarrolladores al cliente.' },
+  { value: 'solucion', label: 'Solución', nota: 'Se entrega el proyecto terminado.' },
+];
+
+/**
+ * `null` es un valor con significado: el proyecto todavía no se clasificó. Los
+ * registrados antes de que la distinción existiera quedaron así a propósito, y
+ * la etiqueta lo dice en lugar de dejar un hueco.
+ */
+export function prestacionLabel(t: TipoPrestacion | null | undefined): string {
+  return TIPOS_PRESTACION.find(x => x.value === t)?.label ?? 'Sin clasificar';
+}
+
 export const SECTORES = [
   'Logística', 'Retail / E-commerce', 'Finanzas', 'Fintech',
   'Salud', 'Educación', 'Farma', 'Otro',
@@ -161,6 +186,10 @@ export interface Project {
   id: string;
   nombre: string;           // nombre de la solución
   sector: string;
+  /** A quién se le presta el servicio. Vacío = interno, sin cliente externo. */
+  cliente: string;
+  /** Qué se presta. Null = sin clasificar. */
+  tipoPrestacion: TipoPrestacion | null;
   problema: string;         // problema identificado
   dolores: string;          // dolores dentro del problema
   solucion: string;         // solución planteada

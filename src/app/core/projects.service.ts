@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FILAS_POR_PAGINA } from '../ui/paginador/paginador';
-import { AppSimilar, CambioEstado, ETAPAS, Project, ProjectStatus } from './models';
+import { AppSimilar, CambioEstado, ETAPAS, Project, ProjectStatus, TipoPrestacion } from './models';
 
 /** Lo que el servidor necesita para devolver una pagina de proyectos. */
 export interface FiltroProyectos {
@@ -11,6 +11,11 @@ export interface FiltroProyectos {
   sector?: string;
   estado?: string;
   pagina?: number;
+  /**
+   * Qué se presta. Además de los dos valores reales acepta `'sin_clasificar'`,
+   * que el servidor traduce a "todavía sin tipo" — no es un valor del enum.
+   */
+  tipoPrestacion?: string;
 
   // ---- Filtros del tablero. Todos se resuelven en el servidor: filtrar en el
   // cliente solo miraria las tarjetas ya cargadas, no el conjunto. ----
@@ -39,6 +44,9 @@ export interface FiltroProyectos {
 export interface NuevoProyecto {
   nombre: string;
   sector: string;
+  cliente?: string;
+  /** Null lo devuelve a "sin clasificar"; el servidor distingue null de ausente. */
+  tipoPrestacion?: TipoPrestacion | null;
   problema?: string;
   dolores?: string;
   solucion?: string;
@@ -117,6 +125,9 @@ function paramsDe(filtro: FiltroProyectos): Record<string, string | number | boo
   if (filtro.q) p['q'] = filtro.q;
   if (filtro.sector && filtro.sector !== 'all') p['sector'] = filtro.sector;
   if (filtro.groupId && filtro.groupId !== 'all') p['groupId'] = filtro.groupId;
+  if (filtro.tipoPrestacion && filtro.tipoPrestacion !== 'all') {
+    p['tipoPrestacion'] = filtro.tipoPrestacion;
+  }
   if (filtro.asignadoAMi) p['asignadoAMi'] = true;
   if (filtro.asignadoA && filtro.asignadoA !== 'all') p['asignadoA'] = filtro.asignadoA;
   if (filtro.asignadoPor && filtro.asignadoPor !== 'all') p['asignadoPor'] = filtro.asignadoPor;
@@ -419,6 +430,8 @@ function aProyecto(p: ProjectApi): Project {
     id: p.id,
     nombre: p.nombre,
     sector: p.sector,
+    cliente: p.cliente ?? '',
+    tipoPrestacion: p.tipoPrestacion ?? null,
     problema: p.problema,
     dolores: p.dolores,
     solucion: p.solucion,
