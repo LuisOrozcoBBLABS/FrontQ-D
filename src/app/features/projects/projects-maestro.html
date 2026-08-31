@@ -43,6 +43,17 @@
         styleClass="mp__sel"
       />
 
+      <p-select
+        [options]="opcionesPrestacion"
+        [ngModel]="prestacionF()"
+        (ngModelChange)="filtrarPrestacion($event)"
+        optionLabel="label"
+        optionValue="value"
+        size="small"
+        styleClass="mp__sel"
+        ariaLabel="Filtrar por tipo de prestación"
+      />
+
       @if (auth.can('projects.create')) {
         <p-button
           label="Nuevo proyecto"
@@ -115,7 +126,9 @@
             <span class="mp__filo" aria-hidden="true"></span>
             <span class="mp__fila-txt">
               <span class="mp__fila-n">{{ p.nombre }}</span>
-              <span class="mp__fila-sub">{{ estadoLabel(p.estado) }} · {{ p.sector }}</span>
+              <span class="mp__fila-sub">
+                {{ estadoLabel(p.estado) }} · {{ p.sector }} · {{ prestacion(p) }}@if (p.cliente) { · {{ p.cliente }} }
+              </span>
             </span>
             <span class="mp__fila-dias mono" [class.mp__fila-dias--mal]="demorado(p)">
               @if (diasEtapa(p) !== null) { {{ diasEtapa(p) }}d } @else { — }
@@ -129,7 +142,7 @@
                 <span>Registrá la primera idea del área y queda visible para tu grupo.</span>
               } @else {
                 <b>Nada coincide con esos filtros</b>
-                <span>Probá con otro sector o etapa, o limpialos para ver todo.</span>
+                <span>Probá con otro sector, etapa o tipo de prestación, o limpialos para ver todo.</span>
                 <p-button label="Limpiar filtros" [text]="true" size="small" (onClick)="limpiarTodo()" />
               }
             </div>
