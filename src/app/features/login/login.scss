@@ -31,13 +31,85 @@
 .acceso__tema svg { width: 18px; height: 18px; }
 .acceso__tema:hover { color: var(--text); background: var(--surface-2); }
 
+/* ---------- La tarjeta: cristal, el mismo material del riel ----------
+   Es el unico lugar de las pantallas de acceso donde el cristal corresponde, y
+   conviene decir por que, porque el panel de avisos lleva el comentario opuesto.
+
+   Alla el cristal no funcionaba: .avisos vive dentro de .rail__dock--util, que
+   tambien lleva backdrop-filter, y todo elemento con backdrop-filter establece
+   un Backdrop Root para sus descendientes — lo que el panel podia muestrear
+   quedaba recortado a la caja de 64px del dock, y el panel se dibuja entero
+   fuera de esa caja. Aca no hay ningun ancestro con backdrop-filter, asi que el
+   desenfoque muestrea la pagina de verdad.
+
+   Y la segunda objecion de alla tampoco aplica. Sobre fondo semitransparente el
+   contraste del texto no es un numero sino un rango, porque depende de lo que
+   haya detras; en el panel de avisos eso era una tabla densa e impredecible.
+   Aca lo de atras es conocido y estatico —el degradado del fondo y la marca de
+   agua al 7% en oscuro y 12% en claro—, asi que el rango se puede medir y
+   acotar. Medido. */
 .acceso__col {
   position: relative;
   z-index: 1;
-  width: min(100%, 372px);
+  width: min(100%, 460px);
   display: flex;
   flex-direction: column;
+  padding: var(--sp-8) var(--sp-8) var(--sp-8);
+  border-radius: var(--r-lg);
+  background: var(--glass-rail);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--glass-line);
+  box-shadow:
+    var(--shadow-rail),
+    inset 0 1px 0 var(--glass-hi),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
   animation: entraAcceso 500ms var(--ease) both;
+}
+
+/* Reflejo especular: lo que hace que el cristal parezca cristal. Mismo gradiente
+   que el riel. */
+.acceso__col::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--glass-hi), transparent 42%);
+  pointer-events: none;
+}
+.acceso__col > * { position: relative; }
+
+/* Sin backdrop-filter el cristal pasa a superficie solida, igual que el riel. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .acceso__col { background: var(--surface); }
+}
+
+/* ---------- Cabecera: marca a la izquierda del nombre ----------
+   Solo en el ingreso. Las otras tres pantallas de acceso tienen titulos que no
+   son la marca ("Recuperar acceso", "Elegi tu contraseña"), y un lockup
+   horizontal con esos no dice nada: ahi el logotipo sigue apilado arriba. */
+.acceso__marca {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+.acceso__marca-sep {
+  align-self: stretch;
+  width: 1px;
+  background: var(--line-strong);
+}
+/* En la fila, el logotipo baja de 44 a 36px y el titulo de --fs-2xl a --fs-xl.
+   Medido: a los tamaños de antes el lockup pedia 417px de ancho util y la
+   tarjeta ofrecia 356, asi que "Plataforma R&D" se partia en dos renglones al
+   lado de la marca. No es un ajuste de gusto — es que los dos elementos ahora
+   comparten un renglon y antes no.
+   El titulo apilado de las otras tres pantallas se queda en --fs-2xl: ahi tiene
+   el ancho entero para el solo. */
+.acceso__marca .logo-bb { height: 36px; }
+.acceso__marca .acceso__t {
+  margin: 0;
+  font-size: var(--fs-xl);
 }
 @keyframes entraAcceso {
   from { opacity: 0; transform: translateY(10px); }

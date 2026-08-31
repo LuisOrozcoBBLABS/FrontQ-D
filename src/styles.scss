@@ -501,7 +501,12 @@ html[data-theme="light"] .logo-bb--claro{ display:block; }
    tenia: estaba para que la marca no compitiera con el titulo, pero atenuar lo
    que se quiere que se note es trabajar en contra. */
 .logo-bb--tira{ height: clamp(38px, 4.2vw, 56px); }
-.logo-bb--acceso{ height: 44px; margin-bottom: var(--sp-6); }
+/* El margen inferior es solo para el caso apilado (recuperar, cambiar clave,
+   bienvenida). En el ingreso el logotipo va dentro de .acceso__marca, que es
+   una fila y pone su propio aire: ahi un margin-bottom lo desalinearia del
+   titulo que tiene al lado. */
+.logo-bb--acceso{ height: 44px; }
+.acceso__col > .logo-bb--acceso{ margin-bottom: var(--sp-6); }
 
 .pie{
   position:relative; z-index:2;
