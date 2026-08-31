@@ -1,17 +1,21 @@
 import { Component, ElementRef, DestroyRef, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, skip } from 'rxjs';
 import { NavRail } from '../../ui/nav-rail/nav-rail';
 
 /**
- * Marco de la aplicación. Ya no hay barra superior: el riel lateral lleva la
- * marca, los módulos y las utilidades, y el fondo lleva la marca de agua del
- * área. Un solo patrón de navegación, sin identidad duplicada.
+ * Marco de la aplicación: tira de marca arriba, riel de navegación a la
+ * izquierda, marca de agua del área en el fondo y crédito de la plataforma
+ * abajo.
+ *
+ * La tira y el pie no navegan (salvo el logotipo, que va a inicio, la única
+ * convención que se conserva de cuando la marca vivía dentro del riel): son
+ * identidad, no chrome. Toda la navegación sigue estando en un solo lugar.
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, NavRail],
+  imports: [RouterOutlet, RouterLink, NavRail],
   templateUrl: './shell.html',
 })
 export class Shell {

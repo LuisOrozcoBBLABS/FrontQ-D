@@ -10,6 +10,38 @@
   <span class="marca-fondo__txt">R&amp;D</span>
 </div>
 
+<!-- =============================================================
+     Tira de marca: la identidad de la empresa, arriba y a lo ancho.
+     Va ANTES del riel en el DOM a proposito. Visualmente no cambia nada (el
+     riel es fixed), pero el orden de tabulacion queda
+     saltar-al-contenido → logotipo → riel → contenido, en vez de dejar el
+     logotipo despues de los diez items del riel.
+     Se usa el logotipo completo y no el isotipo: el asset oficial ya trae el
+     "powered by </Riwi>", asi que la marca de la alianza viaja con la marca sin
+     tener que re-tipearla.
+     ============================================================= -->
+<div class="tira">
+  <a class="tira__logo" routerLink="/inicio" aria-label="Inicio · Blackbird Labs">
+    <!-- Dos archivos y no un src reactivo: el cambio de tema es instantaneo y no
+         hay un cuadro en blanco mientras el navegador pide el PNG nuevo. El que
+         no corresponde sale con display:none, asi que no lo lee el lector de
+         pantalla ni ocupa lugar. -->
+    <img class="tira__logo-img tira__logo-img--oscuro" src="brand/logo-blanco.png"
+         alt="Blackbird Labs" width="1585" height="540" />
+    <img class="tira__logo-img tira__logo-img--claro" src="brand/logo-negro.png"
+         alt="Blackbird Labs" width="1585" height="540" />
+  </a>
+
+  <!-- La alianza, legible. En el logotipo de arriba el "powered by </Riwi>" mide
+       menos de 4px de alto y funciona como textura, no como texto. -->
+  <p class="tira__riwi">
+    <span class="tira__riwi-txt">powered by</span>
+    <span class="tira__riwi-mk">
+      <span aria-hidden="true">&lt;/</span>Riwi<span aria-hidden="true">&gt;</span>
+    </span>
+  </p>
+</div>
+
 <app-nav-rail />
 
 <!-- El landmark principal existía solo en las tres pantallas de acceso; ninguna
@@ -21,3 +53,19 @@
 <main #contenido id="contenido" tabindex="-1">
   <router-outlet />
 </main>
+
+<!-- Cierre de marca. Fuera del <main> a proposito: es credito de la plataforma,
+     no contenido de la pantalla, asi que no entra en el landmark principal ni se
+     lo lleva el salto al contenido. -->
+<footer class="pie">
+  <span class="pie__marca">Blackbird Labs</span>
+  <span class="pie__sep" aria-hidden="true">·</span>
+  <span class="pie__prod">Plataforma R&amp;D</span>
+  <span class="pie__sep" aria-hidden="true">·</span>
+  <span class="pie__riwi">
+    powered by
+    <span class="pie__riwi-mk">
+      <span aria-hidden="true">&lt;/</span>Riwi<span aria-hidden="true">&gt;</span>
+    </span>
+  </span>
+</footer>

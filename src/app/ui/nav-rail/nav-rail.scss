@@ -1,7 +1,8 @@
 /* =============================================================
    Riel de navegación — cristal líquido
-   Única pieza de chrome de la app: marca, módulos y utilidades. Solo iconos;
-   el nombre se despliega al pasar el cursor o al enfocar con teclado.
+   Módulos y utilidades. Solo iconos; el nombre se despliega al pasar el cursor
+   o al enfocar con teclado. La marca de la empresa NO vive acá: vive en la tira
+   superior del marco, con el logotipo completo.
    ============================================================= */
 
 :host {
@@ -33,7 +34,6 @@
 
 /* ---------- Cristal compartido ----------
    Sin .avisos: ver el comentario largo en su propia regla. */
-.rail__marca,
 .rail__dock,
 .rail__tip {
   background: var(--glass-rail);
@@ -47,7 +47,6 @@
 }
 
 /* Reflejo especular: lo que hace que el cristal parezca cristal */
-.rail__marca::before,
 .rail__dock::before {
   content: "";
   position: absolute;
@@ -55,29 +54,6 @@
   border-radius: inherit;
   background: linear-gradient(180deg, var(--glass-hi), transparent 42%);
   pointer-events: none;
-}
-
-/* ---------- Marca ---------- */
-.rail__marca {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: calc(var(--item) + var(--pad) * 2);
-  height: calc(var(--item) + var(--pad) * 2);
-  border-radius: var(--r-xl);
-  overflow: hidden;
-  transition: transform var(--dur) var(--ease-spring);
-  flex: 0 0 auto;
-}
-.rail__marca:hover { transform: scale(1.05); }
-.rail__marca:active { transform: scale(0.97); }
-/* El PNG oficial ya trae su fondo obsidiana: se usa como baldosa, recortada
-   en el radio del riel, y así no choca en ningún tema. */
-.rail__marca img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: calc(var(--r-xl) - 2px);
 }
 
 /* ---------- Dock ---------- */
@@ -151,26 +127,48 @@
 .rail__item--btn:hover { background: var(--surface-2); }
 .rail__item--salir:hover { color: var(--danger-text); }
 
-/* Perfil: el avatar es el propio botón */
+/* ---------- Perfil ----------
+   El avatar es el propio botón, y desde que la baldosa de marca se fue del riel
+   es el único elemento redondo que queda: la bolita de abajo es quien inició
+   sesión, y nada más. Por eso crece de 32 a 36px y suma un aro tenue del acento
+   — antes se leía como una pastilla apagada más entre los iconos, cuando en
+   realidad es la identidad de la persona. */
 .rail__perfil { overflow: hidden; }
-.rail__perfil img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--r-full); }
+.rail__perfil img {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-full);
+  object-fit: cover;
+}
 .rail__ini {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--r-full);
   background: var(--surface-2);
   border: 1px solid var(--line);
+  /* Aro exterior, no borde: el borde ya lo usa el estado (hover/activo), así
+     que el anillo de identidad va aparte para que no se peleen. */
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .04em;
   color: var(--text-2);
-  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
 }
-.rail__perfil:hover .rail__ini { color: var(--text); border-color: var(--line-strong); }
-.rail__perfil.on .rail__ini { border-color: var(--accent); color: var(--text); }
+.rail__perfil:hover .rail__ini {
+  color: var(--text);
+  border-color: var(--line-strong);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 34%, transparent);
+}
+.rail__perfil.on .rail__ini {
+  border-color: var(--accent);
+  color: var(--text);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+}
 
 /* Contador de avisos sin leer */
 .rail__badge {
@@ -338,7 +336,8 @@
      alrededor si baja al paso mas chico de la escala. */
   :host { --item: 40px; --gap: var(--sp-1); --pad: var(--sp-1); }
   .rail__item svg { width: 18px; height: 18px; }
-  .rail__ini { width: 28px; height: 28px; font-size: 10px; }
+  .rail__perfil img { width: 32px; height: 32px; }
+  .rail__ini { width: 32px; height: 32px; font-size: 11px; }
 }
 
 /* ---------- Móvil: el riel baja y se acuesta ---------- */
@@ -354,7 +353,6 @@
     max-width: calc(100vw - var(--rail-gap) * 2);
     max-height: none;
   }
-  .rail__marca { display: none; } // la marca vive en el fondo de la página
   .rail__dock { flex-direction: row; }
   .rail__dock:not(.rail__dock--util) { overflow-x: auto; overflow-y: visible; }
   .rail__ind { transform: translateX(calc(var(--i, 0) * (var(--item) + var(--gap)))); }
@@ -397,7 +395,6 @@
   .rail__item,
   .rail__item svg,
   .rail__tip,
-  .rail__marca,
   .avisos {
     transition: none;
     animation: none;
@@ -406,7 +403,6 @@
 
 /* Sin backdrop-filter, el cristal pasa a superficie sólida */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .rail__marca,
   .rail__dock,
   .rail__tip {
     background: var(--surface);

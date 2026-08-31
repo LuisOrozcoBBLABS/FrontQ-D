@@ -428,7 +428,92 @@ body:has(app-nav-rail){ padding-left: var(--rail-clear); }
   }
 }
 
-/* Ya no hay barra superior: el riel lateral lleva marca, modulos y utilidades.
+/* =============================================================
+   Tira de marca y pie de plataforma
+   La identidad de la empresa ocupa las dos esquinas de arriba y el cierre de
+   abajo. No es una barra de navegacion: no lleva controles ni menus, y lo unico
+   pulsable es el logotipo, que va a inicio.
+
+   Van a lo ancho de la ventana y NO dentro de --maxw. La columna de lectura
+   arranca en ~430px en una pantalla de 1920, asi que una tira centrada en ella
+   dejaria el logotipo flotando en el medio en vez de anclado en la esquina, que
+   es donde se lo busca.
+
+   z-index:2 los deja sobre la marca de agua del area (z-index:0) y muy por
+   debajo del riel (55), que sigue siendo lo mas alto del marco.
+   ============================================================= */
+.tira{
+  position:relative; z-index:2;
+  display:flex; align-items:center; justify-content:space-between;
+  gap: var(--sp-5);
+  padding: var(--sp-6) clamp(var(--sp-4),4vw,var(--sp-8)) 0;
+}
+
+.tira__logo{ display:inline-flex; align-items:center; border-radius:var(--r-md); }
+/* Alto fijo, ancho automatico: los atributos width/height del <img> mantienen la
+   proporcion 1585x540 y evitan el salto de layout mientras carga el PNG. */
+.tira__logo-img{
+  height: clamp(30px, 3.2vw, 40px);
+  width: auto;
+  /* Al 92% la marca esta presente sin competir con el titulo de la pantalla, que
+     es el elemento que tiene que ganar la primera mirada. */
+  opacity: .92;
+  transition: opacity var(--dur) var(--ease);
+}
+.tira__logo:hover .tira__logo-img{ opacity:1; }
+
+/* Un archivo por tema. display:none saca la variante que no corresponde del
+   flujo Y del arbol de accesibilidad, asi que el lector de pantalla anuncia
+   "Blackbird Labs" una sola vez y no dos. */
+.tira__logo-img--claro{ display:none; }
+html[data-theme="light"] .tira__logo-img--oscuro{ display:none; }
+html[data-theme="light"] .tira__logo-img--claro{ display:block; }
+
+/* La alianza, legible. Dentro del logotipo oficial el "powered by </Riwi>" mide
+   menos de 4px de alto a esta escala: ahi funciona como textura de marca, no
+   como texto que alguien pueda leer. */
+.tira__riwi{
+  display:flex; align-items:baseline; gap: var(--sp-2);
+  font-family:var(--font-display); line-height:var(--lh-snug);
+}
+.tira__riwi-txt{
+  font-size:var(--fs-2xs); font-weight:600; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--text-dim);
+}
+.tira__riwi-mk{ font-size:var(--fs-sm); font-weight:700; color:var(--text-2); }
+/* Los signos son parte del logotipo de Riwi, no puntuacion: van en el acento y
+   marcados aria-hidden, para que el nombre accesible sea "powered by Riwi". */
+.tira__riwi-mk > span{ color:var(--accent-ui); }
+
+.pie{
+  position:relative; z-index:2;
+  display:flex; align-items:center; justify-content:center; flex-wrap:wrap;
+  gap: var(--sp-2) var(--sp-3);
+  margin: var(--sp-12) clamp(var(--sp-4),4vw,var(--sp-8)) 0;
+  padding: var(--sp-6) 0 var(--sp-10);
+  border-top:1px solid var(--line);
+  font-family:var(--font-display); font-size:var(--fs-2xs); font-weight:600;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim);
+}
+/* El pie no repite el chip de arriba palabra por palabra: suma el nombre del
+   producto, asi que es la linea de identidad completa y no un eco. */
+.pie__marca{ font-weight:700; color:var(--text-2); }
+.pie__prod{ color:var(--text-dim); }
+.pie__sep{ opacity:.5; }
+.pie__riwi{ display:inline-flex; align-items:center; gap: var(--sp-2); }
+.pie__riwi-mk{ font-weight:700; letter-spacing:0; text-transform:none; color:var(--text-2); }
+.pie__riwi-mk > span{ color:var(--accent-ui); }
+
+@media (max-width:900px){
+  /* El riel se acuesta abajo en este ancho, asi que la tira queda sola arriba y
+     puede achicarse sin dejar hueco. */
+  .tira{ padding-top: var(--sp-5); }
+  .tira__logo-img{ height:28px; }
+  .pie{ margin-top: var(--sp-8); padding-bottom: var(--sp-6); }
+}
+
+/* Ya no hay barra superior: la tira de arriba es solo marca y el riel lateral
+   lleva los modulos y las utilidades.
    Se conserva .avatar, que si se usa. */
 .avatar{
   display:grid; place-items:center; width:36px; height:36px; border-radius:var(--r-full);
@@ -440,8 +525,10 @@ body:has(app-nav-rail){ padding-left: var(--rail-clear); }
 .page{
   position:relative; z-index:1;
   max-width:var(--maxw); margin: 0 auto;
-  /* Sin barra superior, el aire de arriba lo pone la propia pagina. */
-  padding: clamp(var(--sp-10),6vw,var(--sp-16)) clamp(var(--sp-4),4vw,var(--sp-8)) var(--sp-16);
+  /* El aire de arriba lo reparten la tira de marca y la pagina. Antes la pagina
+     lo ponia todo (hasta 64px) porque no habia nada encima; con la tira eso
+     sumaba ~128px hasta el titulo y la pantalla arrancaba hundida. */
+  padding: clamp(var(--sp-6),3vw,var(--sp-10)) clamp(var(--sp-4),4vw,var(--sp-8)) var(--sp-16);
 }
 /* Marca de agua del area: la variante de tema va aca porque una regla con
    prefijo html[data-theme] dentro de un componente Angular nunca matchea
