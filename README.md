@@ -101,13 +101,18 @@ persona perdía. El avatar creció a 36px y suma un aro tenue del acento.
 
 ## Identidad de la empresa en el marco
 
-Tres lugares, cada uno con un trabajo distinto:
+Dos lugares, cada uno con un trabajo distinto:
 
 | Dónde | Qué lleva | Por qué ahí |
 |---|---|---|
 | Tira superior, izquierda | Logotipo completo de Blackbird Labs | Es la esquina donde se busca la marca. Se usa el logotipo y no el isotipo porque el asset oficial ya trae el `powered by </Riwi>`, así que la alianza viaja con la marca sin re-tipearla. |
-| Tira superior, derecha | `powered by </Riwi>` legible | Dentro del logotipo esa línea mide menos de 4px de alto: ahí funciona como textura de marca, no como texto que alguien pueda leer. |
-| Pie | `Blackbird Labs · Plataforma R&D · powered by </Riwi>` | Cierre de identidad. No repite el chip palabra por palabra: suma el nombre del producto. |
+| Pie | `Blackbird Labs · Plataforma R&D · powered by </Riwi>` | Cierre de identidad, y el único lugar donde el `powered by </Riwi>` se lee de verdad: dentro del logotipo esa línea mide menos de 4px de alto, así que ahí es textura de marca. |
+
+La ranura de la derecha de la tira está **reservada y vacía**, no olvidada. Tuvo
+un chip que repetía el `powered by </Riwi>`, y verlo montado mostró que decirlo
+dos veces en la misma pantalla le quitaba peso a las dos. La regla de `.tira`
+conserva `justify-content: space-between` y el `gap` para que lo que entre ahí
+mañana se apoye solo.
 
 La tira **no es una barra de navegación**: no lleva controles ni menús, y lo
 único pulsable es el logotipo, que va a inicio — la única convención que se
@@ -128,8 +133,8 @@ Dos detalles que no son obvios:
 
 Los signos `</` y `>` son parte del logotipo de Riwi, no puntuación: van en el
 color de acento y marcados `aria-hidden`, para que el nombre accesible sea
-"powered by Riwi". Los seis textos de la tira y el pie pasan AA en ambos temas,
-con 5.46:1 en el peor caso.
+"powered by Riwi". Los cinco textos del pie pasan AA en ambos temas, con 5.46:1
+en el peor caso — que son justamente esos signos en tema claro.
 
 El fondo sigue llevando la identidad del área: **R&D** en grande, con relleno
 degradado al 7% en oscuro y 12% en claro, y trazo hairline. Va detrás de todo y
@@ -286,7 +291,7 @@ OpenAI en el backend.
 
 | Rama | Qué cambió |
 |---|---|
-| `feat/tablero-proyectos` | **Identidad de la empresa en el marco.** El logotipo completo de Blackbird Labs arriba a la izquierda, el `powered by </Riwi>` legible arriba a la derecha y la línea de identidad completa en el pie. Se quitó la baldosa de marca del riel: dos círculos en la misma columna competían por significar identidad y el de la persona perdía, así que ahora el único elemento redondo del riel es el avatar de quien inició sesión. |
+| `feat/tablero-proyectos` | **Identidad de la empresa en el marco.** El logotipo completo de Blackbird Labs arriba a la izquierda y la línea de identidad completa en el pie, que es el único lugar donde el `powered by </Riwi>` se lee de verdad. Se quitó la baldosa de marca del riel: dos círculos en la misma columna competían por significar identidad y el de la persona perdía, así que ahora el único elemento redondo del riel es el avatar de quien inició sesión. |
 | `feat/tablero-proyectos` | **Arreglo de producción: el icono del aviso de error tapaba la pantalla.** Los `<svg>` inline no traen `width`/`height` propios y se estiran al contenedor cuando falta la regla que los dimensiona. La regla de `.alerta` existía solo dentro de `assignments.scss` y la encapsulación de Angular hizo que el tablero nunca la recibiera. Queda una red de seguridad: `svg:not([class])` toma 1em, que cubre los 38 iconos sin clase y no puede tocar el `.spark` del sparkline, que sí necesita estirarse. |
 | `feat/tablero-proyectos` | **Auditoría visual y de accesibilidad, aplicada.** Tres tokens de contraste que faltaban (`--text-dim` no llegaba a 4.5:1 en ninguno de los dos temas; `--accent-ui` porque el lima daba 1.26:1 sobre fondo claro y el anillo de foco era invisible; `--danger-text`). Alternativa por teclado para mover tarjetas en el tablero, que `@angular/cdk` no trae. Landmark `<main>`, enlace de salto, títulos en las 14 rutas y foco al navegar. Espaciado de 162 valores crudos a 0, con la escala de control `--ctl-*` y stylelint para congelarlo. Onboarding y perfil reconstruidos sobre el sistema (onboarding vivía sobre `.login`, una clase que ya no existía). Grupos pasa de tabla a tarjetas. Y los defectos de las capturas: los iconos de campo pisaban el texto en 3 de 4 pantallas, el panel de avisos se transparentaba porque su blur no tenía nada que desenfocar, el paginador se derramaba fuera de la columna, la barra de filtros se trepaba sobre el título, y el encabezado de tabla quedaba pisado por el estado vacío. |
 | `feat/tablero-proyectos` | **CI en cada pull request** (`ci.yml`): tipos con `strictTemplates`, stylelint, compilación y los 41 tests. No despliega. |

@@ -444,7 +444,11 @@ body:has(app-nav-rail){ padding-left: var(--rail-clear); }
    ============================================================= */
 .tira{
   position:relative; z-index:2;
-  display:flex; align-items:center; justify-content:space-between;
+  display:flex; align-items:center;
+  /* space-between y gap con un solo hijo hoy no hacen nada, y se quedan a
+     proposito: la ranura de la derecha esta reservada y vacia, no olvidada. Si
+     vuelve a entrar algo ahi, se apoya solo sin tocar esta regla. */
+  justify-content:space-between;
   gap: var(--sp-5);
   padding: var(--sp-6) clamp(var(--sp-4),4vw,var(--sp-8)) 0;
 }
@@ -468,22 +472,6 @@ body:has(app-nav-rail){ padding-left: var(--rail-clear); }
 .tira__logo-img--claro{ display:none; }
 html[data-theme="light"] .tira__logo-img--oscuro{ display:none; }
 html[data-theme="light"] .tira__logo-img--claro{ display:block; }
-
-/* La alianza, legible. Dentro del logotipo oficial el "powered by </Riwi>" mide
-   menos de 4px de alto a esta escala: ahi funciona como textura de marca, no
-   como texto que alguien pueda leer. */
-.tira__riwi{
-  display:flex; align-items:baseline; gap: var(--sp-2);
-  font-family:var(--font-display); line-height:var(--lh-snug);
-}
-.tira__riwi-txt{
-  font-size:var(--fs-2xs); font-weight:600; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--text-dim);
-}
-.tira__riwi-mk{ font-size:var(--fs-sm); font-weight:700; color:var(--text-2); }
-/* Los signos son parte del logotipo de Riwi, no puntuacion: van en el acento y
-   marcados aria-hidden, para que el nombre accesible sea "powered by Riwi". */
-.tira__riwi-mk > span{ color:var(--accent-ui); }
 
 .pie{
   position:relative; z-index:2;
