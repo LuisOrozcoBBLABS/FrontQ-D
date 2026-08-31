@@ -16,6 +16,9 @@
       <span class="prio-pin" [class]="'prio-pin prio-pin--' + prioridad()">{{ pr }}</span>
     } @else {
       <span class="tarjeta__sector">{{ proyecto().sector }}</span>
+      @if (proyecto().cliente) {
+        <span class="tarjeta__cliente" [title]="'Cliente: ' + proyecto().cliente">{{ proyecto().cliente }}</span>
+      }
     }
 
     @if (movible()) {

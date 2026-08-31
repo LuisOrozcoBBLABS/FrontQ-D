@@ -39,6 +39,7 @@ export interface FiltroProyectos {
 export interface NuevoProyecto {
   nombre: string;
   sector: string;
+  cliente?: string;
   problema?: string;
   dolores?: string;
   solucion?: string;
@@ -419,6 +420,7 @@ function aProyecto(p: ProjectApi): Project {
     id: p.id,
     nombre: p.nombre,
     sector: p.sector,
+    cliente: p.cliente ?? null,
     problema: p.problema,
     dolores: p.dolores,
     solucion: p.solucion,

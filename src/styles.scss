@@ -268,6 +268,10 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* ---------- Chips / badges / tags ---------- */
 .chip{ display:inline-flex; align-items:center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); border:1px solid var(--line); border-radius:999px; color:var(--text-2); font-size:13.5px; background:var(--surface); }
 .tag-mono{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); border:1px solid var(--line); border-radius:999px; padding: var(--sp-1) var(--sp-3); }
+/* El cliente va con el acento para separarse del sector, que es la etiqueta
+   de al lado y comparte forma. --accent-ui y no --accent: el lima crudo da
+   1.26:1 sobre fondo claro y esto es texto de 11px. */
+.tag-mono--cliente{ color:var(--accent-ui); border-color:var(--accent-ui); }
 .badge{ display:inline-flex; align-items:center; gap: var(--sp-2); font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; padding: var(--sp-1) var(--sp-3); border-radius:999px; border:1px solid var(--line-strong); color:var(--text-2); }
 .badge--on{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
 .badge--muted{ color:var(--text-dim); }

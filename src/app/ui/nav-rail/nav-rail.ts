@@ -5,7 +5,7 @@ import { filter, map } from 'rxjs';
 import { AssignmentsService } from '../../core/assignments.service';
 import { AuthService } from '../../core/auth.service';
 import { ConfirmService } from '../../core/confirm.service';
-import { NotificationItem } from '../../core/models';
+import { NotificationItem, ROL_LABEL } from '../../core/models';
 import { ThemeService } from '../../core/theme.service';
 import { environment } from '../../../environments/environment';
 
@@ -93,7 +93,10 @@ export class NavRail {
     return n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase();
   });
 
-  protected rolLabel = computed(() => (this.auth.isAdmin() ? 'Administrador' : 'Colaborador'));
+  protected rolLabel = computed(() => {
+    const r = this.auth.currentUser()?.rol;
+    return r ? ROL_LABEL[r] : '';
+  });
 
   toggleNotif(): void {
     this.notifOpen.set(!this.notifOpen());

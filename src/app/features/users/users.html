@@ -184,7 +184,7 @@
               <h2 class="ficha__n">{{ u.nombre }}</h2>
               <p class="ficha__mail">{{ u.email }}</p>
               <div class="ficha__tags">
-                <p-tag [value]="u.rol === 'admin' ? 'Admin' : 'Colaborador'" [severity]="u.rol === 'admin' ? 'success' : 'secondary'" [rounded]="true" />
+                <p-tag [value]="rolLabel(u.rol)" [severity]="u.rol === 'admin' ? 'success' : 'secondary'" [rounded]="true" />
                 <p-tag [value]="u.activo ? 'Activo' : 'Inactivo'" [severity]="u.activo ? 'success' : 'secondary'" [rounded]="true" />
               </div>
             </div>

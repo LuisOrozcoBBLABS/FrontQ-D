@@ -17,6 +17,9 @@ import { NuevoProyecto } from './projects.service';
 export interface BorradorProyecto {
   nombre: string;
   sector: string;
+  /** Cliente para el que se hace. Cadena vacia = sin cliente; el servidor la
+   *  guarda como null, porque "sin cliente" y "cliente en blanco" son lo mismo. */
+  cliente: string;
   problema: string;
   dolores: string;
   solucion: string;
@@ -31,6 +34,7 @@ export interface BorradorProyecto {
  */
 export const LIMITES = {
   nombre: 140,
+  cliente: 140,
   texto: 4000,
   similarNombre: 120,
   similarUrl: 400,
@@ -40,6 +44,7 @@ export function borradorVacio(groupId: string | null = null): BorradorProyecto {
   return {
     nombre: '',
     sector: '',
+    cliente: '',
     problema: '',
     dolores: '',
     solucion: '',
@@ -178,6 +183,14 @@ export function aNuevoProyecto(b: BorradorProyecto): NuevoProyecto {
   return {
     nombre: recortar(b.nombre.trim(), LIMITES.nombre),
     sector: b.sector.trim(),
+    // Se OMITE la clave cuando no hay cliente, en vez de mandarla en undefined.
+    // Con `cliente: undefined` el JSON sale igual (JSON.stringify descarta los
+    // undefined), pero el objeto sí lleva la clave, y el contrato de este metodo
+    // se verifica con Object.keys — o sea que la forma del objeto y la del
+    // cuerpo que viaja tienen que coincidir para que el test signifique algo.
+    ...(b.cliente.trim()
+      ? { cliente: recortar(b.cliente.trim(), LIMITES.cliente) }
+      : {}),
     problema: recortar(b.problema.trim(), LIMITES.texto),
     dolores: recortar(b.dolores.trim(), LIMITES.texto),
     solucion: recortar(b.solucion.trim(), LIMITES.texto),

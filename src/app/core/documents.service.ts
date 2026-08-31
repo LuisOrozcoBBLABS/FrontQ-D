@@ -140,6 +140,9 @@ export function aAnalisis(api: BorradorApi): AnalisisListo {
   const borrador: BorradorProyecto = {
     nombre: campo(b.nombre, 'el nombre', LIMITES.nombre),
     sector: sectorPropuesto,
+    // La extraccion no propone cliente: el documento fuente rara vez lo dice, y
+    // adivinarlo es peor que dejarlo en blanco para que lo escriba una persona.
+    cliente: '',
     problema: campo(b.problema, 'el problema', LIMITES.texto),
     dolores: campo(b.dolores, 'los dolores', LIMITES.texto),
     solucion: campo(b.solucion, 'la solución', LIMITES.texto),

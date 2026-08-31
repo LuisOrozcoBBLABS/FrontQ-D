@@ -8,6 +8,7 @@
     <div class="page__head enter">
       <div class="proj-head">
         <span class="tag-mono">{{ p.sector }}</span>
+        @if (p.cliente) { <span class="tag-mono tag-mono--cliente">{{ p.cliente }}</span> }
         <span class="badge" [class.badge--on]="p.estado === 'aprobado'">{{ estadoLabel(p.estado) }}</span>
       </div>
       <h1 class="page__title">{{ p.nombre }}</h1>

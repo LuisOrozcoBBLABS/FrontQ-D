@@ -14,7 +14,8 @@ import { ProjectsMaestro } from './projects-maestro';
  *   todo el conjunto.
  *
  * El criterio es el permiso `assignments.create`: quien puede asignar, asigna.
- * El rol admin queda fuera del tablero de forma explícita.
+ * Los roles admin y comercial quedan fuera del tablero de forma explícita: a
+ * ninguno de los dos se le asignan proyectos.
  *
  * La plantilla va en línea a propósito: es solo la bifurcación, y separarla en
  * un archivo esconde la única decisión que toma este componente.
@@ -36,7 +37,10 @@ export class Projects {
   protected verTablero = computed(() => {
     const u = this.auth.currentUser();
     if (!u) return false;
-    if (u.rol === 'admin') return false;
+    // Ni admin ni comercial reciben asignaciones, asi que un tablero de "lo mio"
+    // les saldria vacio: los dos van a la tabla del area. Comercial ademas es de
+    // solo lectura, y la tabla es justo lo que necesita — listar y filtrar.
+    if (u.rol === 'admin' || u.rol === 'comercial') return false;
     return !this.auth.can('assignments.create');
   });
 }
