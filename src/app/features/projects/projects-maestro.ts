@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProjectsService } from '../../core/projects.service';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
@@ -46,6 +46,7 @@ export class ProjectsMaestro {
   private projectsSvc = inject(ProjectsService);
   protected auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private confirm = inject(ConfirmService);
   private toast = inject(ToastService);
 
@@ -214,8 +215,15 @@ export class ProjectsMaestro {
     return this.auth.esAutorOAdmin(p.autorId);
   }
 
+  /** Abre el modal de edición sobre la tabla: la URL es la que lo controla. */
   async editar(p: Project): Promise<void> {
-    await this.router.navigate(['/proyectos', p.id, 'editar']);
+    // `relativeTo` no es opcional acá: con la lista de comandos vacía y sin él,
+    // el router resuelve contra la raíz y termina navegando a `/?editar=…`.
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editar: p.id },
+      queryParamsHandling: 'merge',
+    });
   }
 
   /**

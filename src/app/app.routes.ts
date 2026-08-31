@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 import {
   authGuard,
   cambioClaveGuard,
@@ -56,15 +57,22 @@ export const routes: Routes = [
         canActivate: [permissionGuard('ai.use')],
         loadComponent: () => import('./features/documents/documents').then(m => m.Documents),
       },
+      // Registrar y editar un proyecto son un modal sobre la pantalla que ya
+      // estaba, no una ruta propia: son tareas cortas que se hacen mirando la
+      // lista o la ficha, y mandar a otra pantalla obligaba a reconstruir al
+      // volver el filtro, la pagina y la fila elegida.
+      //
+      // Las dos rutas viejas siguen existiendo como redireccion, con la forma
+      // de FUNCION de `redirectTo` porque la de cadena no puede llevar query
+      // params. No es cortesia: hay enlaces guardados, y el 404 los mandaria al
+      // inicio sin decir por que.
       {
-        path: 'proyectos/nuevo', title: 'Nuevo proyecto · Plataforma R&D',
-        canActivate: [permissionGuard('projects.create')],
-        loadComponent: () => import('./features/projects/project-form').then(m => m.ProjectForm),
+        path: 'proyectos/nuevo',
+        redirectTo: () => inject(Router).parseUrl('/proyectos?nuevo=1'),
       },
       {
-        path: 'proyectos/:id/editar', title: 'Editar proyecto · Plataforma R&D',
-        canActivate: [permissionGuard('projects.create')],
-        loadComponent: () => import('./features/projects/project-form').then(m => m.ProjectForm),
+        path: 'proyectos/:id/editar',
+        redirectTo: r => inject(Router).parseUrl(`/proyectos/${r.paramMap.get('id')}?editar=1`),
       },
       { path: 'proyectos/:id', title: 'Detalle del proyecto · Plataforma R&D', loadComponent: () => import('./features/projects/project-detail').then(m => m.ProjectDetail) },
     ],

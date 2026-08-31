@@ -162,7 +162,7 @@
   <!-- Accesos rápidos -->
   <div class="quick">
     @if (auth.can('projects.create')) {
-      <a class="card quick__card" routerLink="/proyectos/nuevo"><h3>Registrar una idea</h3><p class="text-2">Crea un proyecto de innovación.</p></a>
+      <a class="card quick__card" routerLink="/proyectos" [queryParams]="{ nuevo: 1 }"><h3>Registrar una idea</h3><p class="text-2">Crea un proyecto de innovación.</p></a>
     }
     @if (auth.can('groups.manage')) {
       <a class="card quick__card" routerLink="/grupos"><h3>Gestionar grupos</h3><p class="text-2">Crea grupos y define sus integrantes.</p></a>

@@ -1,5 +1,5 @@
 import { Component, DestroyRef, computed, effect, inject, input, output, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProjectsService } from '../../core/projects.service';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { ConfirmService } from '../../core/confirm.service';
@@ -31,6 +31,7 @@ export class ProjectPanel {
   private confirm = inject(ConfirmService);
   private toast = inject(ToastService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   readonly resumen = input.required<Project>();
   /**
@@ -183,8 +184,19 @@ export class ProjectPanel {
     this.cargando.set(false);
   }
 
+  /**
+   * Abre el modal de edición sin moverse de donde está. El panel vive tanto en
+   * la tabla como en el tablero, y las dos pantallas montan el mismo modal, así
+   * que alcanza con poner el parámetro en la URL actual.
+   */
   protected async editar(): Promise<void> {
-    await this.router.navigate(['/proyectos', this.p().id, 'editar']);
+    // `relativeTo` no es opcional: con comandos vacíos y sin él, el router
+    // resuelve contra la raíz y navega a `/?editar=…`.
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editar: this.p().id },
+      queryParamsHandling: 'merge',
+    });
   }
 
   /**

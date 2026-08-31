@@ -174,3 +174,10 @@
     <div class="card enter"><p class="text-2">Proyecto no encontrado. <a routerLink="/proyectos">Volver a proyectos</a>.</p></div>
   }
 </div>
+
+<!-- Edición: el mismo modal que monta /proyectos, acá sobre la ficha. -->
+<app-project-modal
+  [abierto]="editarAbierto()"
+  (abiertoChange)="alCerrarEdicion($event)"
+  [id]="idProyecto"
+/>

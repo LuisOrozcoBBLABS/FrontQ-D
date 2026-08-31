@@ -44,7 +44,13 @@
       />
 
       @if (auth.can('projects.create')) {
-        <p-button label="Nuevo proyecto" icon="pi pi-plus" size="small" routerLink="/proyectos/nuevo" />
+        <p-button
+          label="Nuevo proyecto"
+          icon="pi pi-plus"
+          size="small"
+          routerLink="/proyectos"
+          [queryParams]="{ nuevo: 1 }"
+        />
       }
     </div>
   </header>

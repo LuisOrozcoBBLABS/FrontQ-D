@@ -170,6 +170,16 @@ export class ProjectsService {
   /** Columnas que están trayendo su siguiente tanda. */
   private readonly _cargandoColumna = signal<ProjectStatus[]>([]);
 
+  /**
+   * Último pedido, para poder repetirlo tal cual. Lo necesita quien guarda
+   * desde el modal, que está montado por encima de la lista y del tablero y no
+   * conoce sus filtros ni su página. Sin esto habría que pasarle el filtro al
+   * modal, y el modal pasaría a saber de paginación —que no es asunto suyo— o,
+   * peor, recargaría sin filtros y la pantalla de atrás cambiaría sola.
+   */
+  private ultimoFiltro: FiltroProyectos = {};
+  private ultimoModo: 'lista' | 'tablero' | null = null;
+
   readonly projects = this._projects.asReadonly();
   readonly cargando = this._cargando.asReadonly();
   readonly error = this._error.asReadonly();
@@ -186,6 +196,8 @@ export class ProjectsService {
    * numerar las paginas.
    */
   async load(filtro: FiltroProyectos = {}): Promise<void> {
+    this.ultimoFiltro = filtro;
+    this.ultimoModo = 'lista';
     this._cargando.set(true);
     this._error.set(null);
 
@@ -229,6 +241,8 @@ export class ProjectsService {
    * cada columna tiene que poder pedir mas por su cuenta.
    */
   async cargarTablero(filtro: FiltroProyectos = {}): Promise<void> {
+    this.ultimoFiltro = filtro;
+    this.ultimoModo = 'tablero';
     this._cargandoTablero.set(true);
     this._error.set(null);
     try {
@@ -366,6 +380,21 @@ export class ProjectsService {
     } catch {
       this._resumen.set(null);
       this._error.set('No se pudo cargar el resumen.');
+    }
+  }
+
+  /**
+   * Repite el último pedido, sea la lista o el tablero. Se usa después de crear
+   * o editar desde el modal: la fila nueva tiene que aparecer donde corresponde
+   * según los filtros y el orden vigentes, no arriba de todo por ser la última.
+   */
+  async recargar(): Promise<void> {
+    if (this.ultimoModo === 'tablero') {
+      await this.cargarTablero(this.ultimoFiltro);
+      return;
+    }
+    if (this.ultimoModo === 'lista') {
+      await Promise.all([this.load(this.ultimoFiltro), this.loadPorEstado(this.ultimoFiltro)]);
     }
   }
 

@@ -1,0 +1,21 @@
+/* El subtítulo del diálogo: dice qué se espera del formulario sin robarle
+   altura, que en un modal es lo que escasea. */
+.pm__sub {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  margin-bottom: var(--sp-5);
+}
+
+/* Mismo aviso de error que traía project-form: borde a la izquierda en vez de
+   fondo rojo, para que se lea como una nota y no como una alarma. */
+.pm__error {
+  color: var(--text);
+  font-size: var(--fs-sm);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  margin-top: var(--sp-4);
+}
