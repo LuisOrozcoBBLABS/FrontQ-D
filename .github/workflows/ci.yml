@@ -23,9 +23,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           # El proyecto corre en Node 22 en local. Se fija acá para que el CI no
           # valide contra una versión distinta de la que usa el equipo.
