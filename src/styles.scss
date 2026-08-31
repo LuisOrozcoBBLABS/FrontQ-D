@@ -156,6 +156,27 @@ body{
   a{ color:inherit; text-decoration:none; }
   button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
   svg{ display:block; }
+
+  /* Tamano por defecto para los iconos SIN clase. Es una red de seguridad, no
+     una preferencia de estilo.
+
+     Hay 39 <svg> inline en las plantillas sin width ni height propios. Son
+     iconos con viewBox, y cada uno depende de que exista una regla
+     `.clase svg` que les de tamano. Cuando esa regla falta, el SVG no se
+     encoge: se ESTIRA al contenedor. Ya paso en produccion — el icono del
+     aviso de error del tablero ocupo la pantalla entera y tapo justo el
+     mensaje de error que explicaba la falla.
+
+     El `:not([class])` es lo que hace la regla segura, y no alcanza con
+     confiar en el orden de capas: 38 de esos 39 iconos son <svg> pelados, y
+     el unico con clase ya esta dimensionado. Un SVG al que un componente le
+     puso clase —como el `.spark` del sparkline, que SI necesita estirarse a
+     su contenedor— queda fuera de esta regla por construccion, no por
+     especificidad.
+
+     Con 1em, un icono al que se le olvido la regla sale del tamano del texto:
+     se nota, pero nunca destruye la pantalla. */
+  svg:not([class]){ width:1em; height:1em; }
   ul{ list-style:none; }
   :focus-visible{ outline:2px solid var(--accent-ui); outline-offset:3px; border-radius:4px; }
 }
@@ -320,6 +341,33 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 .table__num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .table__min{ width:1%; white-space:nowrap; }
 .table__actions{ display:flex; align-items:center; gap: var(--sp-2); justify-content:flex-end; flex-wrap:nowrap; }
+/* ---------- Aviso de error ----------
+   Vive acá y no en un componente porque la usan DOS pantallas: el tablero de
+   proyectos y las asignaciones. Estaba solo en assignments.scss, y como Angular
+   encapsula los estilos de componente, el tablero se quedaba SIN la regla que
+   dimensiona el icono.
+
+   El resultado se vio en produccion: un <svg> inline con viewBox y sin width ni
+   height, dentro de un contenedor grande, se estira. El circulo del icono de
+   alerta ocupaba la pantalla entera y el palito del signo de exclamacion
+   quedaba como una barra vertical de 130px — tapando justo el mensaje de error
+   que explicaba lo que estaba pasando. Un icono sin tamano convierte "algo
+   fallo" en "la aplicacion se destruyo".
+
+   El `svg { display: block }` global de @layer base no alcanza: define como se
+   comporta la caja, no cuanto mide. */
+.alerta{
+  display:flex; align-items:center; gap:var(--sp-3);
+  padding:var(--sp-3) var(--sp-4);
+  margin-bottom:var(--sp-6);
+  border:1px solid var(--danger);
+  border-radius:var(--r-md);
+  background:var(--danger-bg);
+  color:var(--text);
+  font-size:var(--fs-sm);
+}
+.alerta svg{ width:17px; height:17px; color:var(--danger); flex:0 0 auto; }
+
 .table__vacia{ background:var(--surface); padding: var(--sp-10) var(--sp-4); text-align:center; color:var(--text-dim); font-size:var(--fs-sm); }
 .table__vacia b{ display:block; color:var(--text); font-weight:600; margin-bottom: var(--sp-1); }
 
