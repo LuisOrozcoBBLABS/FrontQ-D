@@ -13,7 +13,7 @@ import { ButtonModule } from 'primeng/button';
 import { SelectButton } from 'primeng/selectbutton';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
-import { SECUENCIA, SIGUIENTE, esFinal, puedeIr, retrocesoDe } from '../../core/transiciones';
+import { SECUENCIA, SIGUIENTE, puedeIr, retrocesoDe } from '../../core/transiciones';
 
 
 
@@ -314,11 +314,9 @@ export class Assignments {
   }
 
   protected alIniciarArrastre(a: Assignment, e: DragEvent): void {
-    // Completada es final: sus tarjetas no se mueven.
-    if (esFinal(a.estado)) {
-      e.preventDefault();
-      return;
-    }
+    // Sin guardia de "estado final": no hay ninguno. La plantilla ya calcula
+    // draggable con `retroceso(a) || siguientePaso(a)`, que es el criterio real
+    // — una completada tiene retroceso a en-curso, asi que SI se arrastra.
     this.arrastrando.set(a);
     e.dataTransfer?.setData('text/plain', a.id);
     if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
