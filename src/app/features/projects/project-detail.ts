@@ -6,7 +6,7 @@ import { ProjectsService } from '../../core/projects.service';
 import { UsersService } from '../../core/users.service';
 import { AuthService } from '../../core/auth.service';
 import { AssignmentsService } from '../../core/assignments.service';
-import { CANALES, Canal, CanalEnvio, ESTADOS_PROYECTO, PRIORIDADES, Prioridad, Project, ProjectStatus, User } from '../../core/models';
+import { CANALES, Canal, CanalEnvio, ESTADOS_PROYECTO, PRIORIDADES, Prioridad, Project, ProjectStatus, User, prestacionLabel } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { mensajeDeError } from '../../core/auth.service';
@@ -117,6 +117,8 @@ export class ProjectDetail {
     return p?.autorNombre ?? this.usersSvc.byId(p?.autorId ?? '')?.nombre ?? '—';
   }
   estadoLabel(e: ProjectStatus): string { return ESTADOS_PROYECTO.find(x => x.value === e)?.label ?? e; }
+  /** Qué se presta. Dice "Sin clasificar" en vez de dejar un hueco. */
+  prestacion(p: Project): string { return prestacionLabel(p.tipoPrestacion); }
   assignableUsers(): User[] { return this.usersSvc.users().filter(u => u.activo); }
   userName(id: string): string { return this.usersSvc.byId(id)?.nombre ?? '—'; }
 

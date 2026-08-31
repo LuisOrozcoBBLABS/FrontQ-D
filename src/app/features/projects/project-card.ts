@@ -1,5 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
-import { PRIORIDADES, Project } from '../../core/models';
+import { PRIORIDADES, Project, prestacionLabel } from '../../core/models';
 import { alertaEtapa, diasEnEtapa, diasTotales, humanoCorto, motivoAlerta } from '../../core/tiempos';
 
 /**
@@ -62,6 +62,19 @@ export class ProjectCard {
   protected prioridadLabel = computed(() => {
     const p = this.prioridad();
     return p ? (PRIORIDADES.find(x => x.value === p)?.label ?? p) : null;
+  });
+
+  /**
+   * "Talento · Bancolombia", con lo que haya. Devuelve null cuando el proyecto
+   * no tiene ninguno de los dos: la línea no se pinta y la tarjeta no crece.
+   */
+  protected prestacionYCliente = computed(() => {
+    const p = this.proyecto();
+    const partes = [
+      p.tipoPrestacion ? prestacionLabel(p.tipoPrestacion) : null,
+      p.cliente || null,
+    ].filter((x): x is string => !!x);
+    return partes.length ? partes.join(' · ') : null;
   });
 
   protected iniciales(nombre: string): string {

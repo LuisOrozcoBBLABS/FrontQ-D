@@ -31,6 +31,12 @@
 
   <span class="tarjeta__nombre">{{ proyecto().nombre }}</span>
 
+  <!-- Solo cuando hay algo que decir: una tarjeta de tablero no tiene lugar
+       para una línea que la mitad de las veces diría "—". -->
+  @if (prestacionYCliente(); as pc) {
+    <span class="tarjeta__prestacion">{{ pc }}</span>
+  }
+
   <span class="tarjeta__pie">
     @if (responsable(); as r) {
       <span class="tarjeta__persona">
