@@ -89,6 +89,11 @@ html[data-theme="dark"]{
   --shadow-rail:0 20px 60px -16px rgba(0,0,0,.8);
   --overlay:rgba(4,4,3,.74);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.12);
+  /* Relleno del boton destructivo solido, que NO es el mismo valor que el
+     borde o el icono. Sobre fondo oscuro el rojo de marca funciona como
+     relleno y lleva tinta obsidiana encima. Ver el bloque de tema claro,
+     donde el mismo rojo no alcanza. */
+  --danger-solid:var(--bb-red); --on-danger:var(--bb-obsidian);
   /* En oscuro el rojo de marca ya da 5.84:1, asi que el token de texto coincide
      con el de marca. Existe igual para que los componentes no tengan que saber
      en que tema estan. */
@@ -123,6 +128,11 @@ html[data-theme="light"]{
   --shadow-rail:0 18px 50px -18px rgba(11,10,7,.28);
   --overlay:rgba(24,24,22,.5);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.1);
+  /* En claro el rojo de marca como relleno da 3.39:1 contra el blanco: pasa
+     el umbral de componente, pero la etiqueta blanca encima queda tambien
+     en 3.39:1 y ahi falla, porque el texto pide 4.5:1. El relleno baja al
+     rojo profundo, que con etiqueta blanca da 5.72:1. */
+  --danger-solid:#C22A31; --on-danger:#FFFFFF;
   /* El rojo de marca sobre fondo claro da 3.39:1: no llega a 4.5:1 y el texto
      de error de formulario es exactamente lo que no puede fallar contraste.
      #C22A31 da 6.09:1 sobre blanco y 5.83 sobre --surface. --bb-red se queda
@@ -1066,7 +1076,24 @@ html[data-theme="light"] .marca-fondo__txt{
    el mismo valor que esta: era defensiva contra el hover de PrimeNG, pero no
    hace falta. Esta regla esta FUERA de capa y la de PrimeNG dentro, y lo no
    capado gana sobre lo capado sin importar la especificidad. */
-.p-button-outlined { border-color: var(--line-strong); color: var(--text-2); }
+/* El borde iba en --line-strong, que es color de hairline: medido daba 1.45:1
+   en claro y 1.53:1 en oscuro contra la superficie. Un boton contorneado cuyo
+   contorno no se ve no es un boton contorneado — es texto suelto, y en un
+   dialogo destructivo eso deja la salida sin forma reconocible. --text-dim es
+   el escalon mas tenue que igual supera el 3:1 que pide WCAG 1.4.11 para el
+   limite de un componente. */
+.p-button-outlined { border-color: var(--text-dim); color: var(--text-2); }
+
+/* El preset no mapeaba las severidades de PrimeNG, asi que el boton
+   destructivo salia con el rojo por defecto de la libreria — rgb(248,113,113)
+   — que sobre blanco da 2.77:1 y falla el umbral de 3:1. Medido, no supuesto.
+   Se excluyen las variantes text y outlined: esas no tienen relleno, y ahi
+   el rojo va como color de texto y lo resuelve --danger-text. */
+.p-button-danger:not(.p-button-text, .p-button-outlined) {
+  background: var(--danger-solid);
+  border-color: var(--danger-solid);
+  color: var(--on-danger);
+}
 
 /* Las etiquetas seguían la paleta de PrimeNG (verde, naranja, azul). La
    plataforma nunca usó eso: sus estados son una pí­ldora con borde y un punto
