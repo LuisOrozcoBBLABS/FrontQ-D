@@ -5,7 +5,7 @@
     <p class="eyebrow">Inicio</p>
     <h1 class="page__title">Hola, {{ nombre() }}</h1>
     <p class="page__sub">
-      {{ auth.isAdmin() ? 'Administración' : 'Colaborador' }}
+      {{ rolLabel() }}
       @if (auth.currentUser()?.grupo) { · Grupo {{ auth.currentUser()?.grupo }} }
       @if (actualizado(); as hora) { <span class="page__dato">· datos al {{ hora }}</span> }
     </p>
