@@ -234,12 +234,24 @@ El permiso vive en un solo lugar, `AuthService.esAutorOAdmin()`, que espeja
 permiso de **lectura**— así que la jefatura veía el botón de eliminar y la API le
 devolvía 403.
 
-`/proyectos/:id/editar` reusa el mismo formulario que registrar: los campos son
-idénticos y duplicarlo garantizaría que las dos versiones se separen. En edición
-**no se manda la etapa**: eso se mueve en el tablero, y mandarla desde el
-formulario pisaría el estado y ensuciaría el historial con una entrada falsa. Si
-alguien entra por URL a editar algo que no registró, se lo devuelve a la ficha
-con el motivo.
+**Registrar y editar son un modal**, no una pantalla aparte. Registrar una idea
+es una tarea corta que se hace mirando la lista, y mandar a otra ruta obligaba a
+perder —y a reconstruir al volver— el filtro, la página y la fila elegida.
+
+El modal se abre **desde la URL**: `?nuevo=1` y `?editar=<id>` sobre `/proyectos`,
+y `?editar=1` sobre `/proyectos/:id` (así editar desde la ficha no te saca de
+ella). Las rutas viejas `/proyectos/nuevo` y `/proyectos/:id/editar` **siguen
+funcionando como redirección** —hay enlaces guardados— con la forma de función
+de `redirectTo`, porque la forma de cadena no puede llevar query params.
+
+Los campos son los de `project-fields`, **la única copia**: la misma que usa
+`/documentos` para revisar lo que propuso la IA. Hubo una segunda dentro de
+`project-form`, hoy eliminada; mientras existieron las dos, cada etiqueta y cada
+tope había que tocarlos en los dos lados.
+
+En edición **no se manda la etapa**: eso se mueve en el tablero, y mandarla desde
+el formulario pisaría el estado y ensuciaría el historial con una entrada falsa.
+Si alguien entra por URL a editar algo que no registró, se lo saca con el motivo.
 
 **Eliminar archiva.** La API no tiene borrado destructivo: el proyecto sale de
 las listas y del tablero, queda con `archivado`, y se puede recuperar. La

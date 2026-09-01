@@ -1,7 +1,5 @@
-/* Misma fila de app parecida que project-form.scss. Está repetida porque los dos
-   componentes tienen su propia copia de los campos (ver el comentario de
-   project-fields.ts): los estilos de componente son scoped, así que no alcanza
-   con declararla en uno solo. */
+/* La fila de una app parecida. Vivía duplicada en project-form.scss mientras
+   existían las dos copias del formulario; ahora esta es la única. */
 .similar-row {
   display: grid;
   grid-template-columns: 1fr 1.4fr auto;

@@ -17,6 +17,8 @@
       <h2 class="panel__t">{{ p().nombre }}</h2>
       <p class="panel__meta">
         {{ p().sector }}
+        <span class="panel__sep">·</span> {{ prestacion() }}
+        @if (p().cliente) { <span class="panel__sep">·</span> {{ p().cliente }} }
         @if (p().grupo) { <span class="panel__sep">·</span> {{ p().grupo }} }
         @if (p().autorNombre) { <span class="panel__sep">·</span> registró {{ p().autorNombre }} }
       </p>

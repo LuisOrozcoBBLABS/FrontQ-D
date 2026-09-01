@@ -34,6 +34,13 @@
 
   <span class="tarjeta__nombre">{{ proyecto().nombre }}</span>
 
+  <!-- Solo cuando hay algo que decir: una tarjeta de tablero no tiene lugar
+       para una línea que la mitad de las veces diría "—". -->
+  <!-- Solo el tipo: el cliente ya va arriba, junto al sector. -->
+  @if (prestacion(); as pr) {
+    <span class="tarjeta__prestacion">{{ pr }}</span>
+  }
+
   <span class="tarjeta__pie">
     @if (responsable(); as r) {
       <span class="tarjeta__persona">

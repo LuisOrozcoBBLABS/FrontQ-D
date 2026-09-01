@@ -6,7 +6,7 @@ import { UsersService } from '../../core/users.service';
 import { GroupsService } from '../../core/groups.service';
 import { ProjectsService } from '../../core/projects.service';
 import { AssignmentsService } from '../../core/assignments.service';
-import { ASIG_ESTADOS, PRIORIDADES, Prioridad, Project } from '../../core/models';
+import { ASIG_ESTADOS, PRIORIDADES, Prioridad, Project, ROL_LABEL } from '../../core/models';
 import { Knob } from 'primeng/knob';
 import { Tag } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
@@ -105,6 +105,17 @@ export class Dashboard {
     return at.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
   });
 
+
+  /**
+   * Rol en palabras. Antes era `isAdmin() ? 'Administración' : 'Colaborador'`,
+   * que le decía "Colaborador" a cualquiera que no fuera admin — y con el rol
+   * comercial eso pasó a ser mentira. ROL_LABEL no compila si se agrega un rol
+   * y nadie lo nombra.
+   */
+  protected rolLabel = computed(() => {
+    const rol = this.auth.currentUser()?.rol;
+    return rol ? ROL_LABEL[rol] : '—';
+  });
 
   protected nombre = computed(() => this.auth.currentUser()?.nombre?.split(' ')[0] ?? '');
 

@@ -1,10 +1,10 @@
 import { Component, DestroyRef, computed, effect, inject, input, output, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProjectsService } from '../../core/projects.service';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
-import { ESTADOS_PROYECTO, Project, ProjectStatus, etapaDe } from '../../core/models';
+import { ESTADOS_PROYECTO, Project, ProjectStatus, etapaDe, prestacionLabel } from '../../core/models';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
@@ -31,6 +31,7 @@ export class ProjectPanel {
   private confirm = inject(ConfirmService);
   private toast = inject(ToastService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   readonly resumen = input.required<Project>();
   /**
@@ -120,6 +121,8 @@ export class ProjectPanel {
   protected p = computed<Project>(() => this.completo() ?? this.resumen());
 
   protected etapa = computed(() => etapaDe(this.p().estado));
+  /** Qué se presta. Dice "Sin clasificar" en vez de dejar un hueco. */
+  protected prestacion = computed(() => prestacionLabel(this.p().tipoPrestacion));
   protected diasEtapa = computed(() => diasEnEtapa(this.p()));
   protected diasTotal = computed(() => diasTotales(this.p()));
   protected diasEtapas = computed(() => diasEnEtapas(this.p().historial));
@@ -183,8 +186,19 @@ export class ProjectPanel {
     this.cargando.set(false);
   }
 
+  /**
+   * Abre el modal de edición sin moverse de donde está. El panel vive tanto en
+   * la tabla como en el tablero, y las dos pantallas montan el mismo modal, así
+   * que alcanza con poner el parámetro en la URL actual.
+   */
   protected async editar(): Promise<void> {
-    await this.router.navigate(['/proyectos', this.p().id, 'editar']);
+    // `relativeTo` no es opcional: con comandos vacíos y sin él, el router
+    // resuelve contra la raíz y navega a `/?editar=…`.
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editar: this.p().id },
+      queryParamsHandling: 'merge',
+    });
   }
 
   /**

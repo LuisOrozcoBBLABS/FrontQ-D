@@ -1,0 +1,44 @@
+<p-dialog
+  [visible]="abierto()"
+  (visibleChange)="alCambiarVisible($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="!guardando()"
+  [closable]="!guardando()"
+  [style]="{ width: 'min(calc(94vw - var(--rail-clear)), 720px)' }"
+>
+  <ng-template #header>
+    <div>
+      <p class="eyebrow">{{ editando() ? 'Editar' : 'Nuevo proyecto' }}</p>
+      <h2 class="modal__title">{{ titulo() }}</h2>
+    </div>
+  </ng-template>
+
+  <p class="pm__sub">
+    @if (editando()) {
+      Cambiá lo que haga falta. La etapa no se toca acá: eso se mueve en el tablero.
+    } @else {
+      Describí la propuesta. Queda registrada para el área y podés asignarla a alguien del equipo.
+    }
+  </p>
+
+  @if (cargando()) {
+    <p class="text-dim">Cargando el proyecto…</p>
+  } @else {
+    <app-project-fields [(valor)]="borrador" [deshabilitado]="guardando()" />
+  }
+
+  @if (error()) { <p class="pm__error" role="alert">{{ error() }}</p> }
+
+  <ng-template #footer>
+    <p-button label="Cancelar" [text]="true" severity="secondary" [disabled]="guardando()" (onClick)="cerrar()" />
+    <p-button
+      [label]="verbo()"
+      icon="pi pi-check"
+      [loading]="guardando()"
+      [disabled]="cargando()"
+      (onClick)="guardar()"
+    />
+  </ng-template>
+</p-dialog>

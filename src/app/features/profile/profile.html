@@ -9,14 +9,14 @@
     <!-- Identidad (solo lectura) -->
     <aside class="card profile__id">
       <div class="profile__avatar">
-        @if (avatarUrl()) {
-          <img [src]="avatarUrl()" alt="Foto de perfil" />
+        @if (avatarActual(); as foto) {
+          <img [src]="foto" alt="Foto de perfil" />
         } @else {
           <span aria-hidden="true">{{ initials(auth.currentUser()?.nombre ?? '?') }}</span>
         }
       </div>
       <h3 class="profile__name">{{ auth.currentUser()?.nombre }}</h3>
-      <span class="badge" [class.badge--on]="auth.isAdmin()">{{ auth.isAdmin() ? 'Administrador' : 'Colaborador' }}</span>
+      <span class="badge" [class.badge--on]="auth.isAdmin()">{{ rolLabel() }}</span>
 
       <dl class="profile__meta">
         <div><dt>Correo</dt><dd>{{ auth.currentUser()?.email }}</dd></div>
@@ -36,64 +36,99 @@
       </dl>
     </aside>
 
-    <!-- Editable -->
-    <section class="card profile__form">
-      <h3 class="profile__section">Editar mi información</h3>
-
-      <div class="field" role="group" aria-labelledby="lbl-foto">
-        <span class="field__label" id="lbl-foto">Foto de perfil</span>
-        <div class="photo-row">
-          <div class="profile__avatar profile__avatar--sm">
-            @if (avatarUrl()) { <img [src]="avatarUrl()" alt="" /> } @else { <span aria-hidden="true">{{ initials(auth.currentUser()?.nombre ?? '?') }}</span> }
-          </div>
-          <input #archivoFoto type="file" accept="image/*" (change)="onFile($event)" hidden />
-          <p-button label="Subir foto" icon="pi pi-upload" size="small" [outlined]="true"
-                    (onClick)="archivoFoto.click()" />
-          @if (avatarUrl()) {
-            <p-button label="Quitar" icon="pi pi-times" size="small" [text]="true" severity="secondary"
-                      (onClick)="removePhoto()" />
-          }
-        </div>
+    <!-- Lo editable, ahora resumido: se toca en el modal -->
+    <section class="card profile__resumen">
+      <div class="profile__resumen-head">
+        <h3 class="profile__section">Mi información</h3>
+        <p-button label="Editar" icon="pi pi-pencil" size="small" [outlined]="true" (onClick)="abrirEdicion()" />
       </div>
 
-      <div class="field-inline">
-        <div class="field">
-          <label for="li">LinkedIn</label>
-          <p-iconfield>
-            <p-inputicon styleClass="pi pi-linkedin" />
-            <input pInputText id="li" type="url" [ngModel]="linkedin()" (ngModelChange)="linkedin.set($event)"
-                   placeholder="https://www.linkedin.com/in/tuusuario" />
-          </p-iconfield>
+      <dl class="profile__meta">
+        <div>
+          <dt>LinkedIn</dt>
+          <dd>
+            @if (auth.currentUser()?.linkedin; as li) {
+              <a [href]="li" target="_blank" rel="noopener noreferrer">{{ li }}</a>
+            } @else { — }
+          </dd>
         </div>
-        <div class="field">
-          <label for="tel">Teléfono (WhatsApp)</label>
-          <p-iconfield>
-            <p-inputicon styleClass="pi pi-whatsapp" />
-            <input pInputText id="tel" type="tel" [ngModel]="telefono()" (ngModelChange)="telefono.set($event)"
-                   placeholder="+57 3xx xxx xxxx" />
-          </p-iconfield>
-        </div>
-      </div>
-
-      <div class="field-inline">
-        <div class="field">
-          <label for="fn">Fecha de nacimiento</label>
-          <p-datepicker inputId="fn" [ngModel]="fechaComoDato()" (ngModelChange)="fijarFecha($event)"
-                        dateFormat="dd/mm/yy" [showIcon]="true" [maxDate]="hoy" [fluid]="true"
-                        placeholder="dd/mm/aaaa" />
-        </div>
-        <div class="field">
-          <label for="gn">Género</label>
-          <p-select inputId="gn" [options]="opcionesGenero()" [ngModel]="genero()"
-                    (ngModelChange)="genero.set($event)" optionLabel="label" optionValue="value"
-                    [fluid]="true" placeholder="Sin especificar" />
-        </div>
-      </div>
-
-      <div class="profile__actions">
-        <p-button label="Guardar cambios" icon="pi pi-check" (onClick)="save()" />
-      </div>
-
+        <div><dt>Teléfono (WhatsApp)</dt><dd>{{ auth.currentUser()?.telefono || '—' }}</dd></div>
+        <div><dt>Fecha de nacimiento</dt><dd>{{ auth.currentUser()?.fechaNacimiento || '—' }}</dd></div>
+      </dl>
     </section>
   </div>
 </div>
+
+<!-- ===================== Editar mi información ===================== -->
+<p-dialog
+  [visible]="editarAbierto()"
+  (visibleChange)="alCambiarVisible($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="!guardando()"
+  [closable]="!guardando()"
+  [style]="{ width: 'min(calc(94vw - var(--rail-clear)), 640px)' }"
+>
+  <ng-template #header>
+    <div>
+      <p class="eyebrow">Mi perfil</p>
+      <h2 class="modal__title">Editar mi información</h2>
+    </div>
+  </ng-template>
+
+  <div class="field" role="group" aria-labelledby="lbl-foto">
+    <span class="field__label" id="lbl-foto">Foto de perfil</span>
+    <div class="photo-row">
+      <div class="profile__avatar profile__avatar--sm">
+        @if (avatarUrl()) { <img [src]="avatarUrl()" alt="" /> } @else { <span aria-hidden="true">{{ initials(auth.currentUser()?.nombre ?? '?') }}</span> }
+      </div>
+      <input #archivoFoto type="file" accept="image/*" (change)="onFile($event)" hidden />
+      <p-button label="Subir foto" icon="pi pi-upload" size="small" [outlined]="true"
+                [disabled]="guardando()" (onClick)="archivoFoto.click()" />
+      @if (avatarUrl()) {
+        <p-button label="Quitar" icon="pi pi-times" size="small" [text]="true" severity="secondary"
+                  [disabled]="guardando()" (onClick)="removePhoto()" />
+      }
+    </div>
+  </div>
+
+  <div class="field-inline">
+    <div class="field">
+      <label for="li">LinkedIn</label>
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-linkedin" />
+        <input pInputText id="li" type="url" [disabled]="guardando()" [ngModel]="linkedin()" (ngModelChange)="linkedin.set($event)"
+               placeholder="https://www.linkedin.com/in/tuusuario" />
+      </p-iconfield>
+    </div>
+    <div class="field">
+      <label for="tel">Teléfono (WhatsApp)</label>
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-whatsapp" />
+        <input pInputText id="tel" type="tel" [disabled]="guardando()" [ngModel]="telefono()" (ngModelChange)="telefono.set($event)"
+               placeholder="+57 3xx xxx xxxx" />
+      </p-iconfield>
+    </div>
+  </div>
+
+  <div class="field-inline">
+    <div class="field">
+      <label for="fn">Fecha de nacimiento</label>
+      <p-datepicker inputId="fn" [ngModel]="fechaComoDato()" (ngModelChange)="fijarFecha($event)"
+                    dateFormat="dd/mm/yy" [showIcon]="true" [maxDate]="hoy" [fluid]="true"
+                    [disabled]="guardando()" placeholder="dd/mm/aaaa" />
+    </div>
+    <div class="field">
+      <label for="gn">Género</label>
+      <p-select inputId="gn" [options]="opcionesGenero()" [ngModel]="genero()"
+                (ngModelChange)="genero.set($event)" optionLabel="label" optionValue="value"
+                [disabled]="guardando()" [fluid]="true" placeholder="Sin especificar" />
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" [text]="true" severity="secondary" [disabled]="guardando()" (onClick)="cerrar()" />
+    <p-button label="Guardar cambios" icon="pi pi-check" [loading]="guardando()" (onClick)="save()" />
+  </ng-template>
+</p-dialog>

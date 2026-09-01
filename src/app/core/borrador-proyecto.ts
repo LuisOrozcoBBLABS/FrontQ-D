@@ -1,4 +1,4 @@
-import { AppSimilar, SECTORES } from './models';
+import { AppSimilar, SECTORES, TipoPrestacion } from './models';
 import { NuevoProyecto } from './projects.service';
 
 /**
@@ -20,6 +20,8 @@ export interface BorradorProyecto {
   /** Cliente para el que se hace. Cadena vacia = sin cliente; el servidor la
    *  guarda como null, porque "sin cliente" y "cliente en blanco" son lo mismo. */
   cliente: string;
+  /** Qué se presta. Null = sin clasificar, que es un valor válido. */
+  tipoPrestacion: TipoPrestacion | null;
   problema: string;
   dolores: string;
   solucion: string;
@@ -45,6 +47,7 @@ export function borradorVacio(groupId: string | null = null): BorradorProyecto {
     nombre: '',
     sector: '',
     cliente: '',
+    tipoPrestacion: null,
     problema: '',
     dolores: '',
     solucion: '',
@@ -188,9 +191,17 @@ export function aNuevoProyecto(b: BorradorProyecto): NuevoProyecto {
     // undefined), pero el objeto sí lleva la clave, y el contrato de este metodo
     // se verifica con Object.keys — o sea que la forma del objeto y la del
     // cuerpo que viaja tienen que coincidir para que el test signifique algo.
+    //
+    // OJO: esto es el cuerpo del POST, o sea el ALTA. Al EDITAR hay que poder
+    // borrar el cliente, y una clave ausente no borra nada — el modal manda
+    // `cliente: ''` aparte para eso. Ver `ProjectModal.guardar()`.
     ...(b.cliente.trim()
       ? { cliente: recortar(b.cliente.trim(), LIMITES.cliente) }
       : {}),
+    // `tipoPrestacion` SÍ viaja siempre, incluso en null, y la diferencia con
+    // el cliente es deliberada: acá null es una elección ("sin clasificar") y
+    // no un campo vacío, así que omitirlo impediría volver a ese estado.
+    tipoPrestacion: b.tipoPrestacion,
     problema: recortar(b.problema.trim(), LIMITES.texto),
     dolores: recortar(b.dolores.trim(), LIMITES.texto),
     solucion: recortar(b.solucion.trim(), LIMITES.texto),
