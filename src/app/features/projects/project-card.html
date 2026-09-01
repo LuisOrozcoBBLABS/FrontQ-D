@@ -16,6 +16,9 @@
       <span class="prio-pin" [class]="'prio-pin prio-pin--' + prioridad()">{{ pr }}</span>
     } @else {
       <span class="tarjeta__sector">{{ proyecto().sector }}</span>
+      @if (proyecto().cliente) {
+        <span class="tarjeta__cliente" [title]="'Cliente: ' + proyecto().cliente">{{ proyecto().cliente }}</span>
+      }
     }
 
     @if (movible()) {
@@ -33,8 +36,9 @@
 
   <!-- Solo cuando hay algo que decir: una tarjeta de tablero no tiene lugar
        para una línea que la mitad de las veces diría "—". -->
-  @if (prestacionYCliente(); as pc) {
-    <span class="tarjeta__prestacion">{{ pc }}</span>
+  <!-- Solo el tipo: el cliente ya va arriba, junto al sector. -->
+  @if (prestacion(); as pr) {
+    <span class="tarjeta__prestacion">{{ pr }}</span>
   }
 
   <span class="tarjeta__pie">

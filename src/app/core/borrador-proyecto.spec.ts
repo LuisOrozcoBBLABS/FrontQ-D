@@ -159,7 +159,11 @@ describe('validarBorrador', () => {
 
 describe('aNuevoProyecto', () => {
   it('arma el body con estado idea y sin campos de más', () => {
-    const body = aNuevoProyecto(completo({ groupId: 'g-1' }));
+    // Con cliente puesto a propósito: este test fija el conjunto MÁXIMO de
+    // claves, que es el que tiene que sobrevivir al `forbidNonWhitelisted` del
+    // servidor. Que la clave se omita cuando no hay cliente lo cubre el test
+    // siguiente.
+    const body = aNuevoProyecto(completo({ groupId: 'g-1', cliente: 'Retycol' }));
 
     expect(body.estado).toBe('idea');
     expect(body.groupId).toBe('g-1');
@@ -178,19 +182,35 @@ describe('aNuevoProyecto', () => {
     ]);
   });
 
-  it('manda tipoPrestacion en null y no lo omite', () => {
-    // Omitirlo y mandarlo null no son lo mismo para el servidor: null es lo que
-    // devuelve un proyecto a "sin clasificar" al editarlo. Si el campo
-    // desapareciera del body, editar nunca podría quitar el tipo.
+  it('omite la clave cliente cuando no hay cliente, en vez de mandarla vacía', () => {
+    // No es lo mismo omitir que mandar "": el DTO del servidor tiene el campo
+    // opcional y la columna es nullable, así que "sin cliente" tiene UNA sola
+    // representación. Mandar cadena vacía crearía la segunda.
+    const body = aNuevoProyecto(completo({ cliente: '' }));
+    expect('cliente' in body).toBe(false);
+
+    // Y en blanco tampoco cuenta como cliente.
+    expect('cliente' in aNuevoProyecto(completo({ cliente: '   ' }))).toBe(false);
+  });
+
+  it('manda el cliente recortado cuando sí lo hay', () => {
+    const body = aNuevoProyecto(completo({ cliente: '  Retycol  ' }));
+    expect(body.cliente).toBe('Retycol');
+
+    const largo = aNuevoProyecto(completo({ cliente: 'C'.repeat(LIMITES.cliente + 50) }));
+    expect(largo.cliente?.length).toBe(LIMITES.cliente);
+  });
+
+  it('manda tipoPrestacion en null y no lo omite, al reves que el cliente', () => {
+    // La asimetría con `cliente` es deliberada y conviene entenderla: un cliente
+    // vacío y "sin cliente" son el mismo hecho, así que la clave se omite; en
+    // cambio null en el tipo de prestación es una ELECCIÓN —"sin clasificar"— y
+    // si la clave desapareciera, editar nunca podría quitarle el tipo a un
+    // proyecto que ya lo tiene.
     const body = aNuevoProyecto(completo({ tipoPrestacion: null }));
 
     expect('tipoPrestacion' in body).toBe(true);
     expect(body.tipoPrestacion).toBeNull();
-  });
-
-  it('recorta el cliente al tope del servidor', () => {
-    const body = aNuevoProyecto(completo({ cliente: '  ' + 'C'.repeat(500) + '  ' }));
-    expect(body.cliente!.length).toBeLessThanOrEqual(LIMITES.cliente);
   });
 
   it('nunca emite un campo por encima de los LIMITES', () => {

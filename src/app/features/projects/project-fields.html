@@ -36,6 +36,20 @@
       [fluid]="true" />
   </div>
   <div class="field">
+    <label for="pf-c">Cliente</label>
+    <input
+      pInputText
+      id="pf-c"
+      [maxlength]="limites.cliente"
+      [disabled]="deshabilitado()"
+      [ngModel]="valor().cliente"
+      (ngModelChange)="patch('cliente', $event)"
+      placeholder="Interno, si no es para un cliente" />
+    @if (cerca(valor().cliente, limites.cliente)) {
+      <p class="field__hint">{{ contador(valor().cliente, limites.cliente) }}</p>
+    }
+  </div>
+  <div class="field">
     <label for="pf-g">Grupo</label>
     <p-select
       inputId="pf-g"
@@ -50,18 +64,6 @@
 </div>
 
 <div class="field-inline">
-  <div class="field">
-    <label for="pf-cl">Cliente</label>
-    <input
-      pInputText
-      id="pf-cl"
-      [maxlength]="limites.cliente"
-      [disabled]="deshabilitado()"
-      [ngModel]="valor().cliente"
-      (ngModelChange)="patch('cliente', $event)"
-      placeholder="Ej. Bancolombia" />
-    <p class="field__hint">Si es un proyecto interno, dejalo vacío.</p>
-  </div>
   <div class="field">
     <label for="pf-tp">Tipo de prestación</label>
     <p-select

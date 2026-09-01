@@ -89,6 +89,11 @@ html[data-theme="dark"]{
   --shadow-rail:0 20px 60px -16px rgba(0,0,0,.8);
   --overlay:rgba(4,4,3,.74);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.12);
+  /* Relleno del boton destructivo solido, que NO es el mismo valor que el
+     borde o el icono. Sobre fondo oscuro el rojo de marca funciona como
+     relleno y lleva tinta obsidiana encima. Ver el bloque de tema claro,
+     donde el mismo rojo no alcanza. */
+  --danger-solid:var(--bb-red); --on-danger:var(--bb-obsidian);
   /* En oscuro el rojo de marca ya da 5.84:1, asi que el token de texto coincide
      con el de marca. Existe igual para que los componentes no tengan que saber
      en que tema estan. */
@@ -123,6 +128,11 @@ html[data-theme="light"]{
   --shadow-rail:0 18px 50px -18px rgba(11,10,7,.28);
   --overlay:rgba(24,24,22,.5);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.1);
+  /* En claro el rojo de marca como relleno da 3.39:1 contra el blanco: pasa
+     el umbral de componente, pero la etiqueta blanca encima queda tambien
+     en 3.39:1 y ahi falla, porque el texto pide 4.5:1. El relleno baja al
+     rojo profundo, que con etiqueta blanca da 5.72:1. */
+  --danger-solid:#C22A31; --on-danger:#FFFFFF;
   /* El rojo de marca sobre fondo claro da 3.39:1: no llega a 4.5:1 y el texto
      de error de formulario es exactamente lo que no puede fallar contraste.
      #C22A31 da 6.09:1 sobre blanco y 5.83 sobre --surface. --bb-red se queda
@@ -258,6 +268,10 @@ h1{ font-size:var(--fs-2xl); } h2{ font-size:var(--fs-lg); } h3{ font-size:var(-
 /* ---------- Chips / badges / tags ---------- */
 .chip{ display:inline-flex; align-items:center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3); border:1px solid var(--line); border-radius:999px; color:var(--text-2); font-size:13.5px; background:var(--surface); }
 .tag-mono{ font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); border:1px solid var(--line); border-radius:999px; padding: var(--sp-1) var(--sp-3); }
+/* El cliente va con el acento para separarse del sector, que es la etiqueta
+   de al lado y comparte forma. --accent-ui y no --accent: el lima crudo da
+   1.26:1 sobre fondo claro y esto es texto de 11px. */
+.tag-mono--cliente{ color:var(--accent-ui); border-color:var(--accent-ui); }
 .badge{ display:inline-flex; align-items:center; gap: var(--sp-2); font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; padding: var(--sp-1) var(--sp-3); border-radius:999px; border:1px solid var(--line-strong); color:var(--text-2); }
 .badge--on{ background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
 .badge--muted{ color:var(--text-dim); }
@@ -454,24 +468,49 @@ body:has(app-nav-rail){ padding-left: var(--rail-clear); }
 }
 
 .tira__logo{ display:inline-flex; align-items:center; border-radius:var(--r-md); }
-/* Alto fijo, ancho automatico: los atributos width/height del <img> mantienen la
-   proporcion 1585x540 y evitan el salto de layout mientras carga el PNG. */
-.tira__logo-img{
-  height: clamp(30px, 3.2vw, 40px);
-  width: auto;
-  /* Al 92% la marca esta presente sin competir con el titulo de la pantalla, que
-     es el elemento que tiene que ganar la primera mirada. */
-  opacity: .92;
-  transition: opacity var(--dur) var(--ease);
-}
-.tira__logo:hover .tira__logo-img{ opacity:1; }
 
-/* Un archivo por tema. display:none saca la variante que no corresponde del
-   flujo Y del arbol de accesibilidad, asi que el lector de pantalla anuncia
-   "Blackbird Labs" una sola vez y no dos. */
-.tira__logo-img--claro{ display:none; }
-html[data-theme="light"] .tira__logo-img--oscuro{ display:none; }
-html[data-theme="light"] .tira__logo-img--claro{ display:block; }
+/* -------------------------------------------------------------
+   Logotipo de Blackbird Labs, con su variante por tema.
+
+   Vive en el sistema y no en cada componente por una razon concreta y no
+   obvia: una regla html[data-theme="..."] escrita DENTRO de un estilo de
+   componente de Angular nunca matchea, porque la encapsulacion le agrega el
+   atributo de scope tambien al <html>. Las cuatro pantallas de acceso
+   comparten login.scss, que es un estilo de componente — ahi el intercambio de
+   tema no funcionaria nunca.
+
+   Son dos <img>, uno por tema, y el que no corresponde sale con display:none.
+   Asi el cambio de tema es instantaneo (no hay un cuadro en blanco mientras el
+   navegador pide el PNG) y el lector de pantalla anuncia "Blackbird Labs" una
+   sola vez, porque display:none tambien lo saca del arbol de accesibilidad.
+
+   Alto fijo y ancho automatico: los atributos width/height del <img> mantienen
+   la proporcion 1585x540 y evitan el salto de layout mientras carga.
+   ------------------------------------------------------------- */
+/* align-self:start no es decorativo, evita que el logotipo salga aplastado.
+   Un flex en columna estira sus hijos al ancho (align-items:stretch es el
+   valor por defecto), asi que en .acceso__col el width:auto no gana: la
+   imagen se iba a 372px de ancho con la altura fija en 44 y el logotipo
+   quedaba deformado. Medido: 372x44 en vez de 129x44. En la tira no se
+   notaba porque ese contenedor abraza el contenido. */
+.logo-bb{ display:block; width:auto; align-self:start; }
+.logo-bb--claro{ display:none; }
+html[data-theme="light"] .logo-bb--oscuro{ display:none; }
+html[data-theme="light"] .logo-bb--claro{ display:block; }
+
+/* Tamaños por contexto, que es lo unico que cambia entre los dos usos.
+   En la tira: de 40 a 56px de alto. A 40 el logotipo pasaba desapercibido —
+   118px de ancho en una tira de 1500 es una marca de agua, no una firma. A 56
+   mide 165px y se lee como lo que es. Se fue tambien la opacidad del 92% que
+   tenia: estaba para que la marca no compitiera con el titulo, pero atenuar lo
+   que se quiere que se note es trabajar en contra. */
+.logo-bb--tira{ height: clamp(38px, 4.2vw, 56px); }
+/* El margen inferior es solo para el caso apilado (recuperar, cambiar clave,
+   bienvenida). En el ingreso el logotipo va dentro de .acceso__marca, que es
+   una fila y pone su propio aire: ahi un margin-bottom lo desalinearia del
+   titulo que tiene al lado. */
+.logo-bb--acceso{ height: 44px; }
+.acceso__col > .logo-bb--acceso{ margin-bottom: var(--sp-6); }
 
 .pie{
   position:relative; z-index:2;
@@ -496,7 +535,7 @@ html[data-theme="light"] .tira__logo-img--claro{ display:block; }
   /* El riel se acuesta abajo en este ancho, asi que la tira queda sola arriba y
      puede achicarse sin dejar hueco. */
   .tira{ padding-top: var(--sp-5); }
-  .tira__logo-img{ height:28px; }
+  .logo-bb--tira{ height:34px; }
   .pie{ margin-top: var(--sp-8); padding-bottom: var(--sp-6); }
 }
 
@@ -1066,7 +1105,24 @@ html[data-theme="light"] .marca-fondo__txt{
    el mismo valor que esta: era defensiva contra el hover de PrimeNG, pero no
    hace falta. Esta regla esta FUERA de capa y la de PrimeNG dentro, y lo no
    capado gana sobre lo capado sin importar la especificidad. */
-.p-button-outlined { border-color: var(--line-strong); color: var(--text-2); }
+/* El borde iba en --line-strong, que es color de hairline: medido daba 1.45:1
+   en claro y 1.53:1 en oscuro contra la superficie. Un boton contorneado cuyo
+   contorno no se ve no es un boton contorneado — es texto suelto, y en un
+   dialogo destructivo eso deja la salida sin forma reconocible. --text-dim es
+   el escalon mas tenue que igual supera el 3:1 que pide WCAG 1.4.11 para el
+   limite de un componente. */
+.p-button-outlined { border-color: var(--text-dim); color: var(--text-2); }
+
+/* El preset no mapeaba las severidades de PrimeNG, asi que el boton
+   destructivo salia con el rojo por defecto de la libreria — rgb(248,113,113)
+   — que sobre blanco da 2.77:1 y falla el umbral de 3:1. Medido, no supuesto.
+   Se excluyen las variantes text y outlined: esas no tienen relleno, y ahi
+   el rojo va como color de texto y lo resuelve --danger-text. */
+.p-button-danger:not(.p-button-text, .p-button-outlined) {
+  background: var(--danger-solid);
+  border-color: var(--danger-solid);
+  color: var(--on-danger);
+}
 
 /* Las etiquetas seguían la paleta de PrimeNG (verde, naranja, azul). La
    plataforma nunca usó eso: sus estados son una pí­ldora con borde y un punto

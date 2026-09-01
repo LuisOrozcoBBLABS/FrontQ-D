@@ -140,10 +140,10 @@ export function aAnalisis(api: BorradorApi): AnalisisListo {
   const borrador: BorradorProyecto = {
     nombre: campo(b.nombre, 'el nombre', LIMITES.nombre),
     sector: sectorPropuesto,
-    // El cliente y el tipo de prestación NO se le piden a la IA: son datos
-    // comerciales que el documento rara vez dice y que inventarlos sería peor
-    // que dejarlos en blanco. Los completa a mano quien revisa, y por eso
-    // tampoco entran en `camposIA` ni llevan el badge de "propuesto".
+    // La extraccion no propone NI cliente NI tipo de prestacion: son datos
+    // comerciales que el documento fuente rara vez dice, y adivinarlos es peor
+    // que dejarlos en blanco para que los escriba una persona. Por eso tampoco
+    // entran en `camposIA` ni llevan el badge de "propuesto".
     cliente: '',
     tipoPrestacion: null,
     problema: campo(b.problema, 'el problema', LIMITES.texto),

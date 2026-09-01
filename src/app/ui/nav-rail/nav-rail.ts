@@ -4,7 +4,8 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/ro
 import { filter, map } from 'rxjs';
 import { AssignmentsService } from '../../core/assignments.service';
 import { AuthService } from '../../core/auth.service';
-import { NotificationItem } from '../../core/models';
+import { ConfirmService } from '../../core/confirm.service';
+import { NotificationItem, ROL_LABEL } from '../../core/models';
 import { ThemeService } from '../../core/theme.service';
 import { environment } from '../../../environments/environment';
 
@@ -42,6 +43,7 @@ export class NavRail {
   private assignSvc = inject(AssignmentsService);
   private tema = inject(ThemeService);
   private router = inject(Router);
+  private confirm = inject(ConfirmService);
 
   protected notifOpen = signal(false);
 
@@ -91,7 +93,10 @@ export class NavRail {
     return n.split(/\s+/).map(x => x[0]).slice(0, 2).join('').toUpperCase();
   });
 
-  protected rolLabel = computed(() => (this.auth.isAdmin() ? 'Administrador' : 'Colaborador'));
+  protected rolLabel = computed(() => {
+    const r = this.auth.currentUser()?.rol;
+    return r ? ROL_LABEL[r] : '';
+  });
 
   toggleNotif(): void {
     this.notifOpen.set(!this.notifOpen());
@@ -146,7 +151,27 @@ export class NavRail {
     if (u) await this.assignSvc.markAllRead(u.id);
   }
 
+  /**
+   * Cerrar sesión pide confirmación.
+   *
+   * El botón está en el riel, pegado al avatar del perfil y al mismo tamaño que
+   * el resto de los iconos: es el vecino de algo que se pulsa a diario. Sin
+   * preguntar, un clic de más en la columna equivocada tira el trabajo sin
+   * guardar de un formulario largo y obliga a escribir la contraseña de nuevo.
+   *
+   * `danger: false` a propósito. El diálogo destructivo pinta el botón de
+   * confirmar en rojo, y esto no destruye nada: la sesión se vuelve a abrir. El
+   * rojo tiene que seguir significando "esto no se deshace" — si se gasta acá,
+   * deja de avisar cuando de verdad importa.
+   */
   async salir(): Promise<void> {
+    const ok = await this.confirm.ask({
+      title: 'Cerrar sesión',
+      message: '¿Cerrar la sesión? Si tenés algo sin guardar, se pierde.',
+      confirmText: 'Cerrar sesión',
+      cancelText: 'Seguir acá',
+    });
+    if (!ok) return;
     await this.auth.logout();
     await this.router.navigateByUrl('/login');
   }

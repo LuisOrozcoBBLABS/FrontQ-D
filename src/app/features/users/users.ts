@@ -7,7 +7,7 @@ import { SolicitudReset } from '../../core/users.service';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
 import { seleccionMaestro } from '../../ui/seleccion-maestro';
 import { mensajeDeError } from '../../core/auth.service';
-import { RoleId, User } from '../../core/models';
+import { ROL_LABEL, RoleId, User } from '../../core/models';
 import { TrapFocus } from '../../ui/trap-focus';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
@@ -208,9 +208,15 @@ export class Users {
   /** Opciones de los filtros; PrimeNG trabaja con listas, no con <option>. */
   protected readonly opcionesRol = [
     { label: 'Todos los roles', value: 'all' },
-    { label: 'Administrador', value: 'admin' },
-    { label: 'Colaborador', value: 'colaborador' },
+    // Se derivan de ROL_LABEL en vez de escribirse a mano: al agregar un rol,
+    // el filtro lo toma solo. Esta lista ya se habia quedado corta una vez.
+    ...(Object.entries(ROL_LABEL) as [RoleId, string][]).map(([value, label]) => ({ label, value })),
   ];
+
+  /** Nombre visible del rol, para la ficha. */
+  protected rolLabel(rol: RoleId): string {
+    return ROL_LABEL[rol];
+  }
   protected readonly opcionesEstado = [
     { label: 'Todos', value: 'all' },
     { label: 'Activos', value: 'activo' },

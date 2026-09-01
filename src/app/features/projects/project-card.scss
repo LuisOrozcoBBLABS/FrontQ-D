@@ -57,6 +57,22 @@
   color: var(--text-dim);
 }
 
+/* El cliente comparte tratamiento con el sector porque son del mismo rango —
+   dos etiquetas de contexto, no un titulo—, pero lleva el acento para poder
+   distinguirlos de un vistazo en una columna con muchas tarjetas. Se recorta
+   con puntos suspensivos: un nombre de empresa largo no puede empujar la fila
+   ni partirla en dos. El title del marcado da el nombre completo al pasar. */
+.tarjeta__cliente {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: var(--accent-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .tarjeta__asa {
   flex: none;
   color: var(--text-dim);

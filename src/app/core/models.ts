@@ -1,6 +1,27 @@
 // Modelos del dominio. Espejan los DTO que devuelve la API de BackQ-D.
 
-export type RoleId = 'admin' | 'colaborador';
+/**
+ * `comercial` es de solo lectura. No lleva ningun permiso de escritura, y la
+ * restriccion la impone el servidor: las cinco rutas que escriben proyectos
+ * exigen o un permiso que este rol no tiene, o ser el autor o admin. Lo que el
+ * front hace es esconder lo que igual iba a dar 403 — no es la barrera, es
+ * cortesia para no ofrecer botones que no funcionan.
+ */
+export type RoleId = 'admin' | 'colaborador' | 'comercial';
+
+/**
+ * Nombre visible de cada rol, en un solo lugar.
+ *
+ * Estaba escrito dos veces como ternario binario (`rol === 'admin' ? A : B`),
+ * en el riel y en la ficha de usuario. Con dos roles eso funcionaba; con el
+ * tercero, un comercial aparecia rotulado "Colaborador" en las dos. Un Record
+ * sobre RoleId hace que agregar un rol sin nombrarlo no compile.
+ */
+export const ROL_LABEL: Record<RoleId, string> = {
+  admin: 'Administrador',
+  colaborador: 'Colaborador',
+  comercial: 'Comercial',
+};
 
 export interface Permission {
   id: string;      // ej. 'users.manage'
@@ -186,8 +207,8 @@ export interface Project {
   id: string;
   nombre: string;           // nombre de la solución
   sector: string;
-  /** A quién se le presta el servicio. Vacío = interno, sin cliente externo. */
-  cliente: string;
+  /** Cliente para el que se hace. Opcional: hay ideas internas sin cliente. */
+  cliente?: string | null;
   /** Qué se presta. Null = sin clasificar. */
   tipoPrestacion: TipoPrestacion | null;
   problema: string;         // problema identificado

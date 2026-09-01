@@ -106,7 +106,9 @@ export class ProjectModal {
     this.borrador.set({
       nombre: p.nombre,
       sector: p.sector,
-      cliente: p.cliente,
+      // El servidor manda null cuando no hay cliente; el formulario trabaja con
+      // cadena vacía, que es lo que un input puede mostrar.
+      cliente: p.cliente ?? '',
       tipoPrestacion: p.tipoPrestacion,
       problema: p.problema,
       dolores: p.dolores,
@@ -137,7 +139,13 @@ export class ProjectModal {
     this.guardando.set(true);
     try {
       const p = id
-        ? await this.projectsSvc.update(id, datos)
+        ? // Al editar, `cliente` viaja SIEMPRE, aunque esté vacío. `aNuevoProyecto`
+          // omite la clave cuando no hay cliente, y eso es correcto para el alta
+          // —"sin cliente" tiene una sola representación— pero al editar una
+          // clave ausente no borra nada: sin esto, un proyecto al que le sacan el
+          // cliente se guardaría con el cliente viejo. El servidor traduce la
+          // cadena vacía a null (`dto.cliente.trim() || null`).
+          await this.projectsSvc.update(id, { ...datos, cliente: this.borrador().cliente.trim() })
         : await this.projectsSvc.create({ ...datos, estado });
 
       this.toast.success(id ? 'Cambios guardados' : 'Proyecto creado');

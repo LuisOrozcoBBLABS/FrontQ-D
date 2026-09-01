@@ -127,7 +127,7 @@ describe('ProjectModal · crear', () => {
     const { fixture, projects } = await montar();
 
     escribir('#pf-n', 'FreightAudit');
-    escribir('#pf-cl', '  Bancolombia  ');
+    escribir('#pf-c', '  Bancolombia  ');
     escribir('#pf-pr', 'Las facturas se auditan a mano.');
     borradorDe(fixture).update(b => ({ ...b, sector: 'Logística' }));
     await fixture.whenStable();
@@ -212,7 +212,7 @@ describe('ProjectModal · editar', () => {
   it('precarga el cliente y el tipo de prestación del proyecto', async () => {
     const { fixture } = await montar('p1');
 
-    expect(document.querySelector<HTMLInputElement>('#pf-cl')!.value).toBe('Bancolombia');
+    expect(document.querySelector<HTMLInputElement>('#pf-c')!.value).toBe('Bancolombia');
     expect(borradorDe(fixture)().tipoPrestacion).toBe('talento');
   });
 

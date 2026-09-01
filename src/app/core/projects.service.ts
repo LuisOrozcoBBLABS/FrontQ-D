@@ -459,7 +459,7 @@ function aProyecto(p: ProjectApi): Project {
     id: p.id,
     nombre: p.nombre,
     sector: p.sector,
-    cliente: p.cliente ?? '',
+    cliente: p.cliente ?? null,
     tipoPrestacion: p.tipoPrestacion ?? null,
     problema: p.problema,
     dolores: p.dolores,

@@ -22,13 +22,11 @@
      ============================================================= -->
 <div class="tira">
   <a class="tira__logo" routerLink="/inicio" aria-label="Inicio · Blackbird Labs">
-    <!-- Dos archivos y no un src reactivo: el cambio de tema es instantaneo y no
-         hay un cuadro en blanco mientras el navegador pide el PNG nuevo. El que
-         no corresponde sale con display:none, asi que no lo lee el lector de
-         pantalla ni ocupa lugar. -->
-    <img class="tira__logo-img tira__logo-img--oscuro" src="brand/logo-blanco.png"
+    <!-- .logo-bb resuelve el intercambio por tema; el modificador solo el tamaño.
+         Ver el bloque del logotipo en styles.scss para el porque de los dos <img>. -->
+    <img class="logo-bb logo-bb--tira logo-bb--oscuro" src="brand/logo-blanco.png"
          alt="Blackbird Labs" width="1585" height="540" />
-    <img class="tira__logo-img tira__logo-img--claro" src="brand/logo-negro.png"
+    <img class="logo-bb logo-bb--tira logo-bb--claro" src="brand/logo-negro.png"
          alt="Blackbird Labs" width="1585" height="540" />
   </a>
 

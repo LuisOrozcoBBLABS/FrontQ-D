@@ -17,9 +17,16 @@
   </button>
 
   <main class="acceso__col">
-    <img class="acceso__marca" src="brand/isotipo.png" alt="Blackbird Labs" width="46" height="46" />
-
-    <h1 class="acceso__t">Plataforma R&amp;D</h1>
+    <!-- Marca a la izquierda del nombre, no encima: es un solo bloque de
+         identidad y se lee de un renglon. -->
+    <div class="acceso__marca">
+      <img class="logo-bb logo-bb--acceso logo-bb--oscuro" src="brand/logo-blanco.png"
+           alt="Blackbird Labs" width="1585" height="540" />
+      <img class="logo-bb logo-bb--acceso logo-bb--claro" src="brand/logo-negro.png"
+           alt="Blackbird Labs" width="1585" height="540" />
+      <span class="acceso__marca-sep" aria-hidden="true"></span>
+      <h1 class="acceso__t">Plataforma R&amp;D</h1>
+    </div>
     <p class="acceso__sub">Innovación y Desarrollo · Blackbird Labs</p>
 
     <form class="acceso__form" (ngSubmit)="submit()">

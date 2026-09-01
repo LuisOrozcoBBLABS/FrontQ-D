@@ -65,16 +65,13 @@ export class ProjectCard {
   });
 
   /**
-   * "Talento · Bancolombia", con lo que haya. Devuelve null cuando el proyecto
-   * no tiene ninguno de los dos: la línea no se pinta y la tarjeta no crece.
+   * Qué se presta, o null si todavía no se clasificó — ahí la línea no se pinta
+   * y la tarjeta no crece. NO incluye el cliente: eso se muestra arriba, al
+   * lado del sector, y repetirlo gastaría dos renglones en el mismo dato.
    */
-  protected prestacionYCliente = computed(() => {
-    const p = this.proyecto();
-    const partes = [
-      p.tipoPrestacion ? prestacionLabel(p.tipoPrestacion) : null,
-      p.cliente || null,
-    ].filter((x): x is string => !!x);
-    return partes.length ? partes.join(' · ') : null;
+  protected prestacion = computed(() => {
+    const t = this.proyecto().tipoPrestacion;
+    return t ? prestacionLabel(t) : null;
   });
 
   protected iniciales(nombre: string): string {

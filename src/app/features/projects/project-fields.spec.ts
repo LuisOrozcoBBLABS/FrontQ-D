@@ -34,7 +34,7 @@ describe('ProjectFields', () => {
 
     expect(el.querySelector('#pf-n')).not.toBeNull();
     expect(el.querySelector('#pf-s')).not.toBeNull();
-    expect(el.querySelector('#pf-cl')).not.toBeNull();
+    expect(el.querySelector('#pf-c')).not.toBeNull();
     expect(el.querySelector('#pf-tp')).not.toBeNull();
     expect(el.querySelector('#pf-pr')).not.toBeNull();
     expect(el.querySelector('#pf-do')).not.toBeNull();
@@ -53,7 +53,7 @@ describe('ProjectFields', () => {
     const el = fixture.nativeElement as HTMLElement;
 
     expect(el.querySelector<HTMLInputElement>('#pf-n')!.maxLength).toBe(LIMITES.nombre);
-    expect(el.querySelector<HTMLInputElement>('#pf-cl')!.maxLength).toBe(LIMITES.cliente);
+    expect(el.querySelector<HTMLInputElement>('#pf-c')!.maxLength).toBe(LIMITES.cliente);
     for (const id of ['#pf-pr', '#pf-do', '#pf-so', '#pf-pl']) {
       expect(el.querySelector<HTMLTextAreaElement>(id)!.maxLength).toBe(LIMITES.texto);
     }
@@ -103,7 +103,7 @@ describe('ProjectFields', () => {
     const etiquetas = Array.from(el.querySelectorAll('label'))
       .filter(l => l.querySelector('.badge'))
       .map(l => l.getAttribute('for'));
-    expect(etiquetas).not.toContain('pf-cl');
+    expect(etiquetas).not.toContain('pf-c');
     expect(etiquetas).not.toContain('pf-tp');
   });
 
@@ -111,7 +111,7 @@ describe('ProjectFields', () => {
     const fixture = await montar();
     const el = fixture.nativeElement as HTMLElement;
 
-    const input = el.querySelector<HTMLInputElement>('#pf-cl')!;
+    const input = el.querySelector<HTMLInputElement>('#pf-c')!;
     input.value = 'Bancolombia';
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
