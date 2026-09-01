@@ -108,11 +108,19 @@
   flex-wrap: wrap;
 }
 
-.profile__actions {
+/* Encabezado del resumen: el titulo a la izquierda, el boton de editar a la
+   derecha. El formulario ya no vive en la pagina —esta en el dialogo— asi que
+   `.profile__actions` se fue con el. */
+.profile__resumen-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--sp-4);
-  margin-top: var(--sp-6);
-  padding-top: var(--sp-5);
-  border-top: 1px solid var(--line);
+  margin-bottom: var(--sp-2);
+}
+.profile__resumen-head .profile__section { margin-bottom: 0; }
+
+.profile__resumen a {
+  color: var(--accent-text);
+  overflow-wrap: anywhere;
 }

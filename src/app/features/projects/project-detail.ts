@@ -1,11 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProjectsService } from '../../core/projects.service';
 import { UsersService } from '../../core/users.service';
 import { AuthService } from '../../core/auth.service';
 import { AssignmentsService } from '../../core/assignments.service';
-import { CANALES, Canal, CanalEnvio, ESTADOS_PROYECTO, PRIORIDADES, Prioridad, Project, ProjectStatus, User } from '../../core/models';
+import { CANALES, Canal, CanalEnvio, ESTADOS_PROYECTO, PRIORIDADES, Prioridad, Project, ProjectStatus, User, prestacionLabel } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { mensajeDeError } from '../../core/auth.service';
@@ -17,6 +18,7 @@ import { Textarea } from 'primeng/textarea';
 import { Checkbox } from 'primeng/checkbox';
 import { Dialog } from 'primeng/dialog';
 import { Tag } from 'primeng/tag';
+import { ProjectModal } from './project-modal';
 
 @Component({
   selector: 'app-project-detail',
@@ -31,6 +33,7 @@ import { Tag } from 'primeng/tag';
     Checkbox,
     Dialog,
     Tag,
+    ProjectModal,
   ],
   templateUrl: './project-detail.html',
   styleUrl: './project-detail.scss',
@@ -114,6 +117,8 @@ export class ProjectDetail {
     return p?.autorNombre ?? this.usersSvc.byId(p?.autorId ?? '')?.nombre ?? '—';
   }
   estadoLabel(e: ProjectStatus): string { return ESTADOS_PROYECTO.find(x => x.value === e)?.label ?? e; }
+  /** Qué se presta. Dice "Sin clasificar" en vez de dejar un hueco. */
+  prestacion(p: Project): string { return prestacionLabel(p.tipoPrestacion); }
   assignableUsers(): User[] { return this.usersSvc.users().filter(u => u.activo); }
   userName(id: string): string { return this.usersSvc.byId(id)?.nombre ?? '—'; }
 
@@ -132,8 +137,40 @@ export class ProjectDetail {
     await this.projectsSvc.update(this.id, { estado: e });
     this.toast.success('Estado actualizado');
   }
+  /**
+   * Editar abre el modal SOBRE la ficha, sin navegar a ningún lado. Antes
+   * llevaba a `/proyectos/:id/editar`, una pantalla aparte; el parámetro deja
+   * el estado en la URL —así recargar o compartir el enlace sigue funcionando—
+   * sin perder de vista el proyecto que se está editando.
+   */
   async editar(): Promise<void> {
-    await this.router.navigate(['/proyectos', this.id, 'editar']);
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editar: 1 },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  protected editarAbierto = computed(() => !!this.paramsUrl().get('editar'));
+
+  private paramsUrl = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+
+  /** Al cerrar, sale el parámetro: la URL es la que manda. */
+  protected alCerrarEdicion(abierto: boolean): void {
+    if (abierto) return;
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editar: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  /** El id del proyecto, para el modal. */
+  protected get idProyecto(): string {
+    return this.id;
   }
 
   async remove(): Promise<void> {

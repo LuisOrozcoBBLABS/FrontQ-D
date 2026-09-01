@@ -1,11 +1,19 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProjectsService } from '../../core/projects.service';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { ToastService } from '../../core/toast.service';
-import { ESTADOS_PROYECTO, Project, ProjectStatus, SECTORES, etapaDe } from '../../core/models';
+import {
+  ESTADOS_PROYECTO,
+  Project,
+  ProjectStatus,
+  SECTORES,
+  TIPOS_PRESTACION,
+  etapaDe,
+  prestacionLabel,
+} from '../../core/models';
 import { FILAS_POR_PAGINA, Paginador } from '../../ui/paginador/paginador';
 import { ProjectPanel } from './project-panel';
 import { alertaEtapa, diasEnEtapa } from '../../core/tiempos';
@@ -20,7 +28,7 @@ import { Skeleton } from 'primeng/skeleton';
 
 /** Filtro activo, para poder mostrarlo y quitarlo con un clic. */
 interface FiltroActivo {
-  clave: 'sector' | 'estado' | 'query';
+  clave: 'sector' | 'estado' | 'query' | 'prestacion';
   etiqueta: string;
 }
 
@@ -46,6 +54,7 @@ export class ProjectsMaestro {
   private projectsSvc = inject(ProjectsService);
   protected auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private confirm = inject(ConfirmService);
   private toast = inject(ToastService);
 
@@ -75,6 +84,17 @@ export class ProjectsMaestro {
   ]);
 
   /**
+   * Qué se presta. "Sin clasificar" es una opción y no un hueco: son los
+   * proyectos anteriores a la distinción, y hay que poder encontrarlos —es la
+   * lista de trabajo de quien tenga que ir clasificándolos.
+   */
+  protected readonly opcionesPrestacion = [
+    { label: 'Talento y solución', value: 'all' },
+    ...TIPOS_PRESTACION.map(t => ({ label: t.label, value: t.value as string })),
+    { label: 'Sin clasificar', value: 'sin_clasificar' },
+  ];
+
+  /**
    * La etapa se lee por color, no solo por texto. Va por fase, no por etapa
    * suelta: con diez etapas, diez colores serían ruido.
    */
@@ -100,6 +120,7 @@ export class ProjectsMaestro {
   protected query = signal('');
   protected sectorF = signal<string>('all');
   protected estadoF = signal<string>('all');
+  protected prestacionF = signal<string>('all');
   protected pagina = signal(1);
 
   /**
@@ -132,6 +153,7 @@ export class ProjectsMaestro {
         q: this.queryDebounce(),
         sector: this.sectorF(),
         estado: this.estadoF(),
+        tipoPrestacion: this.prestacionF(),
         pagina: this.pagina(),
         sort: o?.campo,
         dir: o?.dir,
@@ -161,6 +183,11 @@ export class ProjectsMaestro {
     this.estadoF.set(valor);
   }
 
+  filtrarPrestacion(valor: string): void {
+    this.pagina.set(1);
+    this.prestacionF.set(valor);
+  }
+
   irAPagina(p: number): void {
     this.pagina.set(p);
   }
@@ -171,6 +198,9 @@ export class ProjectsMaestro {
     if (this.sectorF() !== 'all') activos.push({ clave: 'sector', etiqueta: this.sectorF() });
     if (this.estadoF() !== 'all') {
       activos.push({ clave: 'estado', etiqueta: this.estadoLabel(this.estadoF() as ProjectStatus) });
+    }
+    if (this.prestacionF() !== 'all') {
+      activos.push({ clave: 'prestacion', etiqueta: this.prestacionEtiqueta(this.prestacionF()) });
     }
     return activos;
   });
@@ -186,6 +216,7 @@ export class ProjectsMaestro {
     }
     if (clave === 'sector') this.sectorF.set('all');
     if (clave === 'estado') this.estadoF.set('all');
+    if (clave === 'prestacion') this.prestacionF.set('all');
   }
 
   limpiarTodo(): void {
@@ -194,10 +225,21 @@ export class ProjectsMaestro {
     this.queryDebounce.set('');
     this.sectorF.set('all');
     this.estadoF.set('all');
+    this.prestacionF.set('all');
   }
 
   estadoLabel(e: ProjectStatus): string {
     return ESTADOS_PROYECTO.find(x => x.value === e)?.label ?? e;
+  }
+
+  /** La etiqueta del filtro. 'sin_clasificar' no es un valor del enum. */
+  private prestacionEtiqueta(valor: string): string {
+    return this.opcionesPrestacion.find(o => o.value === valor)?.label ?? valor;
+  }
+
+  /** Qué se presta, para la fila. Dice "Sin clasificar" en vez de dejar hueco. */
+  prestacion(p: Project): string {
+    return prestacionLabel(p.tipoPrestacion);
   }
 
   /** La API ya resuelve el autor: un colaborador no puede listar usuarios. */
@@ -214,8 +256,15 @@ export class ProjectsMaestro {
     return this.auth.esAutorOAdmin(p.autorId);
   }
 
+  /** Abre el modal de edición sobre la tabla: la URL es la que lo controla. */
   async editar(p: Project): Promise<void> {
-    await this.router.navigate(['/proyectos', p.id, 'editar']);
+    // `relativeTo` no es opcional acá: con la lista de comandos vacía y sin él,
+    // el router resuelve contra la raíz y termina navegando a `/?editar=…`.
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editar: p.id },
+      queryParamsHandling: 'merge',
+    });
   }
 
   /**
@@ -235,14 +284,10 @@ export class ProjectsMaestro {
     try {
       await this.projectsSvc.archivar(p.id);
       this.toast.success('Proyecto eliminado');
-      // Recarga la página actual: al sacar una fila, la de abajo sube.
-      await this.projectsSvc.load({
-        q: this.query(),
-        sector: this.sectorF(),
-        estado: this.estadoF(),
-        pagina: this.pagina(),
-      });
-      void this.projectsSvc.loadPorEstado({ q: this.query(), sector: this.sectorF() });
+      // Recarga la página actual: al sacar una fila, la de abajo sube. Repite el
+      // último pedido para no tener que enumerar los filtros acá: cada vez que
+      // se agrega uno, esta lista se olvidaba y la tabla saltaba a otra cosa.
+      await this.projectsSvc.recargar();
     } catch (e) {
       this.toast.error(mensajeDeError(e, 'No se pudo eliminar el proyecto.'));
     } finally {

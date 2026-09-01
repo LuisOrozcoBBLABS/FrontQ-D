@@ -140,9 +140,12 @@ export function aAnalisis(api: BorradorApi): AnalisisListo {
   const borrador: BorradorProyecto = {
     nombre: campo(b.nombre, 'el nombre', LIMITES.nombre),
     sector: sectorPropuesto,
-    // La extraccion no propone cliente: el documento fuente rara vez lo dice, y
-    // adivinarlo es peor que dejarlo en blanco para que lo escriba una persona.
+    // La extraccion no propone NI cliente NI tipo de prestacion: son datos
+    // comerciales que el documento fuente rara vez dice, y adivinarlos es peor
+    // que dejarlos en blanco para que los escriba una persona. Por eso tampoco
+    // entran en `camposIA` ni llevan el badge de "propuesto".
     cliente: '',
+    tipoPrestacion: null,
     problema: campo(b.problema, 'el problema', LIMITES.texto),
     dolores: campo(b.dolores, 'los dolores', LIMITES.texto),
     solucion: campo(b.solucion, 'la solución', LIMITES.texto),
@@ -220,7 +223,19 @@ export function leerBorrador(): BorradorGuardado | null {
     const dato = JSON.parse(crudo) as BorradorGuardado;
     // Un borrador sin nada escrito no vale la pena restaurar.
     if (!dato?.borrador?.nombre?.trim() && !dato?.borrador?.problema?.trim()) return null;
-    return dato;
+
+    // Lo guardado puede venir de una versión anterior de la aplicación, sin los
+    // campos que se agregaron después. Se completan acá y no en quien lo use:
+    // un `undefined.trim()` al guardar rompería el formulario con el borrador
+    // ya en pantalla, que es el peor momento posible.
+    return {
+      ...dato,
+      borrador: {
+        ...dato.borrador,
+        cliente: dato.borrador.cliente ?? '',
+        tipoPrestacion: dato.borrador.tipoPrestacion ?? null,
+      },
+    };
   } catch {
     olvidarBorrador();
     return null;

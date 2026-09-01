@@ -106,7 +106,13 @@
    comparten un renglon y antes no.
    El titulo apilado de las otras tres pantallas se queda en --fs-2xl: ahi tiene
    el ancho entero para el solo. */
-.acceso__marca .logo-bb { height: 36px; }
+/* El unico logotipo que NO puede crecer libremente: comparte renglon con el
+   titulo y lo que aprieta es el ANCHO, no el alto. La tarjeta ofrece 396px de
+   contenido (460 menos 2x32 de padding) y el conjunto —logotipo + separador +
+   dos gaps de 16 + "Plataforma R&D" a --fs-xl— pide ~362px a 44px de alto. Con
+   mas altura el ancho se come el margen y el titulo vuelve a partirse en dos
+   renglones, que es el defecto que este bloque vino a arreglar. */
+.acceso__marca .logo-bb { height: 44px; }
 .acceso__marca .acceso__t {
   margin: 0;
   font-size: var(--fs-xl);

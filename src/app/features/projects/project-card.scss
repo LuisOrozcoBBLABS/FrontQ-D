@@ -182,3 +182,14 @@
 .prio-pin--alta { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); }
 .prio-pin--media { border-color: var(--line-strong); }
 .prio-pin--baja { opacity: .75; }
+
+/* Tipo de prestación y cliente, bajo el nombre. Una sola línea que se corta:
+   la altura uniforme es lo que hace legible una columna del tablero. */
+.tarjeta__prestacion {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  line-height: var(--lh-snug);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

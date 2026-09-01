@@ -21,6 +21,7 @@ import {
   Project,
   ProjectStatus,
   SECTORES,
+  TIPOS_PRESTACION,
 } from '../../core/models';
 import { alertaEtapa } from '../../core/tiempos';
 import { ButtonModule } from 'primeng/button';
@@ -93,6 +94,7 @@ export class ProjectsBoard {
   private temporizador?: ReturnType<typeof setTimeout>;
 
   protected sectorF = signal('all');
+  protected prestacionF = signal('all');
   protected prioridadF = signal('all');
   protected estadoAsigF = signal('all');
   protected asignadoPorF = signal('all');
@@ -109,6 +111,12 @@ export class ProjectsBoard {
   protected readonly opcionesSector = [
     { label: 'Todos', value: 'all' },
     ...SECTORES.map(x => ({ label: x, value: x })),
+  ];
+  /** Igual que en la tabla: "Sin clasificar" es una opción y no un hueco. */
+  protected readonly opcionesPrestacion = [
+    { label: 'Talento y solución', value: 'all' },
+    ...TIPOS_PRESTACION.map(t => ({ label: t.label, value: t.value as string })),
+    { label: 'Sin clasificar', value: 'sin_clasificar' },
   ];
   protected readonly opcionesPrioridad = [
     { label: 'Cualquiera', value: 'all' },
@@ -155,6 +163,7 @@ export class ProjectsBoard {
     asignadoAMi: true,
     q: this.queryDebounce(),
     sector: this.sectorF(),
+    tipoPrestacion: this.prestacionF(),
     prioridad: this.prioridadF(),
     estadoAsignacion: this.estadoAsigF(),
     asignadoPor: this.asignadoPorF(),
@@ -195,6 +204,7 @@ export class ProjectsBoard {
     this.query.set('');
     this.queryDebounce.set('');
     this.sectorF.set('all');
+    this.prestacionF.set('all');
     this.prioridadF.set('all');
     this.estadoAsigF.set('all');
     this.asignadoPorF.set('all');
@@ -209,6 +219,10 @@ export class ProjectsBoard {
     const lista: { clave: string; etiqueta: string }[] = [];
     if (this.queryDebounce()) lista.push({ clave: 'q', etiqueta: `“${this.queryDebounce()}”` });
     if (this.sectorF() !== 'all') lista.push({ clave: 'sector', etiqueta: this.sectorF() });
+    if (this.prestacionF() !== 'all') {
+      const t = this.opcionesPrestacion.find(x => x.value === this.prestacionF());
+      lista.push({ clave: 'prestacion', etiqueta: t?.label ?? this.prestacionF() });
+    }
     if (this.prioridadF() !== 'all') {
       const p = PRIORIDADES.find(x => x.value === this.prioridadF());
       lista.push({ clave: 'prioridad', etiqueta: `Prioridad ${p?.label ?? ''}` });
@@ -232,6 +246,7 @@ export class ProjectsBoard {
     switch (clave) {
       case 'q': this.query.set(''); this.queryDebounce.set(''); break;
       case 'sector': this.sectorF.set('all'); break;
+      case 'prestacion': this.prestacionF.set('all'); break;
       case 'prioridad': this.prioridadF.set('all'); break;
       case 'estadoAsignacion': this.estadoAsigF.set('all'); break;
       case 'asignadoPor': this.asignadoPorF.set('all'); break;

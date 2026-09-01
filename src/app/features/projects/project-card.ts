@@ -1,5 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
-import { PRIORIDADES, Project } from '../../core/models';
+import { PRIORIDADES, Project, prestacionLabel } from '../../core/models';
 import { alertaEtapa, diasEnEtapa, diasTotales, humanoCorto, motivoAlerta } from '../../core/tiempos';
 
 /**
@@ -62,6 +62,16 @@ export class ProjectCard {
   protected prioridadLabel = computed(() => {
     const p = this.prioridad();
     return p ? (PRIORIDADES.find(x => x.value === p)?.label ?? p) : null;
+  });
+
+  /**
+   * Qué se presta, o null si todavía no se clasificó — ahí la línea no se pinta
+   * y la tarjeta no crece. NO incluye el cliente: eso se muestra arriba, al
+   * lado del sector, y repetirlo gastaría dos renglones en el mismo dato.
+   */
+  protected prestacion = computed(() => {
+    const t = this.proyecto().tipoPrestacion;
+    return t ? prestacionLabel(t) : null;
   });
 
   protected iniciales(nombre: string): string {

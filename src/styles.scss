@@ -498,18 +498,35 @@ body:has(app-nav-rail){ padding-left: var(--rail-clear); }
 html[data-theme="light"] .logo-bb--oscuro{ display:none; }
 html[data-theme="light"] .logo-bb--claro{ display:block; }
 
-/* Tamaños por contexto, que es lo unico que cambia entre los dos usos.
-   En la tira: de 40 a 56px de alto. A 40 el logotipo pasaba desapercibido —
-   118px de ancho en una tira de 1500 es una marca de agua, no una firma. A 56
-   mide 165px y se lee como lo que es. Se fue tambien la opacidad del 92% que
-   tenia: estaba para que la marca no compitiera con el titulo, pero atenuar lo
-   que se quiere que se note es trabajar en contra. */
-.logo-bb--tira{ height: clamp(38px, 4.2vw, 56px); }
+/* ⚠️ EL PNG ES 55% RELLENO TRANSPARENTE. Es lo que hay que saber antes de
+   tocar cualquiera de estas alturas.
+
+   Medido sobre el archivo: el lienzo es 1585x540 pero la tinta ocupa 1412x243,
+   o sea el 45% del alto y el 89% del ancho. Asi que la altura que se pide en
+   CSS NO es la altura del logotipo: `height: 38px` pintaba un logotipo de
+   17px, y dentro de esos 17px el renglon "powered by </Riwi>" queda en ~2px y
+   directamente no se lee. Ese era el sintoma: "parte de las letras no se ven".
+
+   Regla practica: el logotipo visible mide 0.45 x la altura que se pide aca.
+   Los valores de abajo estan elegidos con esa cuenta, no a ojo.
+
+   El arreglo de fondo es recortar los margenes vacios del PNG; no se hizo
+   porque cambia la proporcion de 2.94 a 5.81 y con eso el ancho a igual
+   altura, que es justo lo que tiene apretado el renglon del ingreso.
+
+   Tamaños por contexto, que es lo unico que cambia entre los dos usos.
+   En la tira: 54 a 78px de alto = 24 a 35px de logotipo visible. Se fue tambien
+   la opacidad del 92% que tenia: estaba para que la marca no compitiera con el
+   titulo, pero atenuar lo que se quiere que se note es trabajar en contra. */
+.logo-bb--tira{ height: clamp(54px, 5.9vw, 78px); }
 /* El margen inferior es solo para el caso apilado (recuperar, cambiar clave,
    bienvenida). En el ingreso el logotipo va dentro de .acceso__marca, que es
    una fila y pone su propio aire: ahi un margin-bottom lo desalinearia del
-   titulo que tiene al lado. */
-.logo-bb--acceso{ height: 44px; }
+   titulo que tiene al lado.
+
+   60px = 27px de logotipo visible. En las tres pantallas apiladas el logotipo
+   tiene el renglon para el solo, asi que el ancho no aprieta. */
+.logo-bb--acceso{ height: 60px; }
 .acceso__col > .logo-bb--acceso{ margin-bottom: var(--sp-6); }
 
 .pie{
@@ -535,7 +552,7 @@ html[data-theme="light"] .logo-bb--claro{ display:block; }
   /* El riel se acuesta abajo en este ancho, asi que la tira queda sola arriba y
      puede achicarse sin dejar hueco. */
   .tira{ padding-top: var(--sp-5); }
-  .logo-bb--tira{ height:34px; }
+  .logo-bb--tira{ height:46px; }
   .pie{ margin-top: var(--sp-8); padding-bottom: var(--sp-6); }
 }
 

@@ -159,11 +159,16 @@ describe('validarBorrador', () => {
 
 describe('aNuevoProyecto', () => {
   it('arma el body con estado idea y sin campos de más', () => {
-    const body = aNuevoProyecto(completo({ groupId: 'g-1' }));
+    // Con cliente puesto a propósito: este test fija el conjunto MÁXIMO de
+    // claves, que es el que tiene que sobrevivir al `forbidNonWhitelisted` del
+    // servidor. Que la clave se omita cuando no hay cliente lo cubre el test
+    // siguiente.
+    const body = aNuevoProyecto(completo({ groupId: 'g-1', cliente: 'Retycol' }));
 
     expect(body.estado).toBe('idea');
     expect(body.groupId).toBe('g-1');
     expect(Object.keys(body).sort()).toEqual([
+      'cliente',
       'dolores',
       'estado',
       'groupId',
@@ -173,6 +178,7 @@ describe('aNuevoProyecto', () => {
       'sector',
       'similares',
       'solucion',
+      'tipoPrestacion',
     ]);
   });
 
@@ -195,12 +201,25 @@ describe('aNuevoProyecto', () => {
     expect(largo.cliente?.length).toBe(LIMITES.cliente);
   });
 
+  it('manda tipoPrestacion en null y no lo omite, al reves que el cliente', () => {
+    // La asimetría con `cliente` es deliberada y conviene entenderla: un cliente
+    // vacío y "sin cliente" son el mismo hecho, así que la clave se omite; en
+    // cambio null en el tipo de prestación es una ELECCIÓN —"sin clasificar"— y
+    // si la clave desapareciera, editar nunca podría quitarle el tipo a un
+    // proyecto que ya lo tiene.
+    const body = aNuevoProyecto(completo({ tipoPrestacion: null }));
+
+    expect('tipoPrestacion' in body).toBe(true);
+    expect(body.tipoPrestacion).toBeNull();
+  });
+
   it('nunca emite un campo por encima de los LIMITES', () => {
     // El maxlength del HTML no aplica a valores puestos por código, así que un
     // texto largo que venga de la IA llegaría entero al POST sin este recorte.
     const body = aNuevoProyecto(
       completo({
         nombre: 'N'.repeat(500),
+        cliente: 'C'.repeat(500),
         problema: 'p '.repeat(5000),
         dolores: 'd'.repeat(9000),
         solucion: 's '.repeat(5000),
@@ -209,6 +228,7 @@ describe('aNuevoProyecto', () => {
     );
 
     expect(body.nombre!.length).toBeLessThanOrEqual(LIMITES.nombre);
+    expect(body.cliente!.length).toBeLessThanOrEqual(LIMITES.cliente);
     expect(body.problema!.length).toBeLessThanOrEqual(LIMITES.texto);
     expect(body.dolores!.length).toBeLessThanOrEqual(LIMITES.texto);
     expect(body.solucion!.length).toBeLessThanOrEqual(LIMITES.texto);

@@ -36,6 +36,33 @@ export const appConfig: ApplicationConfig = {
         },
       },
       ripple: true,
+
+      /**
+       * Los desplegables se cuelgan del <body>, no del componente que los abre.
+       *
+       * Arregla un defecto concreto: `/proyectos` —la tabla y el tablero— fija
+       * `height: 100dvh` con `overflow: hidden`, a proposito, para que el
+       * scroll viva dentro de la lista y no se lleve el encabezado y los
+       * filtros. Pero el panel de un p-select se dibuja DENTRO del componente,
+       * asi que ese mismo `overflow: hidden` lo recortaba: al abrir un filtro
+       * se veia media lista de opciones y el resto quedaba fuera, sin forma de
+       * clickearlo.
+       *
+       * ⚠️ La opcion es `overlayAppendTo`, arriba de todo, y NO
+       * `overlayOptions: { appendTo }`. Las dos existen y se leen igual de
+       * bien, pero PrimeNG 21 resuelve esto con
+       * `this.appendTo() || this.config.overlayAppendTo()`
+       * (primeng-select.mjs), asi que `overlayOptions.appendTo` se acepta sin
+       * chistar y NO HACE NADA. El defecto por defecto es `'self'`, que es
+       * justamente el que recorta.
+       *
+       * Va global y no `appendTo="body"` select por select porque el problema
+       * no es de esos dos selects: es de cualquier overlay dentro de un
+       * contenedor recortado, y la proxima pantalla con scroll propio lo iba a
+       * repetir. PrimeNG maneja el z-index de los overlays por su cuenta, asi
+       * que salir del contenedor no los mete debajo del riel.
+       */
+      overlayAppendTo: 'body',
     }),
     MessageService,
     ConfirmationService,

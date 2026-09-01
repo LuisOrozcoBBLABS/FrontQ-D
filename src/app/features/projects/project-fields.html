@@ -63,6 +63,22 @@
   </div>
 </div>
 
+<div class="field-inline">
+  <div class="field">
+    <label for="pf-tp">Tipo de prestación</label>
+    <p-select
+      inputId="pf-tp"
+      [options]="opcionesPrestacion"
+      [ngModel]="valor().tipoPrestacion"
+      (ngModelChange)="patch('tipoPrestacion', $event)"
+      optionLabel="label"
+      optionValue="value"
+      [disabled]="deshabilitado()"
+      [fluid]="true" />
+    <p class="field__hint">{{ notaPrestacion() }}</p>
+  </div>
+</div>
+
 <div class="field">
   <label for="pf-pr">
     Problema identificado

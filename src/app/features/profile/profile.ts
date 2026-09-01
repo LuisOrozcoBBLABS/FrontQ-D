@@ -1,33 +1,112 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, mensajeDeError } from '../../core/auth.service';
-import { GENEROS, Genero, generoLabel } from '../../core/models';
+import { GENEROS, Genero, ROL_LABEL, generoLabel } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
 import { ButtonModule } from 'primeng/button';
+import { Dialog } from 'primeng/dialog';
 import { InputText } from 'primeng/inputtext';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { DatePicker } from 'primeng/datepicker';
 import { Select } from 'primeng/select';
 
+/**
+ * Mi perfil: la ficha de identidad es la página, y lo editable vive en un
+ * diálogo. Es el mismo reparto que usuarios y grupos —una pantalla que muestra,
+ * un modal que edita— y el que quedó para proyectos.
+ *
+ * El modal se abre desde la URL (`/perfil?editar=1`) y no desde una bandera
+ * interna, por lo mismo que en proyectos: recargar reabre lo mismo y "atrás"
+ * cierra el diálogo en vez de sacarte de la pantalla.
+ */
 @Component({
   selector: 'app-profile',
-  imports: [FormsModule, ButtonModule, InputText, IconField, InputIcon, DatePicker, Select],
+  imports: [FormsModule, ButtonModule, Dialog, InputText, IconField, InputIcon, DatePicker, Select],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class Profile {
   protected auth = inject(AuthService);
   private toast = inject(ToastService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   protected generos = GENEROS;
   protected generoLabel = generoLabel;
 
-  private u = this.auth.currentUser();
-  linkedin = signal(this.u?.linkedin ?? '');
-  telefono = signal(this.u?.telefono ?? '');
-  genero = signal<Genero>(this.u?.genero ?? null);
-  fechaNacimiento = signal(this.u?.fechaNacimiento ?? '');
-  avatarUrl = signal<string | null>(this.u?.avatarUrl ?? null);
+  linkedin = signal('');
+  telefono = signal('');
+  genero = signal<Genero>(null);
+  fechaNacimiento = signal('');
+  avatarUrl = signal<string | null>(null);
+
+  /**
+   * Rol en palabras. Sale de ROL_LABEL y no de un ternario sobre `isAdmin()`:
+   * la ficha decía "Colaborador" para cualquiera que no fuera admin, así que
+   * con el rol comercial mentía. ROL_LABEL además no compila si se agrega un
+   * rol y nadie lo nombra.
+   */
+  protected rolLabel = computed(() => {
+    const rol = this.auth.currentUser()?.rol;
+    return rol ? ROL_LABEL[rol] : '—';
+  });
+
+  /** La foto de la ficha es la guardada, no la que se esté probando en el modal. */
+  protected avatarActual = computed(() => this.auth.currentUser()?.avatarUrl ?? null);
+
+  private params = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+  protected editarAbierto = computed(() => !!this.params().get('editar'));
+
+  constructor() {
+    // Se rellena al ABRIR y no al construir: si se cancela y se vuelve a entrar,
+    // el formulario tiene que mostrar lo guardado y no lo que se dejó a medias.
+    effect(() => {
+      if (!this.editarAbierto()) return;
+      const u = this.auth.currentUser();
+      this.linkedin.set(u?.linkedin ?? '');
+      this.telefono.set(u?.telefono ?? '');
+      this.genero.set(u?.genero ?? null);
+      this.fechaNacimiento.set(u?.fechaNacimiento ?? '');
+      this.avatarUrl.set(u?.avatarUrl ?? null);
+    });
+  }
+
+  protected abrirEdicion(): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editar: 1 },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  /** p-dialog avisa el cierre por Escape o por clic en el fondo. */
+  protected alCambiarVisible(abierto: boolean): void {
+    if (!abierto) this.cerrar();
+  }
+
+  protected cerrar(): void {
+    if (this.guardando()) return; // no se cierra a mitad de un guardado
+    this.cerrarYa();
+  }
+
+  /**
+   * Cierre incondicional. Va separado de `cerrar()` por la misma razón que en
+   * `ProjectModal`: el cierre del final de `save()` corre con `guardando`
+   * todavía en true, y el guard de "no cerrar a mitad de un guardado" se lo
+   * comería.
+   */
+  private cerrarYa(): void {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { editar: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
 
   /** Tope del calendario: no se puede nacer mañana. */
   protected readonly hoy = new Date();
@@ -81,6 +160,7 @@ export class Profile {
         avatarUrl: this.avatarUrl(),
       });
       this.toast.success('Perfil actualizado');
+      this.cerrarYa();
     } catch (e) {
       this.toast.error(mensajeDeError(e, 'No se pudo guardar el perfil.'));
     } finally {

@@ -98,6 +98,19 @@
         </label>
 
         <label class="campo">
+          <span class="campo__t">Tipo de prestación</span>
+          <p-select
+            [options]="opcionesPrestacion"
+            [ngModel]="prestacionF()"
+            (ngModelChange)="prestacionF.set($event)"
+            optionLabel="label"
+            optionValue="value"
+            [fluid]="true"
+            size="small"
+          />
+        </label>
+
+        <label class="campo">
           <span class="campo__t">Prioridad</span>
           <p-select
             [options]="opcionesPrioridad"
