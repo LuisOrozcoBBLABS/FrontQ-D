@@ -176,6 +176,25 @@ describe('aNuevoProyecto', () => {
     ]);
   });
 
+  it('omite la clave cliente cuando no hay cliente, en vez de mandarla vacía', () => {
+    // No es lo mismo omitir que mandar "": el DTO del servidor tiene el campo
+    // opcional y la columna es nullable, así que "sin cliente" tiene UNA sola
+    // representación. Mandar cadena vacía crearía la segunda.
+    const body = aNuevoProyecto(completo({ cliente: '' }));
+    expect('cliente' in body).toBe(false);
+
+    // Y en blanco tampoco cuenta como cliente.
+    expect('cliente' in aNuevoProyecto(completo({ cliente: '   ' }))).toBe(false);
+  });
+
+  it('manda el cliente recortado cuando sí lo hay', () => {
+    const body = aNuevoProyecto(completo({ cliente: '  Retycol  ' }));
+    expect(body.cliente).toBe('Retycol');
+
+    const largo = aNuevoProyecto(completo({ cliente: 'C'.repeat(LIMITES.cliente + 50) }));
+    expect(largo.cliente?.length).toBe(LIMITES.cliente);
+  });
+
   it('nunca emite un campo por encima de los LIMITES', () => {
     // El maxlength del HTML no aplica a valores puestos por código, así que un
     // texto largo que venga de la IA llegaría entero al POST sin este recorte.
