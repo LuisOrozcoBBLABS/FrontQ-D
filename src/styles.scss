@@ -89,6 +89,10 @@ html[data-theme="dark"]{
   --shadow-rail:0 20px 60px -16px rgba(0,0,0,.8);
   --overlay:rgba(4,4,3,.74);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.12);
+  /* Lavado del acento, para fondos y halos. Mismo patron que --danger-bg:
+     el color de marca crudo con alfa baja, no un tono aparte que despues
+     haya que mantener sincronizado a mano. */
+  --accent-halo:rgba(178,234,54,.12);
   /* Relleno del boton destructivo solido, que NO es el mismo valor que el
      borde o el icono. Sobre fondo oscuro el rojo de marca funciona como
      relleno y lleva tinta obsidiana encima. Ver el bloque de tema claro,
@@ -128,6 +132,9 @@ html[data-theme="light"]{
   --shadow-rail:0 18px 50px -18px rgba(11,10,7,.28);
   --overlay:rgba(24,24,22,.5);
   --danger:var(--bb-red); --danger-bg:rgba(242,84,91,.1);
+  /* Un poco mas presente que en oscuro: sobre blanco el mismo alfa
+     desaparece y la caja del plus dejaria de leerse como destacada. */
+  --accent-halo:rgba(178,234,54,.18);
   /* En claro el rojo de marca como relleno da 3.39:1 contra el blanco: pasa
      el umbral de componente, pero la etiqueta blanca encima queda tambien
      en 3.39:1 y ahi falla, porque el texto pide 4.5:1. El relleno baja al

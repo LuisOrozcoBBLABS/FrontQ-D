@@ -10,6 +10,8 @@ import { CANALES, Canal, CanalEnvio, ESTADOS_PROYECTO, PRIORIDADES, Prioridad, P
 import { ToastService } from '../../core/toast.service';
 import { ConfirmService } from '../../core/confirm.service';
 import { mensajeDeError } from '../../core/auth.service';
+import { ETAPAS } from '../../core/models';
+import { fechaCorta, humano, tramos } from '../../core/tiempos';
 import { ButtonModule } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { SelectButton } from 'primeng/selectbutton';
@@ -58,6 +60,59 @@ export class ProjectDetail {
   protected auth = inject(AuthService);
 
   protected estados = ESTADOS_PROYECTO;
+
+  /**
+   * El recorrido real del proyecto por el pipeline, tramo por tramo.
+   *
+   * Se apoya en `tramos()` en lugar de recorrer las diez etapas y marcar cuáles
+   * pasaron, y esa diferencia importa: si un proyecto volvió de QA a desarrollo,
+   * `tramos()` devuelve DOS entradas de desarrollo, no una. Colapsarlas en una
+   * fila fija escondería el reproceso, que es justo lo que hay que poder ver.
+   * La decisión ya estaba tomada en core/tiempos.ts; acá se respeta.
+   */
+  protected recorrido = computed(() => {
+    const p = this.project();
+    if (!p) return [];
+    return tramos(p.historial).map(t => ({
+      etiqueta: t.etiqueta,
+      duracion: humano(t.dias),
+      enCurso: t.enCurso,
+    }));
+  });
+
+  /**
+   * Lo que le falta al proyecto, en gris debajo del recorrido.
+   *
+   * Sale del orden canónico de ETAPAS a partir de la etapa actual. Se excluye
+   * `descartado` porque no es un paso del camino sino una salida, y mostrarla
+   * como "lo que viene" sugeriría que todo proyecto termina descartado.
+   */
+  protected pendientes = computed(() => {
+    const p = this.project();
+    if (!p || p.estado === 'descartado') return [];
+    const i = ETAPAS.findIndex(e => e.value === p.estado);
+    if (i < 0) return [];
+    return ETAPAS.slice(i + 1)
+      .filter(e => e.value !== 'descartado')
+      .map(e => e.label);
+  });
+
+  /**
+   * Las dos fechas del riel, ya formateadas.
+   *
+   * En un `computed` y no en un método de plantilla: un método se reevalúa en
+   * cada ciclo de detección de cambios, y `Intl.format` no es gratis.
+   */
+  protected fechas = computed(() => {
+    const p = this.project();
+    return {
+      fin: p ? fechaCorta(p.finEstimado) : null,
+      registrado: p ? fechaCorta(p.createdAt) : null,
+    };
+  });
+
+  /** Sin historial no hay escalera que mostrar: los proyectos migrados arrancan así. */
+  protected hayRecorrido = computed(() => this.recorrido().length > 0);
 
   /** Tope inferior del calendario: una fecha límite en el pasado no sirve. */
   protected readonly hoy = new Date();

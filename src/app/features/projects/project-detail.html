@@ -30,30 +30,91 @@
     />
 
     @if (tab() === 'resumen') {
-      <div class="card card--forma enter">
-        <div class="block-sec"><span class="block__label">Problema identificado</span><p>{{ p.problema || '—' }}</p></div>
-        <div class="block-sec"><span class="block__label">Dolores</span><p>{{ p.dolores || '—' }}</p></div>
-        <div class="block-sec"><span class="block__label">Nuestra solución</span><p>{{ p.solucion || '—' }}</p></div>
-        <div class="block-sec">
-          <span class="block__label">Aplicaciones parecidas en el mercado</span>
-          @if (p.similares.length) {
-            <div class="market">
-              @for (s of p.similares; track $index) {
-                <a [href]="s.url" target="_blank" rel="noopener noreferrer">{{ s.name || s.url }}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
-                </a>
-              }
+      <!-- Dos columnas: los datos duros a la izquierda, el argumento a la derecha.
+           La prosa se lee en una medida angosta y fija en vez de cruzar toda la
+           pantalla, que era el motivo real de que la ficha cansara. -->
+      <div class="ficha enter">
+
+        <aside class="ficha__riel">
+          @if (hayRecorrido()) {
+            <div class="riel__caja">
+              <span class="riel__k">Recorrido</span>
+              <ol class="pasos">
+                @for (t of recorrido(); track $index) {
+                  <li class="paso" [class.paso--aqui]="t.enCurso">
+                    <span class="paso__punto"></span>
+                    <span class="paso__n">{{ t.etiqueta }}</span>
+                    <span class="paso__t">{{ t.duracion }}</span>
+                  </li>
+                }
+                @for (e of pendientes(); track e) {
+                  <li class="paso paso--falta">
+                    <span class="paso__punto"></span>
+                    <span class="paso__n">{{ e }}</span>
+                    <span class="paso__t">&mdash;</span>
+                  </li>
+                }
+              </ol>
             </div>
-          } @else { <p class="text-dim">—</p> }
-        </div>
-        <div class="aiplus">
-          <div class="block__body">
-            <span class="aiplus__tag">IA+ · Diferencial</span>
-            <p class="aiplus__text">{{ p.plusIA || 'Sin definir aún.' }}</p>
+          }
+
+          <div class="riel__caja">
+            @if (p.responsables?.length) {
+              <div class="dato">
+                <span class="riel__k">Responsables</span>
+                <span class="dato__v">{{ p.responsables!.join(' · ') }}</span>
+              </div>
+            }
+            @if (fechas().fin) {
+              <div class="dato">
+                <span class="riel__k">Fin estimado</span>
+                <span class="dato__v dato__v--num">{{ fechas().fin }}</span>
+              </div>
+            }
+            @if (fechas().registrado) {
+              <div class="dato">
+                <span class="riel__k">Registrado</span>
+                <span class="dato__v dato__v--num">{{ fechas().registrado }}</span>
+              </div>
+            }
           </div>
+        </aside>
+
+        <div class="relato">
+          <section class="tramo">
+            <h2 class="tramo__k">El problema</h2>
+            <p>{{ p.problema || '—' }}</p>
+          </section>
+
+          <section class="tramo">
+            <h2 class="tramo__k">Por qué duele</h2>
+            <p>{{ p.dolores || '—' }}</p>
+          </section>
+
+          <!-- La solución es la respuesta del proyecto: lleva más peso visual
+               que el contexto que la rodea. -->
+          <section class="tramo tramo--clave">
+            <h2 class="tramo__k">Lo que proponemos</h2>
+            <p>{{ p.solucion || '—' }}</p>
+          </section>
+
+          <section class="plus">
+            <h2 class="plus__k">El plus con IA</h2>
+            <p>{{ p.plusIA || 'Sin definir aún.' }}</p>
+          </section>
+
+          @if (p.similares.length) {
+            <section class="tramo">
+              <h2 class="tramo__k">Ya existe algo parecido</h2>
+              <div class="mercado">
+                @for (s of p.similares; track $index) {
+                  <a [href]="s.url" target="_blank" rel="noopener noreferrer">{{ s.name || s.url }}</a>
+                }
+              </div>
+            </section>
+          }
         </div>
       </div>
-
     }
 
 

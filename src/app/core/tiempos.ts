@@ -154,3 +154,38 @@ export function motivoAlerta(p: Project, ahora = new Date()): string | null {
   if (limite === undefined || dias === null || dias <= limite * 0.7) return null;
   return `${humano(dias)} en ${etapaDe(p.estado).label.toLowerCase()}; lo esperado es hasta ${limite} días.`;
 }
+
+/**
+ * Fecha corta y en español: "30 sept 2026".
+ *
+ * Tres decisiones, y las tres se tomaron midiendo:
+ *
+ * 1. NO se usa el pipe `date` de Angular. El proyecto no registra ningún
+ *    locale, así que ese pipe cae en `en-US` y devuelve "30 Sep 2026" — meses
+ *    en inglés dentro de una interfaz que está toda en español.
+ *
+ * 2. `timeZone: 'UTC'`, y esto es lo importante. Sin eso, una fecha que llega
+ *    como "2026-09-30T00:00:00Z" se muestra como 29 de septiembre en Colombia
+ *    (UTC-5): la medianoche UTC es la tarde del día anterior acá. Una fecha
+ *    límite corrida un día es peor que no mostrarla. Se interpreta como fecha
+ *    de calendario, no como instante.
+ *
+ * 3. `es-ES` y no `es-CO`. Con es-CO, Intl devuelve "30 de sept de 2026": los
+ *    "de" sobran en una columna de datos donde lo que se compara es el número.
+ *
+ * Devuelve null y no una cadena vacía cuando no hay fecha: así quien lo llama
+ * decide qué mostrar en vez de recibir un hueco silencioso.
+ */
+const FORMATO_CORTO = new Intl.DateTimeFormat('es-ES', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+export function fechaCorta(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return null;
+  return FORMATO_CORTO.format(new Date(t));
+}

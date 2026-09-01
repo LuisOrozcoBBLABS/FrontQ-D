@@ -42,3 +42,173 @@
 .pd__nota { margin-top: var(--sp-3); }
 .pd__intro { font-size: var(--fs-sm); color: var(--text-2); margin-bottom: var(--sp-4); }
 .pd__canal { margin-bottom: var(--sp-2); }
+
+/* =============================================================
+   Ficha: recorrido a la izquierda, argumento a la derecha.
+
+   Antes eran cinco bloques de prosa apilados, todos con el mismo peso, cada
+   uno de hasta 4000 caracteres y a todo el ancho de la pantalla. Lo que cansa
+   no es la cantidad de texto sino esas dos cosas juntas: nada indica qué
+   importa, y a esa medida el ojo pierde el renglón al volver a la izquierda.
+   ============================================================= */
+.ficha {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: var(--sp-10);
+  align-items: start;
+}
+
+/* El riel acompaña la lectura en pantallas altas. `top` lo despega de la tira
+   de marca, que es fija. */
+.ficha__riel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  position: sticky;
+  top: var(--sp-8);
+}
+
+.riel__caja {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.riel__k {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* stylelint-disable-next-line declaration-property-value-disallowed-list -- 2px entre etiqueta y valor: ajuste tipografico, no ritmo. Con --sp-1 el par deja de leerse como una unidad. */
+.dato { display: flex; flex-direction: column; gap: 2px; }
+.dato__v { font-size: var(--fs-sm); font-weight: 600; }
+/* Las fechas se leen en columna: sin cifras tabulares bailan de ancho. */
+.dato__v--num { font-variant-numeric: tabular-nums; }
+
+/* ---------- La escalera del recorrido ---------- */
+.pasos { display: flex; flex-direction: column; list-style: none; }
+.paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-1) 0;
+}
+/* El hilo que une los puntos. Va del punto de arriba al de abajo, y no se
+   dibuja en el último para que la escalera no termine en el aire. */
+.paso:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 16px;
+  bottom: -4px;
+  width: 1px;
+  background: var(--line-strong);
+}
+.paso__punto {
+  justify-self: center;
+  width: 9px;
+  height: 9px;
+  border-radius: var(--r-full);
+  background: var(--accent-ui);
+  position: relative;
+  z-index: 1;
+}
+.paso__n { font-size: var(--fs-sm); color: var(--text-2); }
+.paso__t {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dónde está parado hoy: el punto crece y se le pone un halo. */
+.paso--aqui .paso__punto {
+  width: 13px;
+  height: 13px;
+  box-shadow: 0 0 0 5px var(--accent-halo);
+}
+.paso--aqui .paso__n { color: var(--text); font-weight: 700; }
+
+/* Lo que falta: mismo lugar, sin color. */
+.paso--falta .paso__punto { background: var(--line-strong); }
+.paso--falta::before { background: var(--line); }
+.paso--falta .paso__n { color: var(--text-dim); }
+
+/* ---------- El argumento ---------- */
+.relato { display: flex; flex-direction: column; gap: var(--sp-10); }
+.tramo { display: flex; flex-direction: column; gap: var(--sp-3); }
+
+/* La etiqueta lleva una línea que se estira hasta el borde: separa los tramos
+   sin gastar un divisor completo, que a esta densidad sería demasiado. */
+.tramo__k {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.tramo__k::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+/* 64 caracteres. Es el arreglo principal: por debajo de ~75 el ojo encuentra
+   solo el renglón siguiente al volver a la izquierda. */
+.tramo p, .plus p { max-width: 64ch; color: var(--text-2); }
+
+/* La solución es la respuesta del proyecto: gana peso sobre el contexto. */
+.tramo--clave p { color: var(--text); font-size: var(--fs-md); line-height: var(--lh-snug); }
+
+.plus {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-5);
+  border: 1px solid var(--accent-ui);
+  border-radius: var(--r-md);
+  background: var(--accent-halo);
+}
+.plus__k {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent-ui);
+}
+
+.mercado { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.mercado a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  /* La pastilla se dimensiona por su altura de control, no por el ritmo de
+     la pagina: --sp-2 vertical la engordaria y --sp-1 la dejaria apretada. */
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- correccion optica de una pastilla, explicada arriba */
+  padding: 5px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-full);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--text-2);
+  text-decoration: none;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.mercado a::after { content: "\2197"; font-size: 10px; opacity: .7; }
+.mercado a:hover, .mercado a:focus-visible { border-color: var(--accent-ui); color: var(--accent-ui); }
+
+/* En angosto el riel pasa arriba y deja de ser pegajoso: ahí compite con el
+   contenido en vez de acompañarlo. */
+@media (max-width: 900px) {
+  .ficha { grid-template-columns: minmax(0, 1fr); gap: var(--sp-8); }
+  .ficha__riel { position: static; }
+}

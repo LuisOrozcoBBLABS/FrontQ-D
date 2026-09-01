@@ -8,6 +8,7 @@ import {
   entradaAEtapaActual,
   humano,
   tramos,
+  fechaCorta,
 } from './tiempos';
 
 const AHORA = new Date('2026-08-20T12:00:00.000Z');
@@ -169,5 +170,28 @@ describe('humano', () => {
     expect(humano(1)).toBe('1 día');
     expect(humano(12)).toBe('12 días');
     expect(humano(60)).toBe('2 meses');
+  });
+});
+
+describe('fechaCorta', () => {
+  it('formatea en español y corto', () => {
+    expect(fechaCorta('2026-09-30T00:00:00Z')).toBe('30 sept 2026');
+    expect(fechaCorta('2026-01-05T00:00:00Z')).toBe('5 ene 2026');
+  });
+
+  it('NO corre el día por zona horaria', () => {
+    // La trampa: medianoche UTC es la tarde del día anterior en Colombia
+    // (UTC-5). Sin timeZone:'UTC' esto devolvía "29 sept 2026" y una fecha
+    // límite se mostraba un día antes de lo que era.
+    expect(fechaCorta('2026-09-30T00:00:00Z')).toBe('30 sept 2026');
+    // Y el mismo día enviado con hora local convertida tiene que dar igual.
+    expect(fechaCorta('2026-09-30T05:00:00Z')).toBe('30 sept 2026');
+  });
+
+  it('no inventa nada cuando no hay fecha', () => {
+    expect(fechaCorta(null)).toBeNull();
+    expect(fechaCorta(undefined)).toBeNull();
+    expect(fechaCorta('')).toBeNull();
+    expect(fechaCorta('no es una fecha')).toBeNull();
   });
 });
